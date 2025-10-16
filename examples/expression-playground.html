@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OMD Expression Playground</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f0f2f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        .container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+        .sidebar {
+            width: 350px;
+            background: white;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        #playground-canvas {
+            width: 100%;
+            max-width: 900px;
+            aspect-ratio: 16/9;
+            background: #fafafa;
+            position: relative;
+            margin: 0 auto;
+            min-height: 0;
+            min-width: 0;
+            display: flex;
+            align-items: stretch;
+            justify-content: stretch;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        .expression-list {
+            margin-top: 30px;
+        }
+        .expression-item {
+            background: #f7fafc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .expression-item:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+        .expression-item.selected {
+            border-color: #667eea;
+            background: #e0e7ff;
+        }
+        .expression-item .expr-text {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+        }
+        .expression-item .expr-type {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        .operation-panel {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px solid #e2e8f0;
+        }
+        .operation-panel h3 {
+            margin-top: 0;
+            color: #2d3748;
+        }
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 300px;
+        }
+        .coordinates {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 10px;
+        }
+        .grid-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .sequence-builder {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f7ff;
+            border: 2px solid #bee3f8;
+            border-radius: 8px;
+        }
+        .sequence-builder h3 {
+            margin-top: 0;
+            color: #2b6cb0;
+        }
+        .sequence-steps {
+            margin: 10px 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .sequence-step {
+            padding: 5px 10px;
+            background: white;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        #playground-canvas.dragging {
+            cursor: grabbing !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 OMD Expression Playground</h1>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="input-group">
+                <label for="expression-input">Enter Expression:</label>
+                <input type="text" id="expression-input" placeholder="e.g., x^2 + 2x + 1, 3x = 9, sin(x), 42">
+            </div>
+            
+            <div class="input-group">
+                <label for="type-select">Type:</label>
+                <select id="type-select">
+                    <option value="auto">Auto-detect</option>
+                    <option value="number">Number</option>
+                    <option value="expression">Expression</option>
+                    <option value="equation">Equation</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn btn-primary" id="add-btn">Add to Canvas</button>
+                <button class="btn btn-secondary" id="random-position-btn">Random Position</button>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn btn-secondary" id="arrange-grid-btn">Arrange Grid</button>
+                <button class="btn btn-danger" id="clear-btn">Clear All</button>
+            </div>
+            
+            <div class="expression-list">
+                <h3>Expressions on Canvas:</h3>
+                <div id="expression-list-container"></div>
+            </div>
+            
+            <div class="sequence-builder">
+                <h3>Sequence Builder</h3>
+                <div class="sequence-steps" id="sequence-steps"></div>
+                <button class="btn btn-primary" id="create-sequence-btn">Create Sequence</button>
+                <button class="btn btn-secondary" id="clear-sequence-btn">Clear Steps</button>
+            </div>
+            
+            <div class="operation-panel">
+                <h3>Operations (Select 2 expressions)</h3>
+                <div class="button-group">
+                    <button class="btn btn-secondary" id="add-op-btn">Add (+)</button>
+                    <button class="btn btn-secondary" id="subtract-op-btn">Subtract (-)</button>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" id="multiply-op-btn">Multiply (×)</button>
+                    <button class="btn btn-secondary" id="divide-op-btn">Divide (÷)</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="canvas-container" id="canvas-container">
+            <div id="playground-canvas"></div>
+            <div class="info-panel" id="info-panel" style="display: none;">
+                <h4>Node Info</h4>
+                <div id="node-info-content"></div>
+                <div class="coordinates" id="node-coordinates"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+    <script src="../jsvg/jsvg.js"></script>
+    <script src="../jsvg/jsvgComponents.js"></script>
+    <script type="module">
+    import { Canvas } from '../canvas/cuiCanvas.js';
+        import { omdNode } from '../omd/nodes/omdNode.js';
+        import { getNodeForAST } from '../omd/core/omdUtilities.js';
+        import { omdEquationNode } from '../omd/nodes/omdEquationNode.js';
+        import { omdEquationSequenceNode } from '../omd/nodes/omdEquationSequenceNode.js';
+        import { omdBinaryExpressionNode } from '../omd/nodes/omdBinaryExpressionNode.js';
+        
+        class ExpressionPlayground {
+            constructor() {
+                this.canvasContainer = document.getElementById('playground-canvas');
+                this.canvas = new Canvas({
+                    width: this.canvasContainer.clientWidth,
+                    height: this.canvasContainer.clientHeight,
+                    showToolbar: false
+                });
+                this.canvasContainer.appendChild(this.canvas.svgObject);
+
+                // Responsive resize
+                const resizeCanvasToContainer = () => {
+                    const rect = this.canvasContainer.getBoundingClientRect();
+                    this.canvas.resize(rect.width, rect.height);
+                };
+                window.addEventListener('resize', resizeCanvasToContainer);
+                window.addEventListener('DOMContentLoaded', resizeCanvasToContainer);
+                resizeCanvasToContainer();
+
+                this.nodeMap = new Map();
+                this.selectedNodes = new Set();
+                this.sequenceSteps = [];
+                this.nextNodeId = 1;
+                
+                this.initializeEventListeners();
+                this.addInitialExpressions();
+            }
+            
+            initializeEventListeners() {
+                document.getElementById('add-btn').onclick = () => this.addFromInput();
+                document.getElementById('arrange-grid-btn').onclick = () => this.arrangeGrid();
+                document.getElementById('clear-btn').onclick = () => this.clearCanvas();
+                document.getElementById('add-op-btn').onclick = () => this.combineSelected('+');
+                document.getElementById('subtract-op-btn').onclick = () => this.combineSelected('-');
+                document.getElementById('multiply-op-btn').onclick = () => this.combineSelected('*');
+                document.getElementById('divide-op-btn').onclick = () => this.combineSelected('/');
+                document.getElementById('create-sequence-btn').onclick = () => this.createSequence();
+                document.getElementById('clear-sequence-btn').onclick = () => this.clearSequence();
+            }
+
+            addFromInput() {
+                    const expr = document.getElementById('expression-input').value.trim();
+                    if (!expr) return;
+                const x = Math.random() * (this.canvasContainer.offsetWidth - 200) + 50;
+                const y = Math.random() * (this.canvasContainer.offsetHeight - 100) + 50;
+                this.addNode(expr, x, y);
+                    document.getElementById('expression-input').value = '';
+            }
+
+            addNode(expr, x, y) {
+                try {
+                    const parsedAST = window.math.parse(expr);
+                    const NodeClass = getNodeForAST(parsedAST);
+                    const node = new NodeClass(parsedAST);
+                    
+                    node.setFontSize(28);
+                    node.initialize();
+                    node.setPosition(x, y);
+
+                    const nodeId = `node-${this.nextNodeId++}`;
+                    this.canvas.field.addChild(node);
+                    this.nodeMap.set(node, { id: nodeId, node: node });
+
+                    this.enhanceNode(node);
+                    this.updateNodeList();
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
+            }
+            
+            enhanceNode(node) {
+                let draggedNode = null;
+                node.svgObject.style.cursor = 'grab';
+
+                node.svgObject.addEventListener('pointerdown', e => {
+                    e.stopPropagation();
+                    node.svgObject.style.cursor = 'grabbing';
+                    draggedNode = {
+                        node: node,
+                        offsetX: e.clientX - node.xpos,
+                        offsetY: e.clientY - node.ypos
+                    };
+                    this.canvasContainer.addEventListener('pointermove', onDrag);
+                    this.canvasContainer.addEventListener('pointerup', onDragEnd);
+                });
+                
+                const onDrag = e => {
+                    if (!draggedNode) return;
+                    e.preventDefault();
+                    draggedNode.node.setPosition(e.clientX - draggedNode.offsetX, e.clientY - draggedNode.offsetY);
+                    this.updateNodeInfoPanel(draggedNode.node);
+                };
+                
+                const onDragEnd = () => {
+                    if (!draggedNode) return;
+                    draggedNode.node.svgObject.style.cursor = 'grab';
+                    draggedNode = null;
+                    this.canvasContainer.removeEventListener('pointermove', onDrag);
+                    this.canvasContainer.removeEventListener('pointerup', onDragEnd);
+                    this.updateNodeList();
+                };
+
+                node.svgObject.addEventListener('click', e => {
+                    e.stopPropagation();
+                    const nodeInfo = this.nodeMap.get(node);
+                    if (!nodeInfo) return;
+                    
+                    if (e.ctrlKey || e.metaKey) {
+                        if (this.selectedNodes.has(nodeInfo.id)) {
+                            this.selectedNodes.delete(nodeInfo.id);
+                        } else {
+                            this.selectedNodes.add(nodeInfo.id);
+                        }
+                    } else {
+                        this.selectedNodes.clear();
+                        this.selectedNodes.add(nodeInfo.id);
+                    }
+                    this.updateNodeList();
+                    this.updateNodeInfoPanel(node);
+                });
+            }
+
+            addInitialExpressions() {
+                // Use valid math.js expressions for initial nodes
+                this.addNode('x^2 + y^2', 100, 100);
+                this.addNode('a*x + b', 400, 250);
+            }
+
+            updateNodeList() {
+                const container = document.getElementById('expression-list-container');
+                container.innerHTML = '';
+                this.nodeMap.forEach((info) => {
+                    const item = document.createElement('div');
+                    item.className = 'expression-item';
+                    if (this.selectedNodes.has(info.id)) {
+                        item.classList.add('selected');
+                    }
+                    item.innerHTML = `<span class="expr-text">${info.node.toString()}</span> <span class="expr-type">${info.node.constructor.name}</span>`;
+                    item.onclick = (e) => {
+                        if (e.ctrlKey || e.metaKey) {
+                            if (this.selectedNodes.has(info.id)) {
+                                this.selectedNodes.delete(info.id);
+                            } else {
+                                this.selectedNodes.add(info.id);
+                            }
+                        } else {
+                            this.selectedNodes.clear();
+                            this.selectedNodes.add(info.id);
+                        }
+                        this.updateNodeList();
+                        this.updateNodeInfoPanel(info.node);
+                    };
+                    container.appendChild(item);
+                });
+            }
+            
+            updateNodeInfoPanel(node) {
+                const panel = document.getElementById('info-panel');
+                if (this.selectedNodes.size !== 1 || !node) {
+                    panel.style.display = 'none';
+                    return;
+                }
+                panel.style.display = 'block';
+                document.getElementById('node-info-content').innerText = `Type: ${node.constructor.name}`;
+                document.getElementById('node-coordinates').innerText = `Position: (${Math.round(node.xpos)}, ${Math.round(node.ypos)})`;
+            }
+
+            combineSelected(op) {
+                if (this.selectedNodes.size !== 2) {
+                    alert('Please select exactly two expressions to combine.');
+                    return;
+                }
+                
+                const [id1, id2] = Array.from(this.selectedNodes);
+                const nodeInfo1 = this.getNodeInfoById(id1);
+                const nodeInfo2 = this.getNodeInfoById(id2);
+
+                if (!nodeInfo1 || !nodeInfo2) return;
+
+                const leftAST = nodeInfo1.node.toMathJSNode();
+                const rightAST = nodeInfo2.node.toMathJSNode();
+                const newAST = { type: 'OperatorNode', op, args: [leftAST, rightAST], implicit: false };
+                
+                const newX = (nodeInfo1.node.xpos + nodeInfo2.node.xpos) / 2;
+                const newY = (nodeInfo1.node.ypos + nodeInfo2.node.ypos) / 2;
+                
+                this.addNode(new omdBinaryExpressionNode(newAST).toString(), newX, newY);
+                this.deleteNodeById(id1);
+                this.deleteNodeById(id2);
+            }
+            
+            deleteNodeById(nodeId) {
+                const info = this.getNodeInfoById(nodeId);
+                if (info) {
+                    this.canvas.field.removeChild(info.node);
+                    this.nodeMap.delete(info.node);
+                    this.selectedNodes.delete(nodeId);
+                    this.updateNodeList();
+                }
+            }
+
+            getNodeInfoById(id) {
+                for (let info of this.nodeMap.values()) {
+                    if (info.id === id) return info;
+                }
+                return null;
+            }
+
+            arrangeGrid() {
+                const nodes = Array.from(this.nodeMap.values());
+                const columns = Math.ceil(Math.sqrt(nodes.length));
+                nodes.forEach((info, index) => {
+                    info.node.setPosition(
+                        100 + (index % columns) * 250,
+                        100 + Math.floor(index / columns) * 200
+                    );
+                });
+                this.updateNodeList();
+            }
+
+            clearCanvas() {
+                this.canvas.field.removeallChildren();
+                this.nodeMap.clear();
+                this.selectedNodes.clear();
+                this.updateNodeList();
+            }
+
+            createSequence() {
+                if (this.sequenceSteps.length === 0) return;
+                const node = new omdEquationSequenceNode(this.sequenceSteps.map(s => omdEquationNode.fromString(s)));
+                this.addNode(node.toString(), 100, 150);
+                this.clearSequence();
+            }
+
+            clearSequence() {
+                this.sequenceSteps = [];
+                document.getElementById('sequence-steps').innerHTML = '';
+            }
+        }
+
+            new ExpressionPlayground();
+    </script>
+</body>
+</html>

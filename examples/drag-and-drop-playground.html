@@ -1,0 +1,153 @@
+    <script src="https://unpkg.com/mathjs@11.8.0/lib/browser/math.js"></script>
+    <script src="../jsvg/jsvg.js"></script>
+    <script src="../jsvg/jsvgComponents.js"></script>
+<style>
+    body {
+        background: #f7f9fa;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        max-width: 900px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        padding: 32px 28px 24px 28px;
+    }
+    h2 {
+        margin-top: 0;
+        font-weight: 600;
+        color: #2d3a4a;
+        letter-spacing: 0.5px;
+    }
+    .controls {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 18px;
+        align-items: center;
+    }
+    #expr-input {
+        flex: 1;
+        padding: 10px 14px;
+        font-size: 1.1em;
+        border: 1px solid #cfd8dc;
+        border-radius: 6px;
+        outline: none;
+        transition: border 0.2s;
+    }
+    #expr-input:focus {
+        border: 1.5px solid #1976d2;
+    }
+    button {
+        background: #1976d2;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 18px;
+        font-size: 1em;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s, box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+    }
+    button:hover {
+        background: #1256a3;
+    }
+    #canvas-area {
+        min-height: 400px;
+        background: #f0f4f8;
+        border: 1.5px solid #e3e7ed;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(44,62,80,0.04);
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>Simple OMD Canvas Example</h2>
+    <div class="controls">
+        <input id="expr-input" type="text" placeholder="Enter a math expression (e.g. x^2 + 2x + 1)" />
+        <button id="add-btn">Add Expression</button>
+        <button id="clear-btn">Clear Canvas</button>
+    </div>
+    <div id="canvas-area"></div>
+</div>
+<script type="module">
+import { Canvas } from '../canvas/cuiCanvas.js';
+import { getNodeForAST } from '../omd/core/omdUtilities.js';
+
+const canvasArea = document.getElementById('canvas-area');
+const canvas = new Canvas({
+    width: canvasArea.clientWidth || 800,
+    height: canvasArea.clientHeight || 400,
+    showToolbar: false
+});
+canvasArea.appendChild(canvas.svgObject);
+
+function resizeCanvas() {
+    canvas.resize(canvasArea.clientWidth || 800, canvasArea.clientHeight || 400);
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+let nodeIdCounter = 1;
+const nodeMap = new Map();
+
+function addExpression(expr, x = 100, y = 100) {
+    try {
+        if (!window.math) throw new Error('Math.js not loaded');
+        const parsedAST = window.math.parse(expr);
+        const NodeClass = getNodeForAST(parsedAST);
+        const node = new NodeClass(parsedAST);
+        node.setFontSize(32);
+        node.initialize();
+        node.setPosition(x, y);
+        canvas.field.addChild(node);
+        const id = 'node-' + nodeIdCounter++;
+        nodeMap.set(id, { node, expr, id });
+        enableDrag(node);
+    } catch (e) {
+        alert('Invalid expression: ' + expr);
+    }
+}
+
+function enableDrag(node) {
+    let dragOffset = null;
+    node.svgObject.style.cursor = 'grab';
+    node.svgObject.addEventListener('pointerdown', (e) => {
+        dragOffset = { x: e.clientX - node.xpos, y: e.clientY - node.ypos };
+        window.addEventListener('pointermove', onDrag);
+        window.addEventListener('pointerup', onDrop);
+    });
+    function onDrag(e) {
+        node.setPosition(e.clientX - dragOffset.x, e.clientY - dragOffset.y);
+    }
+    function onDrop() {
+        window.removeEventListener('pointermove', onDrag);
+        window.removeEventListener('pointerup', onDrop);
+        dragOffset = null;
+    }
+}
+
+document.getElementById('add-btn').onclick = () => {
+    const expr = document.getElementById('expr-input').value.trim();
+    if (expr) addExpression(expr);
+    document.getElementById('expr-input').value = '';
+};
+document.getElementById('clear-btn').onclick = () => {
+    canvas.field.removeAllChildren();
+    nodeMap.clear();
+};
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>

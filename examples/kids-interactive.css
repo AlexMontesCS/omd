@@ -1,0 +1,232 @@
+/* Only one #math-display block, with all properties */
+#math-display {
+    width: 100%;
+    min-height: 200px;
+    max-height: 75vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    border: 3px solid #e2e8f0;
+    background: #f7fafc;
+    border-radius: 15px;
+    margin: 20px 0;
+    position: relative;
+    padding: 20px;
+    box-sizing: border-box;
+}
+#math-display > svg {
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+}
+body {
+    font-family: 'Albert Sans', 'Arial', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #5a67d8;
+    min-height: 100vh;
+}
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+h1 {
+    color: #5a67d8;
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+.problem-selector {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.problem-card {
+    background: #f7fafc;
+    border: 3px solid #e2e8f0;
+    padding: 15px 25px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 20px;
+    font-weight: bold;
+}
+.problem-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border-color: #5a67d8;
+    background: #edf2f7;
+}
+.problem-card.selected {
+    background: #5a67d8;
+    color: white;
+    border-color: #5a67d8;
+}
+#math-display {
+    width: 100%;
+    min-height: 200px;
+    max-height: 75vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    border: 3px solid #e2e8f0;
+    background: #f7fafc;
+    border-radius: 15px;
+    margin: 20px 0;
+    position: relative;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.hint-area {
+    background: #c6f6d5;
+    border: 2px solid #9ae6b4;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    font-size: 18px;
+    display: none;
+    animation: slideIn 0.5s ease-out;
+}
+@keyframes slideIn {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+.controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+.btn {
+    padding: 15px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.btn-hint {
+    background: #f6e05e;
+    color: #744210;
+}
+.btn-hint:hover {
+    background: #f6d743;
+    transform: scale(1.05);
+}
+.btn-hint:disabled {
+    background: #e2e8f0;
+    color: #a0aec0;
+    cursor: not-allowed;
+    transform: none;
+}
+.btn-check {
+    background: #48bb78;
+    color: white;
+}
+.btn-check:hover {
+    background: #38a169;
+    transform: scale(1.05);
+}
+.btn-next {
+    background: #667eea;
+    color: white;
+}
+.btn-next:hover {
+    background: #5a67d8;
+    transform: scale(1.05);
+}
+.answer-input {
+    text-align: center;
+    margin: 20px 0;
+}
+.answer-input input {
+    padding: 15px;
+    font-size: 24px;
+    width: 150px;
+    text-align: center;
+    border: 3px solid #e2e8f0;
+    border-radius: 10px;
+    font-weight: bold;
+}
+.answer-input input:focus {
+    outline: none;
+    border-color: #5a67d8;
+}
+.feedback {
+    text-align: center;
+    font-size: 24px;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 10px;
+    display: none;
+    font-weight: bold;
+}
+.feedback.correct {
+    background: #c6f6d5;
+    color: #22543d;
+    animation: bounce 0.5s ease-out;
+}
+.feedback.incorrect {
+    background: #feb2b2;
+    color: #742a2a;
+    animation: shake 0.5s ease-out;
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+.stars {
+    text-align: center;
+    font-size: 40px;
+    margin: 20px 0;
+}
+.star {
+    color: #f6e05e;
+    display: inline-block;
+    margin: 0 5px;
+    animation: starPop 0.5s ease-out;
+}
+@keyframes starPop {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+.progress {
+    background: #e2e8f0;
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+.progress-bar {
+    background: linear-gradient(90deg, #48bb78, #38a169);
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease-out;
+}

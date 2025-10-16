@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD Canvas - Modular Drawing System</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/mathjs@14.5.2/lib/browser/math.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Albert Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #main-canvas {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Minimal floating controls */
+        .floating-controls {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            background: #fff;
+            color: #333;
+            border: 1px solid #eee;
+        }
+
+        .btn:hover {
+            background: #f7f7f7;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-danger {
+            background: #ffebee;
+            color: #c62828;
+            border-color: #ffcdd2;
+        }
+
+        .btn-danger:hover {
+            background: #ffcdd2;
+            color: #b71c1c;
+        }
+
+        .btn-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-color: #c8e6c9;
+        }
+
+        .btn-success:hover {
+            background: #c8e6c9;
+            color: #1b5e20;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #424242;
+            border-color: #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #eeeeee;
+            color: #212121;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Full Screen Canvas -->
+    <div id="main-canvas"></div>
+    
+    <!-- Minimal Floating Controls -->
+    <div class="floating-controls">
+        <button class="btn btn-danger" onclick="clearCanvas()" title="Clear Canvas">
+            Clear
+        </button>
+        <button class="btn btn-secondary" onclick="createFocusFrame()" title="Create Focus Frame">
+            Focus Frame
+        </button>
+        <button class="btn btn-success" onclick="exportPNG()" title="Export as PNG">
+            Export PNG
+        </button>
+        <button class="btn btn-secondary" onclick="exportSVG()" title="Export as SVG">
+            Export SVG
+        </button>
+    </div>
+
+    <!-- Load the new modular canvas system -->
+    <script src="../../jsvg/jsvg.js"></script>
+    <script src="../../jsvg/jsvgComponents.js"></script>
+    
+    <script type="module">
+        import { createCanvas, omdCanvas } from '../../canvas/index.js';
+        import { jsvgGroup } from "@teachinglab/jsvg";
+
+        // Global reference for demo functions
+        window.mainCanvas = null;
+        window.gridEnabled = false;
+        
+        // Initialize the main canvas
+        function initializeCanvas() {
+            try {
+                // Get full screen dimensions
+                const screenWidth = window.innerWidth;
+                const screenHeight = window.innerHeight;
+
+                window.mainCanvas = createCanvas('#main-canvas', {
+                    width: screenWidth,
+                    height: screenHeight,
+                    showToolbar: true,
+                    showGrid: false,
+                    enabledTools: ['pencil', 'eraser', 'select'],
+                    defaultTool: 'pencil',
+                    backgroundColor: 'white',
+                    enableFocusFrames: true,
+                    enableKeyboardShortcuts: true,
+                    theme: {
+                        primary: '#007bff',
+                        secondary: '#6c757d',
+                        success: '#28a745',
+                        warning: '#ffc107',
+                        danger: '#dc3545'
+                    }
+                });
+
+                // Set the default cursor to pencil
+                if (window.mainCanvas && window.mainCanvas.cursor) {
+                    window.mainCanvas.cursor.setShape && window.mainCanvas.cursor.setShape('pencil');
+                }
+
+                // Set up event listeners for demonstration
+                setupEventListeners();
+
+                console.log('OMD Canvas initialized successfully!');
+
+            } catch (error) {
+                console.error('Failed to initialize canvas:', error);
+                showError('Failed to initialize canvas. Check console for details.');
+            }
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Tool change events
+            window.mainCanvas.on('toolChanged', (event) => {
+                console.log('Tool changed to:', event.detail.name);
+                // Show/hide eraser status
+                const toolStatus = document.getElementById('tool-status');
+                if (toolStatus) {
+                    if (event.detail.name === 'eraser') {
+                        toolStatus.style.display = 'block';
+                        // Get current eraser mode
+                        const eraserTool = window.mainCanvas.toolManager.getTool('eraser');
+                        if (eraserTool) {
+                            updateEraserModeDisplay(eraserTool.getMode());
+                        }
+                    } else {
+                        toolStatus.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Stroke events
+            window.mainCanvas.on('strokeCompleted', (event) => {
+                console.log('Stroke completed with', event.detail.totalPoints, 'points');
+            });
+            
+            // Selection events
+            window.mainCanvas.on('selectionChanged', (event) => {
+                console.log('Selection changed:', event.detail.selected);
+            });
+            
+            // Canvas events
+            window.mainCanvas.on('cleared', () => {
+                console.log('Canvas cleared');
+            });
+            
+            // Listen for eraser mode changes
+            window.mainCanvas.on('eraserModeChanged', (event) => {
+                console.log('Eraser mode changed:', event.detail.description);
+                updateEraserModeDisplay(event.detail.mode);
+                showNotification(`Eraser mode: ${event.detail.description}`);
+            });
+        }
+        
+        function updateEraserModeDisplay(mode) {
+            const modeText = document.getElementById('eraser-mode-text');
+            if (modeText) {
+                modeText.textContent = mode === 'stroke' ? 'Whole Stroke' : 'Radius Erasing';
+                modeText.style.color = mode === 'stroke' ? '#dc3545' : '#ff9f43';
+            }
+        }
+        
+        // Demo functions
+        window.clearCanvas = function() {
+            if (window.mainCanvas) {
+                window.mainCanvas.clear();
+                showNotification('Canvas cleared!', 'info');
+            }
+        };
+        
+        window.exportPNG = async function() {
+            if (!window.mainCanvas) return;
+            
+            try {
+                // Check for active focus frame
+                const activeFrame = window.mainCanvas.focusFrameManager?.getFrame(window.mainCanvas.focusFrameManager.activeFrameId);
+                
+                if (activeFrame) {
+                    // Export only focus frame content
+                    await activeFrame.downloadAsBitmap('canvas-focus-frame.png', 'png');
+                    showNotification('Focus frame PNG exported successfully!', 'success');
+                } else {
+                    // Export entire canvas
+                    const blob = await window.mainCanvas.exportImage('png', 0.9);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `canvas-drawing-${Date.now()}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showNotification('PNG exported successfully!', 'success');
+                }
+            } catch (error) {
+                console.error('Export failed:', error);
+                showNotification('Export failed. Check console for details.', 'error');
+            }
+        };
+        
+        window.exportSVG = function() {
+            if (!window.mainCanvas) return;
+            
+            try {
+                // Check for active focus frame
+                const activeFrame = window.mainCanvas.focusFrameManager?.getFrame(window.mainCanvas.focusFrameManager.activeFrameId);
+                
+                if (activeFrame) {
+                    // Export only focus frame content as SVG
+                    const bounds = activeFrame.getBounds();
+                    const svgData = window.mainCanvas.exportSVG(bounds);
+                    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `canvas-focus-frame-${Date.now()}.svg`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showNotification('Focus frame SVG exported successfully!', 'success');
+                } else {
+                    // Export entire canvas
+                    const svgData = window.mainCanvas.exportSVG();
+                    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `canvas-drawing-${Date.now()}.svg`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showNotification('SVG exported successfully!', 'success');
+                }
+            } catch (error) {
+                console.error('SVG export failed:', error);
+                showNotification('SVG export failed. Check console for details.', 'error');
+            }
+        };
+        
+        window.toggleGrid = function() {
+            if (!window.mainCanvas) return;
+            
+            window.gridEnabled = !window.gridEnabled;
+            // Note: Grid toggle would need to be implemented in the canvas config
+            showNotification(`Grid ${window.gridEnabled ? 'enabled' : 'disabled'}`, 'info');
+        };
+        
+        window.createFocusFrame = function() {
+            if (!window.mainCanvas || !window.mainCanvas.focusFrameManager) return;
+            
+            try {
+                const { id, frame } = window.mainCanvas.focusFrameManager.createFrame({
+                    x: 100,
+                    y: 100,
+                    width: 200,
+                    height: 150,
+                    showOutline: true,
+                    outlineColor: '#007bff',
+                    outlineWidth: 2,
+                    outlineDashed: true
+                });
+                
+                // Set as active frame
+                window.mainCanvas.focusFrameManager.setActiveFrame(id);
+                
+                showNotification(`Focus frame created and activated (ID: ${id})`, 'success');
+                console.log('Focus frame created:', { id, frame });
+            } catch (error) {
+                console.error('Focus frame creation failed:', error);
+                showNotification('Focus frame creation failed', 'error');
+            }
+        };
+        
+        window.downloadFocusFrame = async function() {
+            if (!window.mainCanvas || !window.mainCanvas.focusFrameManager) {
+                showNotification('Focus frames not available', 'error');
+                return;
+            }
+            
+            try {
+                const activeFrame = window.mainCanvas.focusFrameManager.getActiveFrame();
+                
+                if (!activeFrame) {
+                    showNotification('No active focus frame found. Create a focus frame first.', 'warning');
+                    return;
+                }
+                
+                showNotification('Converting focus frame to bitmap...', 'info');
+                
+                // Generate filename with timestamp
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                const filename = `focus-frame-${timestamp}.png`;
+                
+                // Download as bitmap using the frame's built-in method
+                await activeFrame.downloadAsBitmap(filename, 'png');
+                
+                showNotification(`Focus frame downloaded as ${filename}`, 'success');
+                console.log('Focus frame downloaded successfully:', filename);
+                
+            } catch (error) {
+                console.error('Failed to download focus frame:', error);
+                showNotification('Failed to download focus frame. Check console for details.', 'error');
+            }
+        };
+        
+        window.showCanvasInfo = function() {
+            if (!window.mainCanvas) return;
+            
+            const info = {
+                dimensions: {
+                    width: window.mainCanvas.width,
+                    height: window.mainCanvas.height
+                },
+                strokeCount: window.mainCanvas.strokes.size,
+                selectedStrokes: window.mainCanvas.selectedStrokes.size,
+                activeTool: window.mainCanvas.toolManager.getActiveTool()?.name || 'none',
+                availableTools: window.mainCanvas.toolManager.getToolNames()
+            };
+            
+            console.log('Canvas Information:', info);
+            alert(`Canvas Info:\n\nDimensions: ${info.dimensions.width}x${info.dimensions.height}\nStrokes: ${info.strokeCount}\nSelected: ${info.selectedStrokes}\nActive Tool: ${info.activeTool}\nAvailable Tools: ${info.availableTools.join(', ')}`);
+        };
+        
+        window.demonstrateAPI = function() {
+            if (!window.mainCanvas) return;
+            
+            console.log('=== API Demonstration ===');
+            
+            // Tool management
+            console.log('Available tools:', window.mainCanvas.toolManager.getToolNames());
+            console.log('Active tool:', window.mainCanvas.toolManager.getActiveTool()?.name);
+            
+            // Canvas state
+            console.log('Canvas dimensions:', window.mainCanvas.width, 'x', window.mainCanvas.height);
+            console.log('Total strokes:', window.mainCanvas.strokes.size);
+            
+            // Event example
+            window.mainCanvas.on('strokeStarted', (event) => {
+                console.log('New stroke started at:', event.detail.point);
+            });
+            
+            showNotification('API demonstration logged to console', 'info');
+        };
+        
+        window.openDocumentation = function() {
+            const url = './canvas/README.md';
+            window.open(url, '_blank');
+        };
+        
+        // Debug function for cursor issues
+        window.debugCursor = function() {
+            if (!window.mainCanvas || !window.mainCanvas.cursor) {
+                console.log('❌ No cursor found');
+                return;
+            }
+            
+            const cursor = window.mainCanvas.cursor;
+            const activeTool = window.mainCanvas.toolManager.getActiveTool();
+            
+            console.log('🔍 Cursor Debug Info:');
+            console.log('- Cursor visible:', cursor.isVisible);
+            console.log('- Current shape:', cursor.currentShape);
+            console.log('- Active tool:', activeTool?.name || 'none');
+            console.log('- Cursor element display:', cursor.element.style.display);
+            console.log('- Available shapes:', Object.keys(cursor.shapes));
+            
+            // Show which shape is currently visible
+            Object.entries(cursor.shapes).forEach(([name, element]) => {
+                console.log(`- Shape "${name}" display:`, element.style.display);
+            });
+            
+            // Force show cursor and set to eraser
+            if (activeTool?.name === 'eraser') {
+                console.log('🧹 Forcing eraser cursor visibility...');
+                cursor.show();
+                cursor.setShape('eraser');
+                console.log('- Cursor after force show:', cursor.isVisible);
+                console.log('- Eraser shape display:', cursor.shapes.eraser?.style.display);
+            }
+        };
+        
+        // Utility functions
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: '#28a745',
+                error: '#dc3545', 
+                info: '#17a2b8',
+                warning: '#ffc107'
+            };
+            
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${colors[type]};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px;
+                font-family: inherit;
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remove after delay
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        function showError(message) {
+            showNotification(message, 'error');
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeCanvas);
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.mainCanvas) {
+                const newWidth = window.innerWidth;
+                const newHeight = window.innerHeight;
+                
+                // Update canvas size
+                window.mainCanvas.resize(newWidth, newHeight);
+                
+                console.log('Canvas resized to:', newWidth, 'x', newHeight);
+            }
+        });
+        
+        // Handle page visibility for performance
+        document.addEventListener('visibilitychange', () => {
+            if (window.mainCanvas) {
+                // Could pause/resume canvas operations here
+                console.log('Page visibility changed:', document.hidden ? 'hidden' : 'visible');
+            }
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (window.mainCanvas) {
+                window.mainCanvas.destroy();
+            }
+        });
+        
+        // Expose canvas for debugging
+        window.OMDCanvas = { omdCanvas, createCanvas };
+        console.log('OMD Canvas classes available in window.omdCanvas for debugging');
+    </script>
+</body>
+</html>

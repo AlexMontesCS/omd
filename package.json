@@ -1,0 +1,55 @@
+{
+  "name": "@teachinglab/omd",
+  "version": "0.6.0",
+  "description": "omd",
+  "main": "./index.js",
+  "module": "./index.js",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "src/",
+    "omd/",
+    "docs/",
+    "canvas/",
+    "jsvg/"  
+  ],
+  "keywords": [
+    "math",
+    "visualization",
+    "equations",
+    "educational",
+    "canvas",
+    "svg",
+    "interactive"
+  ],
+  "author": "jaredschiffman",
+  "license": "MIT",
+  "dependencies": {
+    "@teachinglab/jsvg": "^0.1.1",
+    "mathjs": "^14.5.2"
+  },
+  "scripts": {
+    "dev": "npm run build:docs && vite",
+    "build": "vite build && node copy-static.js && node build-docs.js",
+    "build:docs": "node build-docs.js",
+    "build:static": "node copy-static.js",
+    "dev:netlify": "npm run build:docs && netlify dev"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@netlify/vite-plugin": "^2.5.4",
+    "dotenv": "^17.2.1",
+    "express": "^4.18.2",
+    "glob": "^11.0.3",
+    "marked": "^16.2.1",
+    "openai": "^4.28.0",
+    "vite": "^5.4.0"
+  }
+}
+

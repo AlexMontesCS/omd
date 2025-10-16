@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD Rendering with Simplification</title>
+
+    <script src="../jsvg/jsvg.js"></script>
+    <script src="../jsvg/jsvgComponents.js"></script>
+    <script src="https://unpkg.com/mathjs@14.5.2/lib/browser/math.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Albert Sans', Arial, sans-serif;
+            display: flex;
+            min-height: 100vh; /* Allow body to grow */
+        }
+        
+        #renderPanel {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+        }
+        #equationPane, #visualPane {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+        }
+        #renderDivider {
+            width: 1px;
+            background: #ddd;
+            margin: 0 0;
+        }
+        #controlsPanel {
+           width: 300px; /* Fixed width for the controls */
+           padding: 20px;
+           box-sizing: border-box;
+           display: flex;
+           flex-direction: column;
+           gap: 20px;
+           height: 100vh; /* Full viewport height */
+           overflow-y: auto; /* Scroll if content overflows */
+           position: sticky;
+           top: 0;
+        }
+        
+        #inputSection, #equationOperations, #filteringSection, #overlayControls, #renderToSection {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        #inputSection h3, #equationOperations h3, #filteringSection h3, #overlayControls h3, #renderToSection h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 16px;
+        }
+        /* Render To control inputs styled like other controls */
+        #renderToSection select, #renderToSection input[type="number"], #renderToSection input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        #renderToSection label { display: block; }
+        
+        #expressionInput, #operationValueInput {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        
+        .button-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .button-container.four-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        
+        #renderButton {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        #renderButton:hover {
+            background-color: #0056b3;
+        }
+        
+        #renderButton:active {
+            background-color: #004085;
+        }
+        
+        #simplifyButton {
+            /* Style moved inline */
+            color: white;
+        }
+        
+        #simplifyButton:hover {
+            background-color: #218838;
+        }
+        
+        #simplifyButton:active {
+            background-color: #1e7e34;
+        }
+        
+        #simplifyAllButton {
+            /* Style moved inline */
+            color: white;
+        }
+        
+        #simplifyAllButton:hover {
+            background-color: #e55a2b;
+        }
+        
+        #simplifyAllButton:active {
+            background-color: #cc4a20;
+        }
+        
+        /* Equation operation buttons */
+        #addBothSidesButton, #subtractBothSidesButton {
+            background-color: #17a2b8;
+            color: white;
+            font-size: 12px;
+        }
+        
+        #addBothSidesButton:hover, #subtractBothSidesButton:hover {
+            background-color: #138496;
+        }
+        
+        #multiplyBothSidesButton, #divideBothSidesButton {
+            background-color: #6f42c1;
+            color: white;
+            font-size: 12px;
+        }
+        
+        #multiplyBothSidesButton:hover, #divideBothSidesButton:hover {
+            background-color: #5a32a3;
+        }
+        
+        /* Function application controls */
+        #functionOperations {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        #functionOperations h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        #functionNameInput {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
+        }
+        
+        #applyFunctionButton {
+            background-color: #6c757d;
+            color: white;
+            width: 100%;
+            font-size: 12px;
+        }
+        
+        #applyFunctionButton:hover {
+            background-color: #545b62;
+        }
+
+        /* Overlay control buttons */
+        #hideLeftButton, #hideRightButton {
+            background-color: #dc3545;
+            color: white;
+            font-size: 12px;
+        }
+        
+        #hideLeftButton:hover, #hideRightButton:hover {
+            background-color: #c82333;
+        }
+        
+        #clearOverlaysButton {
+            background-color: #6c757d;
+            color: white;
+            font-size: 12px;
+        }
+        
+        #clearOverlaysButton:hover {
+            background-color: #545b62;
+        }
+        
+        /* Status message */
+        #statusMessage {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        #statusMessage.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        #statusMessage.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        #statusMessage.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        #simplificationHistory {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #simplificationHistory h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 16px;
+        }
+
+        #historyList {
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="renderPanel">
+        <div id="equationPane"></div>
+        <div id="renderDivider"></div>
+        <div id="visualPane"></div>
+    </div>
+    <div id="controlsPanel">
+        <div id="inputSection">
+            <h3>Mathematical Expression</h3>
+            <input type="text" id="expressionInput" placeholder="Enter equation or expression (e.g., x+2=5 or 2*x)" value="3x+2=14">
+            <p style="font-size: 12px; color: #666; margin: 5px 0 10px 0;">
+                Sequences: separate equations with semicolons (e.g., "x+1=3; 2*x=4")
+            </p>
+            <div style="margin-bottom: 10px;">
+                <button id="renderButton" style="width: 100%;">Render Expression</button>
+            </div>
+            <div class="button-container">
+                <button id="simplifyButton" style="background-color: #28a745; color: white;">Simplify (One Step)</button>
+                <button id="simplifyAllButton" style="background-color: #ff6b35; color: white;">Simplify (All Steps)</button>
+            </div>
+        </div>
+
+        <div id="equationOperations">
+            <h3>Equation Operations</h3>
+            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;">
+                Single equations: operations replace the equation.<br>
+                Sequences: operations add new steps.
+            </p>
+            <input type="text" id="operationValueInput" placeholder="Value (e.g., 3, x, 2x)" value="3">
+            <div class="button-container four-grid">
+                <button id="addBothSidesButton">+ Add to Both</button>
+                <button id="subtractBothSidesButton">− Subtract from Both</button>
+                <button id="multiplyBothSidesButton">× Multiply Both</button>
+                <button id="divideBothSidesButton">÷ Divide Both</button>
+            </div>
+            <div style="margin-top: 15px;">
+                <input type="checkbox" id="autoSimplifyCheckbox" checked>
+                <label for="autoSimplifyCheckbox" style="font-size: 14px; color: #333;">Automatically Simplify after operations</label>
+            </div>
+            <div id="statusMessage"></div>
+        </div>
+
+        <div id="functionOperations">
+            <h3>Function Operations</h3>
+            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;">
+                Apply functions to both sides of equations.
+            </p>
+            <input type="text" id="functionNameInput" placeholder="Function name (e.g., sqrt, sin, cos, ln)" value="sqrt">
+            <button id="applyFunctionButton">Apply Function to Both Sides</button>
+        </div>
+
+        <div id="evaluationSection">
+            <h3>Evaluate Expression</h3>
+            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;">
+                Provide variable values (e.g., x=2, y=3). For equations, this will check if the solution is correct.
+            </p>
+            <input type="text" id="variablesInput" placeholder="e.g., x=2, y=3" value="x=3" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 14px; margin-bottom: 10px; box-sizing: border-box;">
+            <button id="evaluateButton" style="width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; transition: background-color 0.2s; background-color: #fd7e14; color: white;">Evaluate</button>
+        </div>
+
+        <div id="simplificationHistory">
+            <h3>Simplification History</h3>
+            <div id="historyList" style="font-size: 14px; color: #333; margin-top: 10px;">
+                No simplifications performed yet.
+            </div>
+        </div>
+
+        <div id="overlayControls">
+            <h3>Interactive Overlays</h3>
+            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;">
+                Hide parts of equations for interactive practice:
+            </p>
+            <div class="button-container">
+                <button id="hideLeftButton" style="background-color: #dc3545; color: white;">Hide Left Side</button>
+                <button id="hideRightButton" style="background-color: #dc3545; color: white;">Hide Right Side</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <button id="clearOverlaysButton" style="width: 100%; background-color: #6c757d; color: white;">Clear All Overlays</button>
+            </div>
+        </div>
+
+        <div id="renderToSection">
+            <h3>Render To</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                <label style="font-size: 12px; color: #333;">Type
+                    <select id="renderToType" style="width: 100%; padding: 8px;">
+                        <option value="graph">Graph</option>
+                        <option value="table">Table</option>
+                        <option value="hanger">Hanger</option>
+                    </select>
+                </label>
+                <label style="font-size: 12px; color: #333;">Side
+                    <select id="renderToSide" style="width: 100%; padding: 8px;">
+                        <option value="both" selected>Both</option>
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                    </select>
+                </label>
+                <label style="font-size: 12px; color: #333;">xMin
+                    <input id="rtXMin" type="number" value="-10" style="width: 100%; padding: 8px;" />
+                </label>
+                <label style="font-size: 12px; color: #333;">xMax
+                    <input id="rtXMax" type="number" value="10" style="width: 100%; padding: 8px;" />
+                </label>
+                <label style="font-size: 12px; color: #333;">yMin (graph)
+                    <input id="rtYMin" type="number" value="-10" style="width: 100%; padding: 8px;" />
+                </label>
+                <label style="font-size: 12px; color: #333;">yMax (graph)
+                    <input id="rtYMax" type="number" value="10" style="width: 100%; padding: 8px;" />
+                </label>
+                <label style="font-size: 12px; color: #333;">stepSize (table)
+                    <input id="rtStep" type="number" value="1" style="width: 100%; padding: 8px;" />
+                </label>
+            </div>
+            <div class="button-container">
+                <button id="renderToButton" style="background-color: #007bff; color: white;">Render To</button>
+                <button id="clearRenderToButton" style="background-color: #6c757d; color: white;">Clear Output</button>
+            </div>
+            <p style="font-size: 12px; color: #666; margin-top: 6px;">Output appears here:</p>
+            <div id="renderToPanel" style="padding: 10px; box-sizing: border-box; border: 1px dashed #ccc; border-radius: 6px;"></div>
+        </div>
+
+        <div id="filteringSection">
+            <h3>Step Filtering</h3>
+            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;">
+                Filter equations by their marking levels:
+            </p>
+            <div style="margin-bottom: 10px;">
+                <label style="display: block; margin: 5px 0; font-size: 13px;">
+                    <input type="checkbox" id="level0" checked> 
+                    <span style="color: #007bff; font-weight: bold;">Level 0</span> - Initial/Final equations
+                </label>
+                <label style="display: block; margin: 5px 0; font-size: 13px;">
+                    <input type="checkbox" id="level1"> 
+                    <span style="color: #17a2b8; font-weight: bold;">Level 1</span> - After operations
+                </label>
+                <label style="display: block; margin: 5px 0; font-size: 13px;">
+                    <input type="checkbox" id="level2"> 
+                    <span style="color: #28a745; font-weight: bold;">Level 2</span> - Intermediate steps
+                </label>
+            </div>
+        </div>
+    <script type="module" src="./equation-rendering/main.js"></script>
+</body>
+</html>

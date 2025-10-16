@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Minimal OMD Example</title>
+    <style>
+        body { 
+            font-family: Albert Sans, sans-serif; 
+            max-width: 800px; 
+            margin: 50px auto;
+            padding: 20px;
+        }
+        #math-display {
+            width: 100%;
+            height: 300px;
+            border: 2px solid #ddd;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .code-example {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Minimal OMD Library Example</h1>
+    <p>This example shows how simple it is to use the OMD library:</p>
+    
+    <div class="code-example">
+// Just 2 lines to render math!<br>
+const renderer = new omdDisplay(container);<br>
+renderer.render('2*x + 3 = 7');
+    </div>
+    
+    <div id="math-display"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+    <script src="../jsvg/jsvg.js"></script>
+    <script src="../jsvg/jsvgComponents.js"></script>
+    
+    <script type="module">
+        import { omdDisplay } from '../omd/core/index.js';
+        
+        // That's it! Just 2 lines:
+        const container = document.getElementById('math-display');
+        const renderer = new omdDisplay(container);
+        
+        // Render some math (config loads automatically)
+        renderer.render('2x + 3 = 7');
+    </script>
+</body>
+</html>

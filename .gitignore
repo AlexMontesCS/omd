@@ -1,0 +1,13 @@
+.netlify
+*.bundle
+wip/
+*.github
+netlify/functions/node_modules
+node_modules/*
+# Environment variables
+.env
+react-demo/
+dist/
+docs-built/
+tldraw-canvas/
+ai-tutor/

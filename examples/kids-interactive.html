@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Math Problem Solver for Kids</title>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="kids-interactive.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Math Problem Solver for Kids</h1>
+        
+        <div class="problem-selector">
+            <!-- Problem cards will be dynamically inserted here -->
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar"></div>
+        </div>
+        
+        <div id="math-display"></div>
+        
+        <div class="hint-area" id="hint-area"></div>
+        
+        <div class="answer-input">
+            <label style="font-size: 20px; font-weight: bold;">What is x equal to?</label><br>
+            <input type="number" id="answer" placeholder="?">
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-hint" id="hint-btn">💡 Show Next Step</button>
+            <button class="btn btn-check" id="check-btn">✓ Check Answer</button>
+            <button class="btn btn-next" id="next-btn" style="display: none;">Next Problem →</button>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+        
+        <div class="stars" id="stars"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+    <script src="../jsvg/jsvg.js"></script>
+    <script src="../jsvg/jsvgComponents.js"></script>
+    
+    <script type="module">
+        import { omdDisplay, omdEquationNode, omdEquationStack } from '../omd/core/index.js';
+        
+        class KidsMathSolver {
+            fitDisplayToSVG(retries = 10) {
+                // Wait for next frame to ensure DOM is updated
+                requestAnimationFrame(() => {
+                    if (!this.display || !this.display.container) {
+                        if (retries > 0) this.fitDisplayToSVG(retries - 1);
+                        else console.debug('[fitDisplayToSVG] this.display.container is undefined');
+                        return;
+                    }
+                    const displayDiv = this.display.container;
+                    const svg = displayDiv.querySelector('svg');
+                    if (!svg) {
+                        if (retries > 0) this.fitDisplayToSVG(retries - 1);
+                        else console.debug('[fitDisplayToSVG] SVG not found in displayDiv');
+                        return;
+                    }
+
+                    // Get SVG height (prefer attribute, fallback to bounding box)
+                    let svgHeight = parseFloat(svg.getAttribute('height'));
+                    if (isNaN(svgHeight)) {
+                        svgHeight = svg.getBoundingClientRect().height;
+                    }
+
+                    // Get padding from CSS
+                    const style = getComputedStyle(displayDiv);
+                    const paddingTop = parseFloat(style.paddingTop);
+                    const paddingBottom = parseFloat(style.paddingBottom);
+                    const minHeight = parseFloat(style.minHeight) || 0;
+                    const maxHeight = parseFloat(style.maxHeight) || window.innerHeight * 0.75;
+
+                    let requiredHeight = svgHeight + paddingTop + paddingBottom;
+                    requiredHeight = Math.max(minHeight, Math.min(requiredHeight, maxHeight));
+
+                    displayDiv.style.height = requiredHeight + 'px';
+                });
+            }
+
+            constructor() {
+                this.display = new omdDisplay(document.getElementById('math-display'), {
+                    backgroundColor: '#f7fafc',
+                    autoResize: true,
+                    fontSize: 48 
+                });
+                
+                this.problems = {
+                    'x + 3 = 7': { 
+                        answer: 4, 
+                        hint: 'Subtract 3 from both sides to find x',
+                        operations: [
+                            { type: 'subtract', value: 3, description: 'Subtract 3 from both sides' },
+                        ]
+                    },
+                    '2x + 4 = 10': { 
+                        answer: 3, 
+                        hint: 'First subtract 4, then divide by 2',
+                        operations: [
+                            { type: 'subtract', value: 4, description: 'Subtract 4 from both sides' },
+                            { type: 'divide', value: 2, description: 'Divide both sides by 2' }
+                        ]
+                    },
+                    '3x - 6 = 9': { 
+                        answer: 5, 
+                        hint: 'First add 6, then divide by 3',
+                        operations: [
+                            { type: 'add', value: 6, description: 'Add 6 to both sides' },
+                            { type: 'divide', value: 3, description: 'Divide both sides by 3' }
+                        ]
+                    },
+                    '2x+4=3x+2': { 
+                        answer: 2, 
+                        hint: 'First subtract 2x from both sides, then subtract 2 from both sides',
+                        operations: [
+                            { type: 'subtract', value: '2x', description: 'Subtract 2x from both sides' },
+                            { type: 'subtract', value: 2, description: 'Subtract 2 from both sides' }
+                        ]
+                    },
+                    'x + 5 = 12': {
+                        answer: 7,
+                        hint: 'Subtract 5 from both sides to find x',
+                        operations: [
+                            { type: 'subtract', value: 5, description: 'Subtract 5 from both sides' }
+                        ]
+                    },
+                    '4x - 8 = 0': {
+                        answer: 2,
+                        hint: 'Add 8 to both sides, then divide by 4',
+                        operations: [
+                            { type: 'add', value: 8, description: 'Add 8 to both sides' },
+                            { type: 'divide', value: 4, description: 'Divide both sides by 4' }
+                        ]
+                    },  
+                    'x/3 + 2 = 5': {
+                        answer: 9,
+                        hint: 'First subtract 2 from both sides, then multiply by 3',
+                        operations: [
+                            { type: 'subtract', value: 2, description: 'Subtract 2 from both sides' },
+                            { type: 'multiply', value: 3, description: 'Multiply both sides by 3' }
+                        ]
+                    },
+                    '6x - 3 = 15': {
+                        answer: 3,
+                        hint: 'First add 3 to both sides, then divide by 6',
+                        operations: [
+                            { type: 'add', value: 3, description: 'Add 3 to both sides' },
+                            { type: 'divide', value: 6, description: 'Divide both sides by 6' }
+                        ]
+                    }, 
+                    '2x+3=4': {
+                        answer: 0.5,
+                        hint: 'First subtract 3 from both sides, then divide by 2',
+                        operations: [
+                            { type: 'subtract', value: 3, description: 'Subtract 3 from both sides' },
+                            { type: 'divide', value: 2, description: 'Divide both sides by 2' }
+                        ]
+                    }
+                    
+                };
+                
+                this.problemKeys = Object.keys(this.problems);
+                this.currentProblemIndex = -1;
+                this.score = 0;
+                this.currentEquationStack = null;
+                this.currentOperationIndex = 0;
+                
+                this.elements = {
+                    problemSelector: document.querySelector('.problem-selector'),
+                    answerInput: document.getElementById('answer'),
+                    hintArea: document.getElementById('hint-area'),
+                    feedback: document.getElementById('feedback'),
+                    nextBtn: document.getElementById('next-btn'),
+                    hintBtn: document.getElementById('hint-btn'),
+                    checkBtn: document.getElementById('check-btn'),
+                    stars: document.getElementById('stars'),
+                    progressBar: document.querySelector('.progress-bar')
+                };
+
+                this.createProblemSelector();
+                this.initializeEventHandlers();
+                this.loadNextProblem(); // Load the first problem
+                // Set up the automatic filtering like in equation-stack-test
+                window.refreshDisplayAndFilters = () => {
+                    if (this.currentEquationStack) {
+                        const seq = this.currentEquationStack.getSequence();
+                        seq.simplifyAll();
+                        seq.updateStepsVisibility(step => (step.stepMark ?? 0) === 0); // Show step 0, filter out 1 and 2
+                        this.currentEquationStack.updateLayout();
+                        this.display.centerNode();
+                        setTimeout(() => this.fitDisplayToSVG(), 0);
+                    }
+                };
+            }
+
+            createProblemSelector() {
+                this.elements.problemSelector.innerHTML = ''; // Clear existing cards
+                this.problemKeys.forEach(problemString => {
+                    const card = document.createElement('div');
+                    card.className = 'problem-card';
+                    card.dataset.problem = problemString;
+                    card.textContent = problemString;
+                    this.elements.problemSelector.appendChild(card);
+                });
+            }
+            
+            initializeEventHandlers() {
+                this.elements.problemSelector.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('problem-card')) {
+                        this.loadProblem(e.target.dataset.problem);
+                    }
+                });
+                
+                this.elements.hintBtn.addEventListener('click', () => this.showHint());
+                this.elements.checkBtn.addEventListener('click', () => this.checkAnswer());
+                this.elements.nextBtn.addEventListener('click', () => this.loadNextProblem());
+                this.elements.answerInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') this.checkAnswer();
+                });
+            }
+
+            loadProblem(problemString) {
+                // Ensure previous problem is completely cleared (handles residual SVG/viewBox)
+                this.clearCurrentProblem();
+                document.querySelectorAll('.problem-card').forEach(c => c.classList.remove('selected'));
+                const selectedCard = document.querySelector(`.problem-card[data-problem="${problemString}"]`);
+                if (selectedCard) selectedCard.classList.add('selected');
+
+                this.currentProblem = problemString;
+                this.currentOperationIndex = 0;
+                // (clearCurrentProblem already recreated display)
+                
+                // Create equation stack like in equation-stack-test
+                const initialEquation = omdEquationNode.fromString(problemString);
+                this.currentEquationStack = new omdEquationStack([initialEquation], {
+                    stepVisualizer: true,
+                    toolbar: false
+                });
+                
+
+                this.display.render(this.currentEquationStack);
+                this.display.centerNode();
+                setTimeout(() => this.fitDisplayToSVG(), 0);
+
+                this.resetUI();
+            }
+
+            clearCurrentProblem() {
+                // Fully clear current visual + state
+                try {
+                    const md = document.getElementById('math-display');
+                    if (this.display) {
+                        try { this.display.destroy(); } catch(_) {}
+                    }
+                    if (md) {
+                        // Hard reset container
+                        md.innerHTML = '';
+                        // Recreate display fresh so no lingering references remain
+                        this.display = new omdDisplay(md, {
+                            backgroundColor: '#f7fafc',
+                            autoResize: true,
+                            fontSize: 48 
+                        });
+                    }
+                } catch(_) {}
+                this.currentEquationStack = null;
+                this.currentOperationIndex = 0;
+                // UI cleanup
+                this.elements.hintArea.style.display = 'none';
+                this.elements.feedback.style.display = 'none';
+                this.elements.nextBtn.style.display = 'none';
+            }
+
+            loadNextProblem() {
+                // Ensure previous problem visuals are cleared before proceeding
+                this.clearCurrentProblem();
+                this.currentProblemIndex++;
+                if (this.currentProblemIndex >= this.problemKeys.length) {
+                    this.showCompletionMessage();
+                    this.currentProblemIndex = 0; // Loop back to start
+                    this.score = 0;
+                }
+                this.loadProblem(this.problemKeys[this.currentProblemIndex]);
+                this.updateScoreDisplay();
+            }
+            
+            showCompletionMessage() {
+                this.elements.feedback.textContent = '🎊 Amazing! You completed all problems! Starting over...';
+                this.elements.feedback.className = 'feedback correct';
+                this.elements.feedback.style.display = 'block';
+                setTimeout(() => {
+                    this.elements.feedback.style.display = 'none';
+                }, 3000);
+            }
+
+            resetUI() {
+                this.elements.answerInput.value = '';
+                this.elements.feedback.style.display = 'none';
+                this.elements.hintArea.style.display = 'none';
+                this.elements.nextBtn.style.display = 'none';
+                this.elements.hintBtn.style.display = 'inline-block';
+                this.elements.checkBtn.style.display = 'inline-block';
+                
+                this.currentOperationIndex = 0;
+            }
+
+            showHint() {
+                if (!this.currentProblem || !this.currentEquationStack) return;
+                
+                const problemData = this.problems[this.currentProblem];
+                
+                // Check if we have more operations to apply
+                if (this.currentOperationIndex < problemData.operations.length) {
+                    const operation = problemData.operations[this.currentOperationIndex];
+                    const sequence = this.currentEquationStack.getSequence();
+                    const currentEquation = sequence.getCurrentEquation();
+                    
+                    if (!currentEquation) return;
+                    
+                    // Apply the operation using the sequence's built-in methods
+                    let result;
+                    switch (operation.type) {
+                        case 'add':
+                            result = sequence.applyEquationOperation(operation.value, 'add');
+                            break;
+                        case 'subtract':
+                            result = sequence.applyEquationOperation(operation.value, 'subtract');
+                            break;
+                        case 'multiply':
+                            result = sequence.applyEquationOperation(operation.value, 'multiply');
+                            break;
+                        case 'divide':
+                            result = sequence.applyEquationOperation(operation.value, 'divide');
+                            break;
+                        default:
+                            console.error('Unknown operation type:', operation.type);
+                            return;
+                    }
+                    
+                    this.currentOperationIndex++;
+                    
+                    // Show hint text
+                    this.elements.hintArea.textContent = `💡 ${operation.description}!`;
+                    this.elements.hintArea.style.display = 'block';
+                    
+                    // Check if we've applied all operations
+                    if (this.currentOperationIndex >= problemData.operations.length) {
+                        this.elements.hintBtn.style.display = 'none';
+                        this.elements.hintArea.textContent += ' Now you can see the answer!';
+                    }
+                } else {
+                    this.elements.hintBtn.style.display = 'none';
+                }
+            }
+
+            checkAnswer() {
+                if (!this.currentProblem) return;
+                
+                const userAnswer = parseInt(this.elements.answerInput.value);
+                const correctAnswer = this.problems[this.currentProblem].answer;
+                
+                if (userAnswer === correctAnswer) {
+                    this.elements.feedback.textContent = '🎉 Correct! Great job!';
+                    this.elements.feedback.className = 'feedback correct';
+                    this.elements.nextBtn.style.display = 'inline-block';
+                    this.score++;
+                    this.elements.hintBtn.style.display = 'none';
+                    this.elements.checkBtn.style.display = 'none';
+                    
+                    // Show the complete solution if not already shown
+                    const problemData = this.problems[this.currentProblem];
+                    while (this.currentOperationIndex < problemData.operations.length) {
+                        this.showHint();
+                    }
+                } else {
+                    this.elements.feedback.textContent = '❌ Try again! Use the hint to see the next step.';
+                    this.elements.feedback.className = 'feedback incorrect';
+                }
+                this.elements.feedback.style.display = 'block';
+                this.updateScoreDisplay();
+            }
+
+            updateScoreDisplay() {
+                this.elements.stars.innerHTML = '⭐'.repeat(this.score);
+                this.elements.progressBar.style.width = `${(this.score / this.problemKeys.length) * 100}%`;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            window.math = math; // Make math.js globally available for OMD
+            new KidsMathSolver();
+        });
+    </script>
+</body>
+</html>
