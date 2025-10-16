@@ -1,4 +1,4 @@
-# OMD (Open Math Display)
+# OMD (On-screen Math Display)
 
 > A JavaScript library for creating interactive mathematical interfaces in web applications
 

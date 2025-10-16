@@ -1,6 +1,6 @@
 # OMD Documentation
 
-Welcome to the Open Math Display (OMD) documentation.
+Welcome to the On-screen Math Display (OMD) documentation.
 
 ## Getting Started
 

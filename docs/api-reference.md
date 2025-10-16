@@ -1,6 +1,6 @@
 # OMD Library API Reference
 
-> This is the complete API reference for the OMD (Open Math Display) library. Use the table of contents below to navigate to the detailed documentation for each module and class.
+> This is the complete API reference for the OMD (On-screen Math Display) library. Use the table of contents below to navigate to the detailed documentation for each module and class.
 
 ---
 
