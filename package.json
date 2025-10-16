@@ -15,7 +15,8 @@
     "omd/",
     "docs/",
     "canvas/",
-    "jsvg/"  
+    "jsvg/"  ,
+    "npm-docs/"
   ],
   "keywords": [
     "math",

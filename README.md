@@ -33,68 +33,68 @@ display.render('2x + 3 = 11');
 ## Documentation
 
 ### Getting Started
-- **[Installation & Setup](./guides/getting-started.md)** - Get up and running with OMD
-- **[Quick Examples](./guides/quick-examples.md)** - Common use cases and code snippets
-- **[Factory Functions](./guides/factory-functions.md)** - Creating objects from JSON (AI-friendly)
+- **[Installation & Setup](npm-docs/guides/getting-started.md)** - Get up and running with OMD
+- **[Quick Examples](npm-docs/guides/quick-examples.md)** - Common use cases and code snippets
+- **[Factory Functions](npm-docs/guides/factory-functions.md)** - Creating objects from JSON (AI-friendly)
 
 ### Core Concepts
 
 #### 1. Global Context & Configuration
 Learn about the foundational systems that power OMD:
 
-- **[Configuration Manager](./api/omdConfigManager.md)** - Library-wide settings and theming
-- **[Configuration Options](./api/configuration-options.md)** - Complete list of available settings
-- **[Display System](./api/omdDisplay.md)** - Main rendering engine
-- **[Canvas System](./api/omdCanvas.md)** - Multi-expression layout manager
-- **[Event Manager](./api/eventManager.md)** - Event handling and coordination
-- **[Helpers & Utilities](./api/omdHelpers.md)** - Utility functions for common tasks
+- **[Configuration Manager](npm-docs/api/omdConfigManager.md)** - Library-wide settings and theming
+- **[Configuration Options](npm-docs/api/configuration-options.md)** - Complete list of available settings
+- **[Display System](npm-docs/api/omdDisplay.md)** - Main rendering engine
+- **[Canvas System](npm-docs/api/omdCanvas.md)** - Multi-expression layout manager
+- **[Event Manager](npm-docs/api/eventManager.md)** - Event handling and coordination
+- **[Helpers & Utilities](npm-docs/api/omdHelpers.md)** - Utility functions for common tasks
 
 #### 2. Visualizations
 Interactive visual components for teaching and learning:
 
 ##### Number & Ratio Visualizations
-- **[Number Line](./guides/visualizations.md#number-line)** - `omdNumberLine` - Interactive number lines with dots and labels
-- **[Number Tiles](./guides/visualizations.md#number-tiles)** - `omdNumberTile` - Visual counting tiles with dots
-- **[Tape Diagrams](./guides/visualizations.md#tape-diagrams)** - `omdTapeDiagram` - Part-whole relationship diagrams
-- **[Ratio Charts](./guides/visualizations.md#ratio-charts)** - `omdRatioChart` - Pie and bar chart ratio visualizations
-- **[Balance Hanger](./guides/visualizations.md#balance-hanger)** - `omdBalanceHanger` - Balance scale visualizations
+- **[Number Line](npm-docs/guides/visualizations.md#number-line)** - `omdNumberLine` - Interactive number lines with dots and labels
+- **[Number Tiles](npm-docs/guides/visualizations.md#number-tiles)** - `omdNumberTile` - Visual counting tiles with dots
+- **[Tape Diagrams](npm-docs/guides/visualizations.md#tape-diagrams)** - `omdTapeDiagram` - Part-whole relationship diagrams
+- **[Ratio Charts](npm-docs/guides/visualizations.md#ratio-charts)** - `omdRatioChart` - Pie and bar chart ratio visualizations
+- **[Balance Hanger](npm-docs/guides/visualizations.md#balance-hanger)** - `omdBalanceHanger` - Balance scale visualizations
 
 ##### Graphing & Geometry
-- **[Coordinate Plane](./guides/visualizations.md#coordinate-plane)** - `omdCoordinatePlane` - 2D graphing with functions and shapes
-- **[Shapes](./guides/visualizations.md#shapes)** - `omdShapes` - Geometric shapes (circles, rectangles, polygons, triangles)
-- **[Spinner](./guides/visualizations.md#spinner)** - `omdSpinner` - Interactive circular spinners
+- **[Coordinate Plane](npm-docs/guides/visualizations.md#coordinate-plane)** - `omdCoordinatePlane` - 2D graphing with functions and shapes
+- **[Shapes](npm-docs/guides/visualizations.md#shapes)** - `omdShapes` - Geometric shapes (circles, rectangles, polygons, triangles)
+- **[Spinner](npm-docs/guides/visualizations.md#spinner)** - `omdSpinner` - Interactive circular spinners
 
 ##### Data Display
-- **[Tables](./guides/visualizations.md#tables)** - `omdTable` - Data tables with customizable styling
-- **[Function Graphs](./guides/visualizations.md#function-graphs)** - Plotting mathematical functions
+- **[Tables](npm-docs/guides/visualizations.md#tables)** - `omdTable` - Data tables with customizable styling
+- **[Function Graphs](npm-docs/guides/visualizations.md#function-graphs)** - Plotting mathematical functions
 
 #### 3. Equations & Expressions
 The heart of mathematical notation and manipulation:
 
 ##### Core Expression Components
-- **[Expression Nodes](./api/expression-nodes.md)** - Understanding the node tree structure and omdEquationNode class
-- **[omdEquationNode](./api/omdEquationNode.md)** - Complete equations with manipulation methods (e.g., `2x + 3 = 11`)
-- **[omdExpression](./guides/equations.md#expressions)** - Mathematical expressions (e.g., `3x² + 5`)
-- **[omdTerm](./guides/equations.md#terms)** - Individual terms (e.g., `3x²`)
-- **[omdNumber](./guides/equations.md#numbers)** - Numeric constants
-- **[omdVariable](./guides/equations.md#variables)** - Variables (e.g., `x`, `y`)
-- **[omdOperator](./guides/equations.md#operators)** - Mathematical operators (+, -, ×, ÷)
+- **[Expression Nodes](npm-docs/api/expression-nodes.md)** - Understanding the node tree structure and omdEquationNode class
+- **[omdEquationNode](npm-docs/api/omdEquationNode.md)** - Complete equations with manipulation methods (e.g., `2x + 3 = 11`)
+- **[omdExpression](npm-docs/guides/equations.md#expressions)** - Mathematical expressions (e.g., `3x² + 5`)
+- **[omdTerm](npm-docs/guides/equations.md#terms)** - Individual terms (e.g., `3x²`)
+- **[omdNumber](npm-docs/guides/equations.md#numbers)** - Numeric constants
+- **[omdVariable](npm-docs/guides/equations.md#variables)** - Variables (e.g., `x`, `y`)
+- **[omdOperator](npm-docs/guides/equations.md#operators)** - Mathematical operators (+, -, ×, ÷)
 
 ##### Advanced Expression Types
-- **[omdPowerExpression](./guides/equations.md#power-expressions)** - Exponentiation (e.g., `(x+1)²`)
-- **[omdRationalExpression](./guides/equations.md#rational-expressions)** - Fractions (e.g., `(x+1)/(x-1)`)
-- **[omdFunction](./guides/equations.md#functions)** - Mathematical functions (e.g., `f(x) = 2x + 1`)
-- **[omdTileEquation](./guides/equations.md#tile-equations)** - Visual tile-based equations
+- **[omdPowerExpression](npm-docs/guides/equations.md#power-expressions)** - Exponentiation (e.g., `(x+1)²`)
+- **[omdRationalExpression](npm-docs/guides/equations.md#rational-expressions)** - Fractions (e.g., `(x+1)/(x-1)`)
+- **[omdFunction](npm-docs/guides/equations.md#functions)** - Mathematical functions (e.g., `f(x) = 2x + 1`)
+- **[omdTileEquation](npm-docs/guides/equations.md#tile-equations)** - Visual tile-based equations
 
 ##### Step-by-Step Solutions
-- **[Equation Stack](./api/omdEquationStack.md)** - Sequenced solution steps
-- **[Step Visualizer](./api/omdStepVisualizer.md)** - Interactive step visualization
-- **[Simplification Engine](./api/omdSimplification.md)** - Rule-based expression simplification
-- **[Simplification Rules](./api/simplificationRules.md)** - Available transformation rules
+- **[Equation Stack](npm-docs/api/omdEquationStack.md)** - Sequenced solution steps
+- **[Step Visualizer](npm-docs/api/omdStepVisualizer.md)** - Interactive step visualization
+- **[Simplification Engine](npm-docs/api/omdSimplification.md)** - Rule-based expression simplification
+- **[Simplification Rules](npm-docs/api/simplificationRules.md)** - Available transformation rules
 
 ### Complete API Reference
-- **[Full API Documentation](./api/api-reference.md)** - Complete reference for all components
-- **[JSON Schemas](./json-schemas.md)** - Detailed JSON structure for all components
+- **[Full API Documentation](npm-docs/api/api-reference.md)** - Complete reference for all components
+- **[JSON Schemas](npm-docs/json-schemas.md)** - Detailed JSON structure for all components
 
 ## Features
 
@@ -121,16 +121,16 @@ The heart of mathematical notation and manipulation:
 ## Guides
 
 ### By Use Case
-- **[Creating Equations](./guides/equations.md)** - Work with equations and expressions
-- **[Visualizations Guide](./guides/visualizations.md)** - All visualization components
-- **[Step-by-Step Solutions](./guides/step-by-step.md)** - Building interactive solutions
-- **[Interactive Features](./guides/interactive-features.md)** - Drag & drop, toolbars, and more
+- **[Creating Equations](npm-docs/guides/equations.md)** - Work with equations and expressions
+- **[Visualizations Guide](npm-docs/guides/visualizations.md)** - All visualization components
+- **[Step-by-Step Solutions](npm-docs/guides/step-by-step.md)** - Building interactive solutions
+- **[Interactive Features](npm-docs/guides/interactive-features.md)** - Drag & drop, toolbars, and more
 
 ### Advanced Topics
-- **[Expression Tree Structure](./guides/expression-tree.md)** - Understanding the AST
-- **[Custom Simplification Rules](./guides/custom-rules.md)** - Extending the simplification engine
-- **[Theming & Styling](./guides/theming.md)** - Customizing appearance
-- **[Performance Optimization](./guides/performance.md)** - Best practices for large applications
+- **[Expression Tree Structure](npm-docs/guides/expression-tree.md)** - Understanding the AST
+- **[Custom Simplification Rules](npm-docs/guides/custom-rules.md)** - Extending the simplification engine
+- **[Theming & Styling](npm-docs/guides/theming.md)** - Customizing appearance
+- **[Performance Optimization](npm-docs/guides/performance.md)** - Best practices for large applications
 
 ## Architecture
 
@@ -248,4 +248,4 @@ We welcome contributions! See our [contributing guidelines](../CONTRIBUTING.md) 
 
 ---
 
-**Ready to get started?** Check out the [Getting Started Guide](./guides/getting-started.md) or explore the [JSON Schemas](./json-schemas.md) for detailed component configurations.
+**Ready to get started?** Check out the [Getting Started Guide](npm-docs/guides/getting-started.md) or explore the [JSON Schemas](npm-docs/json-schemas.md) for detailed component configurations.
