@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMD (Open Math Display) - OMD Documentation</title>
+    <title>OMD (On-screen Math Display) - OMD Documentation</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -145,9 +145,100 @@
     </div>
     
     <div class="content">
-        <h1 id="omd-open-math-display">OMD (Open Math Display)</h1>
-<p>OMD is a JavaScript library for creating interactive mathematical interfaces in web applications. Build everything from simple equation displays to complex step-by-step solution systems with rich visual feedback and user interaction.</p>
+        <h1 id="omd-on-screen-math-display">OMD (On-screen Math Display)</h1>
+<blockquote>
+<p>A JavaScript library for creating interactive mathematical interfaces in web applications</p>
+</blockquote>
+<p><a href="https://www.npmjs.com/package/@teachinglab/omd"><img src="https://img.shields.io/npm/v/@teachinglab/omd.svg" alt="npm version"></a><br><a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></p>
+<p>OMD is a comprehensive JavaScript library for building rich, interactive mathematical experiences in the browser. From simple equation displays to complex step-by-step solution systems with full visual feedback and user interaction.</p>
 <p><img src="https://i.imgur.com/CdtEi33.png" alt="OMD Demo"></p>
+<h2 id="full-documentation">📖 Full Documentation</h2>
+<p><strong><a href="https://your-site.netlify.app/npm-docs/">View the complete documentation →</a></strong></p>
+<p>The full documentation includes interactive examples, detailed API references, and comprehensive guides.</p>
+<h2 id="quick-start">Quick Start</h2>
+<h3 id="installation">Installation</h3>
+<pre><code class="language-bash">npm install @teachinglab/omd
+</code></pre>
+<h3 id="basic-usage">Basic Usage</h3>
+<pre><code class="language-javascript">import { omdDisplay } from &#39;@teachinglab/omd&#39;;
+
+// Create a math display
+const container = document.getElementById(&#39;math-container&#39;);
+const display = new omdDisplay(container);
+
+// Render an equation
+display.render(&#39;2x + 3 = 11&#39;);
+</code></pre>
+<h2 id="documentation">Documentation</h2>
+<h3 id="getting-started">Getting Started</h3>
+<ul>
+<li><strong><a href="npm-docs/guides/getting-started.html">Installation &amp; Setup</a></strong> - Get up and running with OMD</li>
+<li><strong><a href="npm-docs/guides/quick-examples.html">Quick Examples</a></strong> - Common use cases and code snippets</li>
+<li><strong><a href="npm-docs/guides/factory-functions.html">Factory Functions</a></strong> - Creating objects from JSON (AI-friendly)</li>
+</ul>
+<h3 id="core-concepts">Core Concepts</h3>
+<h4 id="1-global-context-amp-configuration">1. Global Context &amp; Configuration</h4>
+<p>Learn about the foundational systems that power OMD:</p>
+<ul>
+<li><strong><a href="npm-docs/api/omdConfigManager.html">Configuration Manager</a></strong> - Library-wide settings and theming</li>
+<li><strong><a href="npm-docs/api/configuration-options.html">Configuration Options</a></strong> - Complete list of available settings</li>
+<li><strong><a href="npm-docs/api/omdDisplay.html">Display System</a></strong> - Main rendering engine</li>
+<li><strong><a href="npm-docs/api/omdCanvas.html">Canvas System</a></strong> - Multi-expression layout manager</li>
+<li><strong><a href="npm-docs/api/eventManager.html">Event Manager</a></strong> - Event handling and coordination</li>
+<li><strong><a href="npm-docs/api/omdHelpers.html">Helpers &amp; Utilities</a></strong> - Utility functions for common tasks</li>
+</ul>
+<h4 id="2-visualizations">2. Visualizations</h4>
+<p>Interactive visual components for teaching and learning:</p>
+<h5 id="number-amp-ratio-visualizations">Number &amp; Ratio Visualizations</h5>
+<ul>
+<li><strong><a href="npm-docs/guides/visualizations.md#number-line">Number Line</a></strong> - <code>omdNumberLine</code> - Interactive number lines with dots and labels</li>
+<li><strong><a href="npm-docs/guides/visualizations.md#number-tiles">Number Tiles</a></strong> - <code>omdNumberTile</code> - Visual counting tiles with dots</li>
+<li><strong><a href="npm-docs/guides/visualizations.md#tape-diagrams">Tape Diagrams</a></strong> - <code>omdTapeDiagram</code> - Part-whole relationship diagrams</li>
+<li><strong><a href="npm-docs/guides/visualizations.md#ratio-charts">Ratio Charts</a></strong> - <code>omdRatioChart</code> - Pie and bar chart ratio visualizations</li>
+<li><strong><a href="npm-docs/guides/visualizations.md#balance-hanger">Balance Hanger</a></strong> - <code>omdBalanceHanger</code> - Balance scale visualizations</li>
+</ul>
+<h5 id="graphing-amp-geometry">Graphing &amp; Geometry</h5>
+<ul>
+<li><strong><a href="npm-docs/guides/visualizations.md#coordinate-plane">Coordinate Plane</a></strong> - <code>omdCoordinatePlane</code> - 2D graphing with functions and shapes</li>
+<li><strong><a href="npm-docs/guides/visualizations.md#shapes">Shapes</a></strong> - <code>omdShapes</code> - Geometric shapes (circles, rectangles, polygons, triangles)</li>
+<li><strong><a href="npm-docs/guides/visualizations.md#spinner">Spinner</a></strong> - <code>omdSpinner</code> - Interactive circular spinners</li>
+</ul>
+<h5 id="data-display">Data Display</h5>
+<ul>
+<li><strong><a href="npm-docs/guides/visualizations.md#tables">Tables</a></strong> - <code>omdTable</code> - Data tables with customizable styling</li>
+<li><strong><a href="npm-docs/guides/visualizations.md#function-graphs">Function Graphs</a></strong> - Plotting mathematical functions</li>
+</ul>
+<h4 id="3-equations-amp-expressions">3. Equations &amp; Expressions</h4>
+<p>The heart of mathematical notation and manipulation:</p>
+<h5 id="core-expression-components">Core Expression Components</h5>
+<ul>
+<li><strong><a href="npm-docs/api/expression-nodes.html">Expression Nodes</a></strong> - Understanding the node tree structure and omdEquationNode class</li>
+<li><strong><a href="npm-docs/api/omdEquationNode.html">omdEquationNode</a></strong> - Complete equations with manipulation methods (e.g., <code>2x + 3 = 11</code>)</li>
+<li><strong><a href="npm-docs/guides/equations.md#expressions">omdExpression</a></strong> - Mathematical expressions (e.g., <code>3x² + 5</code>)</li>
+<li><strong><a href="npm-docs/guides/equations.md#terms">omdTerm</a></strong> - Individual terms (e.g., <code>3x²</code>)</li>
+<li><strong><a href="npm-docs/guides/equations.md#numbers">omdNumber</a></strong> - Numeric constants</li>
+<li><strong><a href="npm-docs/guides/equations.md#variables">omdVariable</a></strong> - Variables (e.g., <code>x</code>, <code>y</code>)</li>
+<li><strong><a href="npm-docs/guides/equations.md#operators">omdOperator</a></strong> - Mathematical operators (+, -, ×, ÷)</li>
+</ul>
+<h5 id="advanced-expression-types">Advanced Expression Types</h5>
+<ul>
+<li><strong><a href="npm-docs/guides/equations.md#power-expressions">omdPowerExpression</a></strong> - Exponentiation (e.g., <code>(x+1)²</code>)</li>
+<li><strong><a href="npm-docs/guides/equations.md#rational-expressions">omdRationalExpression</a></strong> - Fractions (e.g., <code>(x+1)/(x-1)</code>)</li>
+<li><strong><a href="npm-docs/guides/equations.md#functions">omdFunction</a></strong> - Mathematical functions (e.g., <code>f(x) = 2x + 1</code>)</li>
+<li><strong><a href="npm-docs/guides/equations.md#tile-equations">omdTileEquation</a></strong> - Visual tile-based equations</li>
+</ul>
+<h5 id="step-by-step-solutions">Step-by-Step Solutions</h5>
+<ul>
+<li><strong><a href="npm-docs/api/omdEquationStack.html">Equation Stack</a></strong> - Sequenced solution steps</li>
+<li><strong><a href="npm-docs/api/omdStepVisualizer.html">Step Visualizer</a></strong> - Interactive step visualization</li>
+<li><strong><a href="npm-docs/api/omdSimplification.html">Simplification Engine</a></strong> - Rule-based expression simplification</li>
+<li><strong><a href="npm-docs/api/simplificationRules.html">Simplification Rules</a></strong> - Available transformation rules</li>
+</ul>
+<h3 id="complete-api-reference">Complete API Reference</h3>
+<ul>
+<li><strong><a href="npm-docs/api/api-reference.html">Full API Documentation</a></strong> - Complete reference for all components</li>
+<li><strong><a href="npm-docs/json-schemas.html">JSON Schemas</a></strong> - Detailed JSON structure for all components</li>
+</ul>
 <h2 id="features">Features</h2>
 <h3 id="interactive-math-rendering"><strong>Interactive Math Rendering</strong></h3>
 <ul>
@@ -173,145 +264,118 @@
 <li>Progressive step revelation</li>
 <li>Visual operation feedback and highlighting</li>
 </ul>
-<h2 id="installation">Installation</h2>
-<h3 id="npm">npm</h3>
-<pre><code class="language-bash">npm install @teachinglab/omd
+<h2 id="guides">Guides</h2>
+<h3 id="by-use-case">By Use Case</h3>
+<ul>
+<li><strong><a href="npm-docs/guides/equations.html">Creating Equations</a></strong> - Work with equations and expressions</li>
+<li><strong><a href="npm-docs/guides/visualizations.html">Visualizations Guide</a></strong> - All visualization components</li>
+<li><strong><a href="npm-docs/guides/step-by-step.html">Step-by-Step Solutions</a></strong> - Building interactive solutions</li>
+<li><strong><a href="npm-docs/guides/interactive-features.html">Interactive Features</a></strong> - Drag &amp; drop, toolbars, and more</li>
+</ul>
+<h3 id="advanced-topics">Advanced Topics</h3>
+<ul>
+<li><strong><a href="npm-docs/guides/expression-tree.html">Expression Tree Structure</a></strong> - Understanding the AST</li>
+<li><strong><a href="npm-docs/guides/custom-rules.html">Custom Simplification Rules</a></strong> - Extending the simplification engine</li>
+<li><strong><a href="npm-docs/guides/theming.html">Theming &amp; Styling</a></strong> - Customizing appearance</li>
+<li><strong><a href="npm-docs/guides/performance.html">Performance Optimization</a></strong> - Best practices for large applications</li>
+</ul>
+<h2 id="architecture">Architecture</h2>
+<pre><code>OMD Library Structure
+├── Core Systems
+│   ├── Configuration Manager (Global settings)
+│   ├── Display System (Rendering engine)
+│   └── Event Manager (Coordination)
+│
+├── Visualizations
+│   ├── Number Visualizations (Number line, tiles, tape diagrams)
+│   ├── Graphing (Coordinate plane, functions)
+│   └── Data Display (Tables, charts)
+│
+└── Equations &amp; Expressions
+    ├── Node System (Expression tree)
+    ├── Equation Components (Equations, terms, operators)
+    ├── Advanced Expressions (Powers, rationals, functions)
+    └── Step-by-Step System (Simplification, visualization)
 </code></pre>
-<h2 id="basic-usage">Basic Usage</h2>
-<pre><code class="language-javascript">import { omdDisplay } from &#39;@teachinglab/omd&#39;;
+<h2 id="examples">Examples</h2>
+<h3 id="creating-objects-from-json-factory-method">Creating Objects from JSON (Factory Method)</h3>
+<pre><code class="language-javascript">import { createFromJSON } from &#39;@teachinglab/omd&#39;;
 
-// Create a math display
-const container = document.getElementById(&#39;math-container&#39;);
-const display = new omdDisplay(container);
+// AI-generated or dynamic JSON data
+const jsonData = {
+    omdType: &#39;numberLine&#39;,
+    min: 0,
+    max: 10,
+    dotValues: [2, 5, 8]
+};
 
-// Render an equation
-display.render(&#39;2x + 3 = 11&#39;);
+// Create the object - no switch statement needed!
+const numberLine = createFromJSON(jsonData);
 </code></pre>
-<h3 id="step-by-step-solutions">Step-by-Step Solutions</h3>
-<pre><code class="language-javascript">import { omdEquationStack, omdEquationNode } from &#39;@teachinglab/omd&#39;;
+<h3 id="basic-equation">Basic Equation</h3>
+<pre><code class="language-javascript">import { omdDisplay, omdEquationNode } from &#39;@teachinglab/omd&#39;;
 
-// Create solution steps
+const display = new omdDisplay(document.getElementById(&#39;container&#39;));
+const equation = omdEquationNode.fromString(&#39;2x + 3 = 11&#39;);
+display.render(equation);
+</code></pre>
+<h3 id="step-by-step-solution">Step-by-Step Solution</h3>
+<pre><code class="language-javascript">import { omdEquationStack } from &#39;@teachinglab/omd&#39;;
+
 const steps = [
-    omdEquationNode.fromString(&#39;2x + 3 = 11&#39;),
-    omdEquationNode.fromString(&#39;2x = 8&#39;),
-    omdEquationNode.fromString(&#39;x = 4&#39;)
+    &#39;2x + 3 = 11&#39;,
+    &#39;2x = 8&#39;,
+    &#39;x = 4&#39;
 ];
 
-// Create interactive equation stack
-const stack = new omdEquationStack(steps, {
+const stack = new omdEquationStack(steps.map(s =&gt; 
+    omdEquationNode.fromString(s)
+), {
     toolbar: true,
     stepVisualizer: true
 });
 
 display.render(stack);
 </code></pre>
-<h2 id="core-concepts">Core Concepts</h2>
-<h3 id="nodes-building-blocks"><strong>Nodes</strong> - Building Blocks</h3>
-<p>Every mathematical element is a node in an expression tree:</p>
-<ul>
-<li><code>omdEquationNode</code> - Complete equations (e.g., <code>2x + 3 = 11</code>)</li>
-<li><code>omdConstantNode</code> - Numbers (e.g., <code>5</code>, <code>3.14</code>)</li>
-<li><code>omdVariableNode</code> - Variables (e.g., <code>x</code>, <code>y</code>)</li>
-<li><code>omdBinaryExpressionNode</code> - Operations (e.g., <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>)</li>
-</ul>
-<h3 id="sequences-solution-steps"><strong>Sequences</strong> - Solution Steps</h3>
-<p>Group related equations for step-by-step solving:</p>
-<pre><code class="language-javascript">const sequence = new omdEquationSequenceNode([
-    equation1, equation2, equation3
-]);
-</code></pre>
-<h3 id="display-rendering-engine"><strong>Display</strong> - Rendering Engine</h3>
-<p>Handles layout, centering, and visualization:</p>
-<pre><code class="language-javascript">const display = new omdDisplay(container, {
-    fontSize: 36,
-    centerContent: true
+<h3 id="coordinate-plane-with-function">Coordinate Plane with Function</h3>
+<pre><code class="language-javascript">import { omdCoordinatePlane } from &#39;@teachinglab/omd&#39;;
+
+const plane = new omdCoordinatePlane();
+plane.loadFromJSON({
+    xMin: -10, xMax: 10,
+    yMin: -10, yMax: 10,
+    graphEquations: [
+        { equation: &#39;y = x^2 - 4&#39;, color: &#39;#e11d48&#39;, strokeWidth: 2 }
+    ]
 });
+
+display.render(plane);
 </code></pre>
-<h2 id="interactive-examples">Interactive Examples</h2>
-<p>Explore OMD&#39;s capabilities with our comprehensive examples:</p>
-<table>
-<thead>
-<tr>
-<th>Category</th>
-<th>Example</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>Getting Started</strong></td>
-<td><a href="examples/minimal.html">Minimal</a></td>
-<td>Basic equation rendering</td>
-</tr>
-<tr>
-<td></td>
-<td><a href="examples/simple-usage.html">Simple Usage</a></td>
-<td>Interactive features</td>
-</tr>
-<tr>
-<td><strong>Advanced</strong></td>
-<td><a href="examples/expression-playground.html">Expression Playground</a></td>
-<td>Full manipulation interface</td>
-</tr>
-<tr>
-<td></td>
-<td><a href="examples/drag-and-drop-playground.html">Drag &amp; Drop</a></td>
-<td>Intuitive interaction</td>
-</tr>
-<tr>
-<td><strong>Educational</strong></td>
-<td><a href="examples/worked-solution.html">Worked Solutions</a></td>
-<td>Step-by-step solving</td>
-</tr>
-<tr>
-<td></td>
-<td><a href="examples/kids-interactive.html">Kids Interactive</a></td>
-<td>Child-friendly interface</td>
-</tr>
-<tr>
-<td><strong>Components</strong></td>
-<td><a href="examples/equation-stack-test.html">Equation Stack</a></td>
-<td>Stacked equations</td>
-</tr>
-<tr>
-<td></td>
-<td><a href="examples/canvas-multiple-nodes.html">Canvas Demo</a></td>
-<td>Multi-expression layouts</td>
-</tr>
-</tbody></table>
-<p><strong><a href="examples/index.html">Browse All Examples</a></strong></p>
-<h2 id="documentation">Documentation</h2>
-<table>
-<thead>
-<tr>
-<th>Resource</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong><a href="docs/api-reference.html">API Reference</a></strong></td>
-<td>Complete component documentation</td>
-</tr>
-<tr>
-<td><strong><a href="docs/user-guide.html">User Guide</a></strong></td>
-<td>Getting started and tutorials</td>
-</tr>
-</tbody></table>
-<h2 id="architecture">Architecture</h2>
-<pre><code>OMD Library Structure
-├── Display Layer (omdDisplay)
-├── Node System (Expression tree components)
-├── UI Components (Toolbar, Step visualizer)
-├── Core Systems (Simplification, Layout)
-└── Utilities (Configuration, Helpers)
+<h3 id="number-line-visualization">Number Line Visualization</h3>
+<pre><code class="language-javascript">import { omdNumberLine } from &#39;@teachinglab/omd&#39;;
+
+const numberLine = new omdNumberLine();
+numberLine.loadFromJSON({
+    min: 0,
+    max: 10,
+    dotValues: [2, 5, 8],
+    label: &#39;Number Line Example&#39;
+});
+
+display.render(numberLine);
 </code></pre>
 <h2 id="dependencies">Dependencies</h2>
 <ul>
-<li><strong>JSVG</strong> - High-performance SVG rendering</li>
+<li><strong>JSVG</strong> (<code>@teachinglab/jsvg</code>) - High-performance SVG rendering</li>
 <li><strong>math.js</strong> - Mathematical expression parsing</li>
-<li><strong>Modern Browser</strong> - ES6 modules, SVG support</li>
+<li><strong>Modern Browser</strong> - ES6 modules, SVG support required</li>
 </ul>
+<h2 id="license">License</h2>
+<p>MIT License - see <a href="../LICENSE">LICENSE</a> for details</p>
+<h2 id="contributing">Contributing</h2>
+<p>We welcome contributions! See our <a href="../CONTRIBUTING.html">contributing guidelines</a> for more information.</p>
 <hr>
-<p><strong>Ready to get started?</strong> Check out our <a href="examples/index.html">examples</a> or dive into the <a href="docs/api-reference.html">documentation</a>!</p>
+<p><strong>Ready to get started?</strong> Check out the <a href="npm-docs/guides/getting-started.html">Getting Started Guide</a> or explore the <a href="npm-docs/json-schemas.html">JSON Schemas</a> for detailed component configurations.</p>
 
     </div>
     

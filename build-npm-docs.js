@@ -279,30 +279,30 @@ function getHtmlTemplate(title, content, relativePath = '') {
         <nav class="sidebar">
             <div class="sidebar-section">
                 <h2>Getting Started</h2>
-                <a href="${rootPath}index.html">Overview</a>
-                <a href="${rootPath}guides/getting-started.html">Installation & Setup</a>
-                <a href="${rootPath}guides/quick-examples.html">Quick Examples</a>
-                <a href="${rootPath}guides/factory-functions.html">Factory Functions</a>
+                <a href="/npm-docs/README.html">Overview</a>
+                <a href="/npm-docs/guides/getting-started.html">Installation & Setup</a>
+                <a href="/npm-docs/guides/quick-examples.html">Quick Examples</a>
+                <a href="/npm-docs/guides/factory-functions.html">Factory Functions</a>
             </div>
             
             <div class="sidebar-section">
                 <h2>Guides</h2>
-                <a href="${rootPath}guides/visualizations.html">Visualizations</a>
-                <a href="${rootPath}guides/equations.html">Equations & Expressions</a>
+                <a href="/npm-docs/guides/visualizations.html">Visualizations</a>
+                <a href="/npm-docs/guides/equations.html">Equations & Expressions</a>
             </div>
             
             <div class="sidebar-section">
                 <h2>API Reference</h2>
-                <a href="${rootPath}api/api-reference.html">Full API Docs</a>
-                <a href="${rootPath}api/expression-nodes.html">Expression Nodes</a>
-                <a href="${rootPath}api/omdEquationNode.html">Equation Node</a>
-                <a href="${rootPath}api/omdDisplay.html">Display System</a>
-                <a href="${rootPath}api/omdCanvas.html">Canvas System</a>
+                <a href="/npm-docs/api/api-reference.html">Full API Docs</a>
+                <a href="/npm-docs/api/expression-nodes.html">Expression Nodes</a>
+                <a href="/npm-docs/api/omdEquationNode.html">Equation Node</a>
+                <a href="/npm-docs/api/omdDisplay.html">Display System</a>
+                <a href="/npm-docs/api/omdCanvas.html">Canvas System</a>
             </div>
             
             <div class="sidebar-section">
                 <h2>Reference</h2>
-                <a href="${rootPath}json-schemas.html">JSON Schemas</a>
+                <a href="/npm-docs/json-schemas.html">JSON Schemas</a>
             </div>
         </nav>
         

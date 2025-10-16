@@ -13,13 +13,15 @@ export default defineConfig({
       }
     }
   },
-  // Copy static assets
-  publicDir: 'public',
-  // Configure dev server to serve static files
+  // Copy static assets - includes dist/ directory for npm-docs
+  publicDir: false, // We'll handle this manually
+  // Configure dev server to serve the built npm-docs from dist
   server: {
     fs: {
-      // Allow serving files from parent directory
-      allow: ['..', '.']
-    }
+      // Allow serving files from parent directory and dist
+      allow: ['..', '.', './dist']
+    },
+    // Middleware to serve dist/npm-docs at /npm-docs
+    middlewareMode: false
   }
 })
