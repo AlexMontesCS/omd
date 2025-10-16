@@ -9,6 +9,12 @@ OMD is a comprehensive JavaScript library for building rich, interactive mathema
 
 ![OMD Demo](https://i.imgur.com/CdtEi33.png)
 
+## 📖 Full Documentation
+
+**[View the complete documentation →](https://your-site.netlify.app/npm-docs/)**
+
+The full documentation includes interactive examples, detailed API references, and comprehensive guides.
+
 ## Quick Start
 
 ### Installation

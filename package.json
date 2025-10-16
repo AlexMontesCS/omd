@@ -1,6 +1,6 @@
 {
   "name": "@teachinglab/omd",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "omd",
   "main": "./index.js",
   "module": "./index.js",
@@ -16,7 +16,8 @@
     "docs/",
     "canvas/",
     "jsvg/"  ,
-    "npm-docs/"
+    "npm-docs/",
+    "README.md"
   ],
   "keywords": [
     "math",
@@ -35,10 +36,11 @@
   },
   "scripts": {
     "dev": "npm run build:docs && vite",
-    "build": "vite build && node copy-static.js && node build-docs.js",
+    "build": "vite build && node copy-static.js && node build-docs.js && node build-npm-docs.js",
     "build:docs": "node build-docs.js",
+    "build:npm-docs": "node build-npm-docs.js",
     "build:static": "node copy-static.js",
-    "dev:netlify": "npm run build:docs && netlify dev"
+    "dev:netlify": "npm run build:docs && npm run build:npm-docs && netlify dev"
   },
   "publishConfig": {
     "access": "public"
