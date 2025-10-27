@@ -31,9 +31,12 @@ async function openAIrequest( topic )
   request += "\tExample: {\"omdType\":\"table\",\"headers\":[\"x\",\"y\"],\"equation\":\"y = 2x + 3\"}\n\n";
   request += "tapeDiagram: MUST include values array and labelSet array.\n";
   request += "\tExample: {\"omdType\":\"tapeDiagram\",\"values\":[2,3],\"labelSet\":[{\"omdType\":\"omdTapeLabel\",\"startIndex\":0,\"endIndex\":2,\"label\":\"5\",\"showBelow\":true}]}\n\n";
-  request += "numberLine: Use for 1D number lines with dots/points. MUST include min, max, and dotValues array.\n";
+  request += "numberLine: Use for 1D number lines with dots/points. MUST include min, max.\n";
   request += "\tUse when: 'number line', '1D line', 'dots on a line', 'points on number line'\n";
-  request += "\tExample: {\"omdType\":\"numberLine\",\"min\":0,\"max\":10,\"dotValues\":[3,7],\"label\":\"Number Line\"}\n\n";
+  request += "\tRequired: min (number), max (number)\n";
+  request += "\tOptional: title (string - displayed on left), increment (number - step between ticks, default 1), showLeftArrow (boolean), showRightArrow (boolean), units (string - appended to labels), hideDefaultNumbers (boolean - only show specialNumbers), specialNumbers (array of numbers to always show), totalWidth (number - pixels, default 320), dotValues (array - dots to display)\n";
+  request += "\tExample: {\"omdType\":\"numberLine\",\"min\":0,\"max\":10,\"dotValues\":[3,7],\"title\":\"Distance\",\"units\":\" cm\"}\n";
+  request += "\tExample with special numbers: {\"omdType\":\"numberLine\",\"min\":0,\"max\":100,\"increment\":10,\"specialNumbers\":[25,75],\"units\":\" m\",\"showRightArrow\":true}\n\n";
   request += "numberTile: MUST include value.\n";
   request += "\tExample: {\"omdType\":\"numberTile\",\"value\":8}\n\n";
   request += "ratioChart: MUST include numerator and denominator.\n";

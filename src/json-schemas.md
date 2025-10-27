@@ -398,25 +398,50 @@ This document provides schemas and examples for the `loadFromJSON` method used i
 
 ## 15. `omdNumberLine`
 
-`omdNumberLine` represents a number line with labeled ticks and optional dots.
+`omdNumberLine` represents a number line with labeled ticks, optional title, custom increments, units, arrows, and special numbers.
 
 ### Schema
 ```json
 {
-  "min": "number",
-  "max": "number",
-  "dotValues": ["array"],
-  "label": "string"
+  "title": "string (optional)",
+  "min": "number (required)",
+  "max": "number (required)",
+  "increment": "number (optional, default: 1)",
+  "showLeftArrow": "boolean (optional, default: false)",
+  "showRightArrow": "boolean (optional, default: false)",
+  "units": "string (optional)",
+  "hideDefaultNumbers": "boolean (optional, default: false)",
+  "specialNumbers": ["array (optional)"],
+  "totalWidth": "number (optional, default: 320)",
+  "dotValues": ["array (optional)"],
+  "label": "string (optional, deprecated - use title)"
 }
 ```
 
 ### Example
 ```json
 {
+  "title": "Distance",
   "min": 0,
   "max": 10,
-  "dotValues": [1, 5, 7],
-  "label": "Number Line"
+  "increment": 1,
+  "units": " cm",
+  "dotValues": [1, 5, 7]
+}
+```
+
+### Example with Special Numbers
+```json
+{
+  "title": "Height",
+  "min": 0,
+  "max": 100,
+  "increment": 10,
+  "specialNumbers": [25, 75],
+  "units": " m",
+  "showRightArrow": true,
+  "hideDefaultNumbers": false,
+  "totalWidth": 400
 }
 ```
 
