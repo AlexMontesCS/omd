@@ -12,7 +12,9 @@ import { omdEquation } from "./omdEquation.js";
 import { omdEquationNode } from "../omd/nodes/omdEquationNode.js";
 import { omdFunction } from "./omdFunction.js";
 import { omdNumberLine } from "./omdNumberLine.js";
+import { omdDoubleNumberLine } from "./omdDoubleNumberLine.js";
 import { omdTapeDiagram } from "./omdTapeDiagram.js";
+import { omdDoubleTapeDiagram } from "./omdDoubleTapeDiagram.js";
 import { omdBalanceHanger } from "./omdBalanceHanger.js";
 import { omdNumberTile } from "./omdNumberTile.js";
 import { omdRatioChart } from "./omdRatioChart.js";
@@ -122,11 +124,17 @@ export class omd extends jsvgContainer
             case "numberLine":
                 N = new omdNumberLine();
                 break;
+            case "doubleNumberLine":
+                N = new omdDoubleNumberLine();
+                break;
             case "balanceHanger":
                 N = new omdBalanceHanger();
                 break;
             case "tapeDiagram":
                 N = new omdTapeDiagram();
+                break;
+            case "doubleTapeDiagram":
+                N = new omdDoubleTapeDiagram();
                 break;
             case "numberTile":
                 N = new omdNumberTile();

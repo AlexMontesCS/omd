@@ -1,6 +1,6 @@
 
 import { omdColor } from "./omdColor.js";
-import { jsvgGroup, jsvgRect, jsvgLine, jsvgTextBox, jsvgEllipse, jsvgPolygon } from "@teachinglab/jsvg";
+import { jsvgGroup, jsvgRect, jsvgLine, jsvgTextBox, jsvgEllipse, jsvgPath } from "@teachinglab/jsvg";
 
 export class omdNumberLine extends jsvgGroup
 {
@@ -87,6 +87,7 @@ export class omdNumberLine extends jsvgGroup
         const leftPadding = this.title ? 80 : 20;
         const rightPadding = 20;
         const arrowSize = 10;
+        const tickOverhang = 5; // How much the line extends past the end ticks
         const lineWidth = this.totalWidth;
         const usableLineWidth = lineWidth - (this.showLeftArrow ? arrowSize : 0) - (this.showRightArrow ? arrowSize : 0);
         
@@ -108,41 +109,45 @@ export class omdNumberLine extends jsvgGroup
             this.addChild(titleText);
         }
 
-        // Calculate start position for line
-        const lineStartX = leftPadding + (this.showLeftArrow ? arrowSize : 0);
+        // Calculate start position for line (with overhang if no arrow)
+        const lineStartX = leftPadding + (this.showLeftArrow ? arrowSize : -tickOverhang);
+        const lineActualWidth = usableLineWidth + (!this.showLeftArrow ? tickOverhang : 0) + (!this.showRightArrow ? tickOverhang : 0);
 
         // Draw left arrow if needed
         if (this.showLeftArrow) {
-            const leftArrow = new jsvgPolygon();
+            const leftArrow = new jsvgPath();
             const arrowY = 25;
-            leftArrow.setPoints([
-                [leftPadding + arrowSize, arrowY - 5],
-                [leftPadding, arrowY],
-                [leftPadding + arrowSize, arrowY + 5]
-            ]);
+            const arrowX = leftPadding;
+            leftArrow.addPoint(arrowX + arrowSize, arrowY - 5);
+            leftArrow.addPoint(arrowX, arrowY);
+            leftArrow.addPoint(arrowX + arrowSize, arrowY + 5);
+            leftArrow.addPoint(arrowX + arrowSize, arrowY - 5); // Close the path
+            leftArrow.updatePath();
             leftArrow.setFillColor(omdColor.mediumGray);
             leftArrow.setStrokeWidth(0);
+            leftArrow.path.setAttribute("fill", omdColor.mediumGray);
             this.addChild(leftArrow);
         }
 
         // Draw right arrow if needed
         if (this.showRightArrow) {
-            const rightArrow = new jsvgPolygon();
+            const rightArrow = new jsvgPath();
             const arrowY = 25;
             const arrowX = leftPadding + lineWidth - arrowSize;
-            rightArrow.setPoints([
-                [arrowX, arrowY - 5],
-                [arrowX + arrowSize, arrowY],
-                [arrowX, arrowY + 5]
-            ]);
+            rightArrow.addPoint(arrowX, arrowY - 5);
+            rightArrow.addPoint(arrowX + arrowSize, arrowY);
+            rightArrow.addPoint(arrowX, arrowY + 5);
+            rightArrow.addPoint(arrowX, arrowY - 5); // Close the path
+            rightArrow.updatePath();
             rightArrow.setFillColor(omdColor.mediumGray);
             rightArrow.setStrokeWidth(0);
+            rightArrow.path.setAttribute("fill", omdColor.mediumGray);
             this.addChild(rightArrow);
         }
 
         // Draw main line
         this.line = new jsvgRect();
-        this.line.setWidthAndHeight(usableLineWidth, 5);
+        this.line.setWidthAndHeight(lineActualWidth, 5);
         this.line.setPosition(lineStartX, 22.5);
         this.line.setFillColor(omdColor.mediumGray);
         this.line.setCornerRadius(2.5);
@@ -167,9 +172,10 @@ export class omdNumberLine extends jsvgGroup
 
         // Draw ticks and labels for all numbers
         const sortedNumbers = Array.from(numbersToShow).sort((a, b) => a - b);
+        const tickBaseX = leftPadding + (this.showLeftArrow ? arrowSize : 0);
         for (const value of sortedNumbers) {
             const normalized = (value - this.min) / (this.max - this.min);
-            const pX = lineStartX + normalized * usableLineWidth;
+            const pX = tickBaseX + normalized * usableLineWidth;
 
             // Draw tick
             const tick = new jsvgLine();
@@ -196,7 +202,7 @@ export class omdNumberLine extends jsvgGroup
             if (V < this.min || V > this.max) continue;
             
             const normalized = (V - this.min) / (this.max - this.min);
-            const pX = lineStartX + normalized * usableLineWidth;
+            const pX = tickBaseX + normalized * usableLineWidth;
 
             const dot = new jsvgEllipse();
             dot.setFillColor("black");

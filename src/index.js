@@ -3,11 +3,13 @@ export { omdTable } from './omdTable.js';
 export { omdBalanceHanger } from './omdBalanceHanger.js';
 export { omdCoordinatePlane } from './omdCoordinatePlane.js';
 export { omdTapeDiagram } from './omdTapeDiagram.js';
+export { omdDoubleTapeDiagram } from './omdDoubleTapeDiagram.js';
 export { omdTileEquation } from './omdTileEquation.js';
 
 // OMD Charts and Diagrams
 export { omdRatioChart } from './omdRatioChart.js';
 export { omdNumberLine } from './omdNumberLine.js';
+export { omdDoubleNumberLine } from './omdDoubleNumberLine.js';
 export { omdNumberTile } from './omdNumberTile.js';
 
 // OMD Mathematical Components
@@ -52,7 +54,8 @@ export default {
         omdTapeDiagram: () => import('./omdTapeDiagram.js').then(m => m.omdTapeDiagram),
         omdTileEquation: () => import('./omdTileEquation.js').then(m => m.omdTileEquation),
         omdRatioChart: () => import('./omdRatioChart.js').then(m => m.omdRatioChart),
-        omdNumberLine: () => import('./omdNumberLine.js').then(m => m.omdNumberLine)
+        omdNumberLine: () => import('./omdNumberLine.js').then(m => m.omdNumberLine),
+        omdDoubleNumberLine: () => import('./omdDoubleNumberLine.js').then(m => m.omdDoubleNumberLine)
     },
     
     // Mathematical expressions

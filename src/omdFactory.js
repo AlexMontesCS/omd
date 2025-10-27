@@ -18,8 +18,10 @@
 import { omdBalanceHanger } from './omdBalanceHanger.js';
 import { omdTable } from './omdTable.js';
 import { omdTapeDiagram } from './omdTapeDiagram.js';
+import { omdDoubleTapeDiagram } from './omdDoubleTapeDiagram.js';
 import { omdCoordinatePlane } from './omdCoordinatePlane.js';
 import { omdNumberLine } from './omdNumberLine.js';
+import { omdDoubleNumberLine } from './omdDoubleNumberLine.js';
 import { omdNumberTile } from './omdNumberTile.js';
 import { omdRatioChart } from './omdRatioChart.js';
 import { omdTileEquation } from './omdTileEquation.js';
@@ -48,8 +50,10 @@ const OMD_TYPE_MAP = {
     'balanceHanger': omdBalanceHanger,
     'table': omdTable,
     'tapeDiagram': omdTapeDiagram,
+    'doubleTapeDiagram': omdDoubleTapeDiagram,
     'coordinatePlane': omdCoordinatePlane,
     'numberLine': omdNumberLine,
+    'doubleNumberLine': omdDoubleNumberLine,
     'numberTile': omdNumberTile,
     'ratioChart': omdRatioChart,
     'tileEquation': omdTileEquation,

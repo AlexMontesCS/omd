@@ -1,11 +1,7 @@
 // OMD AI Visual Generator - Main JavaScript
 
-// Import OMD classes
-import { omdBalanceHanger } from './src/omdBalanceHanger.js';
-import { omdTable } from './src/omdTable.js';
-import { omdCoordinatePlane } from './src/omdCoordinatePlane.js';
-import { omdTapeDiagram } from './src/omdTapeDiagram.js';
-import { omdNumberTile } from './src/omdNumberTile.js';
+// Import the factory function - this is all we need!
+import { createFromJSON } from './src/omdFactory.js';
 
 class OMDVisualGenerator {
     constructor() {
@@ -142,47 +138,13 @@ class OMDVisualGenerator {
             throw new Error('Invalid JSON structure - missing omdType');
         }
 
-        let omdObject = null;
-
         try {
-            // Create the appropriate OMD object based on type
-            switch (jsonData.omdType) {
-                case 'balanceHanger':
-                    console.log('Creating balance hanger...');
-                    omdObject = new omdBalanceHanger();
-                    break;
-                case 'table':
-                    console.log('Creating table...');
-                    omdObject = new omdTable();
-                    break;
-                case 'coordinatePlane':
-                    console.log('Creating coordinate plane...');
-                    omdObject = new omdCoordinatePlane();
-                    break;
-                case 'tapeDiagram':
-                    console.log('Creating tape diagram...');
-                    omdObject = new omdTapeDiagram();
-                    break;
-                case 'numberTile':
-                    console.log('Creating number tile...');
-                    omdObject = new omdNumberTile();
-                    break;
-                case 'tileEquation':
-                    console.log('Creating tile equation...');
-                    const { omdTileEquation } = await import('./src/omdTileEquation.js');
-                    omdObject = new omdTileEquation();
-                    break;
-                default:
-                    throw new Error(`Unsupported OMD type: ${jsonData.omdType}`);
-            }
-
+            // Create the OMD object using the factory function
+            console.log('Creating OMD object with factory...');
+            const omdObject = createFromJSON(jsonData);
+            
             if (omdObject) {
                 console.log('OMD object created:', omdObject);
-                
-                // Load data from JSON
-                console.log('Loading JSON data into OMD object...');
-                omdObject.loadFromJSON(jsonData);
-                console.log('JSON data loaded, OMD object:', omdObject);
                 
                 // Check if SVG object exists
                 if (!omdObject.svgObject) {
@@ -248,6 +210,8 @@ class OMDVisualGenerator {
                 // Additional debug info
                 console.log('Final SVG:', svg);
                 console.log('Final container:', container);
+            } else {
+                throw new Error(`Failed to create OMD object for type: ${jsonData.omdType}`);
             }
         } catch (renderError) {
             console.error('Render error:', renderError);

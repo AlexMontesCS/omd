@@ -105,24 +105,85 @@ This document provides schemas and examples for the `loadFromJSON` method used i
 ### Schema
 ```json
 {
-  "values": ["array"],
-  "showValues": "boolean",
-  "colors": ["array"],
-  "labelSet": ["array"],
-  "unitWidth": "number"
+  "title": "string (optional)",
+  "values": ["array (required) - can be strings or objects with {value, showLabel, color}"],
+  "labelSet": ["array (optional) - objects with {startIndex, endIndex, label, showBelow}"],
+  "totalWidth": "number (optional, default: 300)"
+}
+```
+
+### Example with Simple Values
+```json
+{
+  "title": "Distance",
+  "totalWidth": 300,
+  "values": ["2x", "3", "x"],
+  "labelSet": [
+    { "startIndex": 0, "endIndex": 3, "label": "Total: 3x + 3", "showBelow": true },
+    { "startIndex": 0, "endIndex": 1, "label": "2x", "showBelow": false }
+  ]
+}
+```
+
+### Example with Value Objects
+```json
+{
+  "title": "Pencils",
+  "totalWidth": 320,
+  "values": [
+    { "value": "5", "showLabel": true, "color": "#93c5fd" },
+    { "value": "5", "showLabel": true, "color": "#93c5fd" },
+    { "value": "5", "showLabel": false, "color": "#fca5a5" }
+  ],
+  "labelSet": [
+    { "startIndex": 0, "endIndex": 3, "label": "15 total", "showBelow": true }
+  ]
+}
+```
+
+---
+
+## 4b. `omdDoubleTapeDiagram`
+
+`omdDoubleTapeDiagram` represents two tape diagrams aligned by their start points.
+
+### Schema
+```json
+{
+  "topTapeDiagram": "object (omdTapeDiagram)",
+  "bottomTapeDiagram": "object (omdTapeDiagram)",
+  "spacing": "number (optional, default: 10)"
 }
 ```
 
 ### Example
 ```json
 {
-  "values": [1, 2, 3],
-  "showValues": true,
-  "colors": ["#FF0000", "#00FF00", "#0000FF"],
-  "labelSet": [
-    { "startIndex": 0, "endIndex": 2, "label": "Example Label", "showBelow": true }
-  ],
-  "unitWidth": 30
+  "topTapeDiagram": {
+    "title": "Pencils",
+    "totalWidth": 320,
+    "values": [
+      { "value": "5", "color": "#93c5fd" },
+      { "value": "5", "color": "#93c5fd" },
+      { "value": "5", "color": "#93c5fd" }
+    ],
+    "labelSet": [
+      { "startIndex": 0, "endIndex": 3, "label": "15 total", "showBelow": true }
+    ]
+  },
+  "bottomTapeDiagram": {
+    "title": "Cost",
+    "totalWidth": 320,
+    "values": [
+      { "value": "$2", "color": "#fca5a5" },
+      { "value": "$2", "color": "#fca5a5" },
+      { "value": "$2", "color": "#fca5a5" }
+    ],
+    "labelSet": [
+      { "startIndex": 0, "endIndex": 3, "label": "$6 total", "showBelow": true }
+    ]
+  },
+  "spacing": 80
 }
 ```
 
@@ -413,8 +474,7 @@ This document provides schemas and examples for the `loadFromJSON` method used i
   "hideDefaultNumbers": "boolean (optional, default: false)",
   "specialNumbers": ["array (optional)"],
   "totalWidth": "number (optional, default: 320)",
-  "dotValues": ["array (optional)"],
-  "label": "string (optional, deprecated - use title)"
+  "dotValues": ["array (optional)"]
 }
 ```
 
@@ -442,6 +502,40 @@ This document provides schemas and examples for the `loadFromJSON` method used i
   "showRightArrow": true,
   "hideDefaultNumbers": false,
   "totalWidth": 400
+}
+```
+
+---
+
+## 15b. `omdDoubleNumberLine`
+
+`omdDoubleNumberLine` represents two number lines aligned by their start points, useful for showing proportional relationships.
+
+### Schema
+```json
+{
+  "topNumberLine": "object (omdNumberLine)",
+  "bottomNumberLine": "object (omdNumberLine)",
+  "spacing": "number (optional, default: 10)"
+}
+```
+
+### Example
+```json
+{
+  "topNumberLine": {
+    "title": "Hours",
+    "min": 0,
+    "max": 10,
+    "increment": 1
+  },
+  "bottomNumberLine": {
+    "title": "Miles",
+    "min": 0,
+    "max": 50,
+    "increment": 10
+  },
+  "spacing": 15
 }
 ```
 

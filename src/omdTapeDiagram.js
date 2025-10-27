@@ -111,30 +111,26 @@ export class omdTapeDiagram extends jsvgGroup
 
         this.type = "omdTapeDiagram";
 
+        this.title = "";
         this.values = []; 
-        this.showValues = true;
-        this.colors = [];
         this.labelSet = [];
-        this.unitWidth = 30;
+        this.totalWidth = 300;
         this.updateLayout();
     }
 
     loadFromJSON( data )
     {
-        if ( typeof data.values != "undefined" )
+        if ( typeof data.title !== "undefined" )
+            this.title = data.title;
+
+        if ( typeof data.values !== "undefined" )
             this.values = data.values;
 
-        if ( typeof data.showValues != "undefined" )
-            this.showValues = data.showValues;
-
-        if ( typeof data.colors != "undefined" )
-            this.colors = data.colors;
-
-        if ( typeof data.labelSet != "undefined" )
+        if ( typeof data.labelSet !== "undefined" )
             this.labelSet = data.labelSet;
 
-        if ( typeof data.unitWidth != "undefined" )
-            this.unitWidth = data.unitWidth;
+        if ( typeof data.totalWidth !== "undefined" )
+            this.totalWidth = data.totalWidth;
 
         this.updateLayout();
     }
@@ -142,104 +138,161 @@ export class omdTapeDiagram extends jsvgGroup
     setValues( newValues )
     {
         this.values = newValues;
+        this.updateLayout();
     }
 
     updateLayout()
     {
         this.removeAllChildren();
 
-        // console.log( this.values );
+        const leftPadding = this.title ? 80 : 20;
+        const rightPadding = 20;
+        
+        // Add title if present
+        if (this.title) {
+            const titleText = new jsvgTextBox();
+            titleText.setWidthAndHeight(70, 30);
+            titleText.setFontFamily("Albert Sans");
+            titleText.setFontColor("black");
+            titleText.setFontSize(12);
+            titleText.setAlignment("left");
+            titleText.setText(this.title);
+            titleText.setPosition(5, 20);
+            this.addChild(titleText);
+        }
 
-        // make box with text
-        var pX = 0;
+        // Calculate width for each segment
+        const segmentWidth = this.values.length > 0 ? this.totalWidth / this.values.length : 0;
+        
+        // Track x positions for labels
+        var pX = leftPadding;
         var indexPositions = [];
-        for( var i=0; i<this.values.length; i++ )
+        
+        for( var i = 0; i < this.values.length; i++ )
         {
             indexPositions.push(pX);
 
-            var value = this.values[i];
-            var W = 30;
-            if ( typeof value == "string" )
-            {
-                W = 20 + value.length*10;
-            }
-            else
-            {
-                W = value * this.unitWidth;
-            }
-            
+            const valueData = this.values[i];
+            let value = "";
+            let showLabel = true;
+            let color = omdColor.lightGray;
 
-            // make box
+            // Handle both old format (simple values) and new format (objects)
+            if (typeof valueData === "object" && valueData !== null) {
+                value = valueData.value || "";
+                showLabel = valueData.showLabel !== undefined ? valueData.showLabel : true;
+                color = valueData.color || omdColor.lightGray;
+            } else {
+                value = valueData.toString();
+            }
+
+            // Make box
             var box = new jsvgRect();
-            box.setWidthAndHeight( W, 30 );
+            box.setWidthAndHeight(segmentWidth, 30);
             box.setCornerRadius(5);
-            box.setStrokeColor( "white" );
-            box.setStrokeWidth( 1 );
-            
-            // Use custom color if available, otherwise default to light gray
-            var boxColor = omdColor.lightGray;
-            if ( this.colors && this.colors.length > i && this.colors[i] )
-            {
-                boxColor = this.colors[i];
+            box.setStrokeColor("white");
+            box.setStrokeWidth(1);
+            box.setFillColor(color);
+            box.setPosition(pX, 0);
+            this.addChild(box);
+
+            // Make box text (if showLabel is true)
+            if (showLabel) {
+                var boxText = new jsvgTextBox();
+                boxText.setWidthAndHeight(segmentWidth, 30);
+                boxText.setFontFamily("Albert Sans");
+                boxText.setFontColor("black");
+                boxText.setFontSize(18);
+                boxText.setAlignment("center");
+                boxText.setVerticalCentering();
+                boxText.setText(value);
+                boxText.setPosition(pX, 0);
+                this.addChild(boxText);
             }
-            box.setFillColor( boxColor );
-            
-            box.setPosition( pX, 0 );
-            this.addChild( box );
 
-            // make box text
-            var boxText = new jsvgTextBox();
-            boxText.setWidthAndHeight( W,30 );
-            boxText.setText ( this.name );
-            boxText.setFontFamily( "Albert Sans" );
-            boxText.setFontColor( "black" );
-            boxText.setFontSize( 18 );
-            boxText.setAlignment("center");
-            boxText.setVerticalCentering();
-            boxText.setText( value.toString() );
-            boxText.setPosition( pX, 0 );
-            this.addChild( boxText );
-
-            pX += W;
+            pX += segmentWidth;
         }
 
         indexPositions.push(pX);
 
-        // Calculate actual content dimensions
-        var contentWidth = pX; // Total width of all boxes
-        var contentHeight = 30; // Height of the tape
-        var labelHeight = 0;
+        // Calculate dimensions
+        var contentWidth = pX - leftPadding;
+        var contentHeight = 30;
+        var topLabelSpace = 0;
+        var bottomLabelSpace = 0;
 
-        // Check if labels extend the height
-        for ( var labelData of this.labelSet )
-        {
-            if ( labelData.showBelow )
-                labelHeight = Math.max(labelHeight, 70); // 40 offset + 30 text height
-            else
-                labelHeight = Math.max(labelHeight, 30); // 20 offset above + 10 buffer
-        }
-        
-        if ( labelHeight > 0 )
-            contentHeight += labelHeight;
+        // Sort labels by span length (number of segments they cover)
+        const sortedLabels = this.labelSet.slice().map((labelData, index) => ({
+            data: labelData,
+            span: (labelData.endIndex || 0) - (labelData.startIndex || 0)
+        })).sort((a, b) => a.span - b.span); // Shortest first
 
-        // make label text
-        for ( var labelData of this.labelSet )
+        // Track occupied label layers to prevent overlap
+        const topLayers = [];
+        const bottomLayers = [];
+
+        // Make label text
+        for ( const item of sortedLabels )
         {
-            var T = new omdTapeLabel();
-            T.unitWidth = this.unitWidth;
+            const labelData = item.data;
+            const T = new omdTapeLabel();
             T.setIndexPositions( indexPositions );
             T.loadFromJSON( labelData );
-            if ( T.showBelow )
-                T.setPosition( 0, 40 );
-            else
-                T.setPosition( 0, -10 );
-            this.addChild( T )
+            
+            if ( T.showBelow ) {
+                // Find the lowest available layer for this label
+                let layer = 0;
+                const start = labelData.startIndex || 0;
+                const end = labelData.endIndex || 0;
+                
+                while (layer < bottomLayers.length) {
+                    const conflicts = bottomLayers[layer].some(occupied => 
+                        !(end <= occupied.start || start >= occupied.end)
+                    );
+                    if (!conflicts) break;
+                    layer++;
+                }
+                
+                if (layer === bottomLayers.length) {
+                    bottomLayers.push([]);
+                }
+                bottomLayers[layer].push({ start, end });
+                
+                const yPos = 40 + (layer * 35); // Stack labels with 35px spacing
+                T.setPosition(0, yPos);
+                bottomLabelSpace = Math.max(bottomLabelSpace, yPos + 30);
+            } else {
+                // Find the highest available layer for this label
+                let layer = 0;
+                const start = labelData.startIndex || 0;
+                const end = labelData.endIndex || 0;
+                
+                while (layer < topLayers.length) {
+                    const conflicts = topLayers[layer].some(occupied => 
+                        !(end <= occupied.start || start >= occupied.end)
+                    );
+                    if (!conflicts) break;
+                    layer++;
+                }
+                
+                if (layer === topLayers.length) {
+                    topLayers.push([]);
+                }
+                topLayers[layer].push({ start, end });
+                
+                const yPos = -10 - (layer * 35); // Stack labels upward with 35px spacing
+                T.setPosition(0, yPos);
+                topLabelSpace = Math.max(topLabelSpace, (layer + 1) * 35);
+            }
+            
+            this.addChild( T );
         }
 
-        // Set proper bounds to hug the content
-        this.setWidthAndHeight( contentWidth, contentHeight );
-        // Fix the viewBox to match our actual content dimensions (no padding)
-        this.svgObject.setAttribute("viewBox", `0 0 ${contentWidth} ${contentHeight}`);
+        // Set proper dimensions including space for labels above and below
+        this.width = leftPadding + contentWidth + rightPadding;
+        this.height = topLabelSpace + contentHeight + bottomLabelSpace;
+        // Adjust viewBox to include space above for top labels
+        this.svgObject.setAttribute("viewBox", `0 ${-topLabelSpace} ${this.width} ${this.height}`);
     }
 
 }
