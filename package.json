@@ -1,12 +1,13 @@
 {
   "name": "@teachinglab/omd",
-  "version": "0.6.1",
+  "version": "0.6.6",
   "description": "omd",
   "main": "./index.js",
   "module": "./index.js",
   "type": "module",
   "exports": {
     ".": "./index.js",
+    "./register-math": "./omd/utils/registerMathGlobal.js",
     "./package.json": "./package.json"
   },
   "files": [
@@ -56,4 +57,3 @@
     "vite": "^5.4.0"
   }
 }
-

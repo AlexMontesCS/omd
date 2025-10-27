@@ -1,4 +1,5 @@
 import { omdEquationNode } from '../nodes/omdEquationNode.js';
+import { omdEquationStack } from '../core/omdEquationStack.js';
 import { omdStepVisualizer } from '../step-visualizer/omdStepVisualizer.js';
 import { getNodeForAST } from '../core/omdUtilities.js';
 import { jsvgContainer } from '@teachinglab/jsvg';
@@ -11,6 +12,13 @@ import { jsvgContainer } from '@teachinglab/jsvg';
 export class omdDisplay {
     constructor(container, options = {}) {
         this.container = container;
+        const {
+            stepVisualizer = false,
+            stackOptions = null,
+            math: mathInstance = (typeof window !== 'undefined' && window.math) ? window.math : null,
+            ...otherOptions
+        } = options || {};
+
         this.options = {
             fontSize: 32,
             centerContent: true,
@@ -21,7 +29,10 @@ export class omdDisplay {
             maxScale: 1,          // Do not upscale beyond 1 by default
             edgePadding: 16,      // Horizontal padding from edges when scaling
             autoCloseStepVisualizer: true, // Close active step visualizer text boxes before autoscale to avoid shrink
-            ...options
+            stepVisualizer,
+            stackOptions,
+            math: mathInstance,
+            ...otherOptions
         };
 
         // Create SVG container
@@ -612,6 +623,74 @@ export class omdDisplay {
         this._lastCenterSignature = contentSig;
     }
 
+    _getMathInstance() {
+        if (this.options.math) {
+            return this.options.math;
+        }
+        if (typeof window !== 'undefined' && window.math) {
+            return window.math;
+        }
+        return null;
+    }
+
+    _createNodeFromSegment(segment, mathLib) {
+        try {
+            if (segment.includes('=')) {
+                return omdEquationNode.fromString(segment);
+            }
+
+            if (!mathLib || typeof mathLib.parse !== 'function') {
+                throw new Error('math.js parser is unavailable');
+            }
+
+            const ast = mathLib.parse(segment);
+            const NodeClass = getNodeForAST(ast);
+            return new NodeClass(ast);
+        } catch (error) {
+            const reason = error?.message || String(error);
+            throw new Error(`Failed to parse expression "${segment}": ${reason}`, { cause: error });
+        }
+    }
+
+    _createNodesFromString(expressionString) {
+        const segments = (expressionString || '')
+            .split(';')
+            .map(segment => segment.trim())
+            .filter(Boolean);
+
+        if (!segments.length) {
+            throw new Error('omdDisplay.render() received an empty expression string.');
+        }
+
+        const mathLib = this._getMathInstance();
+        return segments.map(segment => this._createNodeFromSegment(segment, mathLib));
+    }
+
+    _buildStackOptions() {
+        const baseOptions = {};
+        if (typeof this.options.stepVisualizer === 'boolean') {
+            baseOptions.stepVisualizer = this.options.stepVisualizer;
+        }
+        if (this.options.styling) {
+            baseOptions.styling = this.options.styling;
+        }
+        if (Object.prototype.hasOwnProperty.call(this.options, 'toolbar')) {
+            baseOptions.toolbar = this.options.toolbar;
+        }
+
+        if (this.options.stackOptions && typeof this.options.stackOptions === 'object') {
+            return { ...baseOptions, ...this.options.stackOptions };
+        }
+        return baseOptions;
+    }
+
+    _createStackFromSteps(steps) {
+        if (!steps || !steps.length) {
+            throw new Error('omdDisplay.render() received no steps to render.');
+        }
+        return new omdEquationStack(steps, this._buildStackOptions());
+    }
+
     fitToContent() {
         if (!this.node) {
             return;
@@ -705,27 +784,23 @@ export class omdDisplay {
 
         // Create node from expression
         if (typeof expression === 'string') {
-            if (expression.includes(';')) {
-                // Multiple equations
-                const equationStrings = expression.split(';').filter(s => s.trim() !== '');
-                const steps = equationStrings.map(str => omdEquationNode.fromString(str));
-                this.node = new omdStepVisualizer(steps, this.options.styling || {});
-            } else {
-                // Single expression or equation
-                if (expression.includes('=')) {
-                    const firstStep = omdEquationNode.fromString(expression);
-                    this.node = new omdStepVisualizer([firstStep], this.options.styling || {});
-                } else {
-                    // Create node directly from expression
-                    const parsedAST = math.parse(expression);
-                    const NodeClass = getNodeForAST(parsedAST);
-                    const firstStep = new NodeClass(parsedAST);
-                    this.node = new omdStepVisualizer([firstStep], this.options.styling || {});
+            const steps = this._createNodesFromString(expression);
+            this.node = this._createStackFromSteps(steps);
+        } else if (Array.isArray(expression)) {
+            const steps = expression.flatMap(item => {
+                if (typeof item === 'string') {
+                    return this._createNodesFromString(item);
                 }
-            }
+                return item;
+            }).filter(Boolean);
+            this.node = this._createStackFromSteps(steps);
         } else {
             // Assume it's already a node
             this.node = expression;
+        }
+
+        if (!this.node) {
+            throw new Error('omdDisplay.render() was unable to create a node from the provided expression.');
         }
 
         // Initialize and render

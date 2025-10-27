@@ -124,6 +124,65 @@ export class omdEquationStack extends jsvgGroup {
     }
 
     /**
+     * Initializes the stack and its underlying sequence.
+     */
+    initialize() {
+        if (this.sequence && typeof this.sequence.initialize === 'function') {
+            this.sequence.initialize();
+        } else if (this.sequence) {
+            if (typeof this.sequence.computeDimensions === 'function') {
+                this.sequence.computeDimensions();
+            }
+            if (typeof this.sequence.updateLayout === 'function') {
+                this.sequence.updateLayout();
+            }
+        }
+        this.updateLayout();
+    }
+
+    /**
+     * Propagates font size changes to the underlying sequence and recomputes layout.
+     * @param {number} fontSize
+     */
+    setFontSize(fontSize) {
+        if (this.sequence && typeof this.sequence.setFontSize === 'function') {
+            this.sequence.setFontSize(fontSize);
+        }
+        this.updateLayout();
+    }
+
+    /**
+     * Delegate to close the currently active step visualizer dot (if present).
+     */
+    closeActiveDot() {
+        if (this.sequence && typeof this.sequence.closeActiveDot === 'function') {
+            this.sequence.closeActiveDot();
+        }
+    }
+
+    /**
+     * Delegate to close all step visualizer text boxes (if present).
+     */
+    closeAllTextBoxes() {
+        if (this.sequence && typeof this.sequence.closeAllTextBoxes === 'function') {
+            this.sequence.closeAllTextBoxes();
+        } else if (this.sequence && typeof this.sequence.closeActiveDot === 'function') {
+            this.sequence.closeActiveDot();
+        }
+    }
+
+    /**
+     * Delegate to force close all step visualizer UI (if present).
+     */
+    forceCloseAll() {
+        if (this.sequence && typeof this.sequence.forceCloseAll === 'function') {
+            this.sequence.forceCloseAll();
+        } else {
+            this.closeAllTextBoxes();
+        }
+    }
+
+    /**
      * Returns the underlying sequence instance.
      * @returns {omdEquationSequenceNode|omdStepVisualizer} The managed sequence instance.
      */
