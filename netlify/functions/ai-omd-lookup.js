@@ -40,8 +40,8 @@ async function openAIrequest( topic )
   request += "doubleNumberLine: Use for two aligned number lines. MUST include topNumberLine and bottomNumberLine objects.\n";
   request += "\tUse when: 'double number line', 'two number lines', 'ratio number line', 'aligned number lines'\n";
   request += "\tRequired: topNumberLine (numberLine object), bottomNumberLine (numberLine object)\n";
-  request += "\tOptional: spacing (number - vertical spacing in pixels, default 10)\n";
-  request += "\tExample: {\"omdType\":\"doubleNumberLine\",\"topNumberLine\":{\"min\":0,\"max\":10,\"title\":\"Hours\"},\"bottomNumberLine\":{\"min\":0,\"max\":50,\"title\":\"Miles\",\"increment\":10},\"spacing\":15}\n\n";
+  request += "\tOptional: spacing (number - vertical spacing in pixels, default and prefer 30)\n";
+  request += "\tExample: {\"omdType\":\"doubleNumberLine\",\"topNumberLine\":{\"min\":0,\"max\":10,\"title\":\"Hours\"},\"bottomNumberLine\":{\"min\":0,\"max\":50,\"title\":\"Miles\",\"increment\":10},\"spacing\":30}\n\n";
   request += "tapeDiagram: Use for part-whole or proportional relationships. MUST include values array.\n";
   request += "\tUse when: 'tape diagram', 'bar model', 'strip diagram', 'part-whole model'\n";
   request += "\tRequired: values (array - can be strings or objects with {value, showLabel, color})\n";
@@ -51,8 +51,8 @@ async function openAIrequest( topic )
   request += "doubleTapeDiagram: Use for comparing two tape diagrams. MUST include topTapeDiagram and bottomTapeDiagram.\n";
   request += "\tUse when: 'double tape diagram', 'comparing tape diagrams', 'two bar models'\n";
   request += "\tRequired: topTapeDiagram (tapeDiagram object), bottomTapeDiagram (tapeDiagram object)\n";
-  request += "\tOptional: spacing (number - vertical gap in pixels, default 10)\n";
-  request += "\tExample: {\"omdType\":\"doubleTapeDiagram\",\"topTapeDiagram\":{\"title\":\"Pencils\",\"values\":[{\"value\":\"5\",\"color\":\"#93c5fd\"},{\"value\":\"5\",\"color\":\"#93c5fd\"}]},\"bottomTapeDiagram\":{\"title\":\"Cost\",\"values\":[{\"value\":\"$2\",\"color\":\"#fca5a5\"},{\"value\":\"$2\",\"color\":\"#fca5a5\"}]},\"spacing\":80}\n\n";
+  request += "\tOptional: spacing (number - vertical gap in pixels, default and prefer 30)\n";
+  request += "\tExample: {\"omdType\":\"doubleTapeDiagram\",\"topTapeDiagram\":{\"title\":\"Pencils\",\"values\":[{\"value\":\"5\",\"color\":\"#93c5fd\"},{\"value\":\"5\",\"color\":\"#93c5fd\"}]},\"bottomTapeDiagram\":{\"title\":\"Cost\",\"values\":[{\"value\":\"$2\",\"color\":\"#fca5a5\"},{\"value\":\"$2\",\"color\":\"#fca5a5\"}]},\"spacing\":30}\n\n";
   request += "numberTile: MUST include value.\n";
   request += "\tExample: {\"omdType\":\"numberTile\",\"value\":8}\n\n";
   request += "ratioChart: MUST include numerator and denominator.\n";

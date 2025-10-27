@@ -14,7 +14,7 @@ export class omdDoubleTapeDiagram extends jsvgGroup
         this.topTapeDiagram = new omdTapeDiagram();
         this.bottomTapeDiagram = new omdTapeDiagram();
         
-        this.spacing = 10;
+        this.spacing = 30;
         
         this.updateLayout();
     }

@@ -87,9 +87,10 @@ export class omdNumberLine extends jsvgGroup
         const leftPadding = this.title ? 80 : 20;
         const rightPadding = 20;
         const arrowSize = 10;
-        const tickOverhang = 5; // How much the line extends past the end ticks (before arrow starts)
+        const tickOverhang = 8; // How much the line extends past the end ticks
         const lineWidth = this.totalWidth;
-        const usableLineWidth = lineWidth - (this.showLeftArrow ? arrowSize + tickOverhang : 0) - (this.showRightArrow ? arrowSize + tickOverhang : 0);
+        // Calculate usable width (space for ticks) - subtract space for arrows only
+        const usableLineWidth = lineWidth - (this.showLeftArrow ? arrowSize : 0) - (this.showRightArrow ? arrowSize : 0);
         
         // Set proper dimensions and viewBox for positioning
         this.width = leftPadding + lineWidth + rightPadding;
@@ -109,20 +110,23 @@ export class omdNumberLine extends jsvgGroup
             this.addChild(titleText);
         }
 
-        // Calculate line position
-        // Line starts at: leftPadding + (arrow + overhang space if present)
-        const lineStartX = leftPadding + (this.showLeftArrow ? arrowSize + tickOverhang : 0);
-        const lineActualWidth = usableLineWidth;
+        // Calculate line position and width
+        // Line starts at: leftPadding + (arrow space if present), and extends past ticks by tickOverhang on each end
+        const lineStartX = leftPadding + (this.showLeftArrow ? arrowSize : 0);
+        const lineActualWidth = usableLineWidth; // This is the space between arrows (or edges), ticks go here with overhang
 
-        // Draw main line
+        // Draw main line (extends past the first and last ticks by tickOverhang)
         this.line = new jsvgRect();
         this.line.setWidthAndHeight(lineActualWidth, 5);
         this.line.setPosition(lineStartX, 22.5);
         this.line.setFillColor(omdColor.mediumGray);
-        this.line.setCornerRadius(2.5);
+        // Only round the corners if there are no arrows (arrows will cover the ends)
+        if (!this.showLeftArrow || !this.showRightArrow) {
+            this.line.setCornerRadius(2.5);
+        }
         this.addChild(this.line);
 
-        // Draw left arrow if needed (starts where line ends on the left)
+        // Draw left arrow if needed
         if (this.showLeftArrow) {
             const leftArrow = new jsvgPath();
             const arrowY = 25;
@@ -136,16 +140,9 @@ export class omdNumberLine extends jsvgGroup
             leftArrow.setStrokeWidth(0);
             leftArrow.path.setAttribute("fill", omdColor.mediumGray);
             this.addChild(leftArrow);
-            
-            // Draw extension line from arrow to first tick
-            const extensionLine = new jsvgRect();
-            extensionLine.setWidthAndHeight(tickOverhang, 5);
-            extensionLine.setPosition(leftPadding + arrowSize, 22.5);
-            extensionLine.setFillColor(omdColor.mediumGray);
-            this.addChild(extensionLine);
         }
 
-        // Draw right arrow if needed (starts where line ends on the right)
+        // Draw right arrow if needed
         if (this.showRightArrow) {
             const rightArrow = new jsvgPath();
             const arrowY = 25;
@@ -159,13 +156,6 @@ export class omdNumberLine extends jsvgGroup
             rightArrow.setStrokeWidth(0);
             rightArrow.path.setAttribute("fill", omdColor.mediumGray);
             this.addChild(rightArrow);
-            
-            // Draw extension line from last tick to arrow
-            const extensionLine = new jsvgRect();
-            extensionLine.setWidthAndHeight(tickOverhang, 5);
-            extensionLine.setPosition(lineStartX + lineActualWidth, 22.5);
-            extensionLine.setFillColor(omdColor.mediumGray);
-            this.addChild(extensionLine);
         }
 
         // Collect all numbers that should be displayed
@@ -187,10 +177,12 @@ export class omdNumberLine extends jsvgGroup
 
         // Draw ticks and labels for all numbers
         const sortedNumbers = Array.from(numbersToShow).sort((a, b) => a - b);
-        const tickBaseX = lineStartX; // Ticks start at the beginning of the main line
+        // Ticks are positioned with tickOverhang on both ends
+        const tickBaseX = lineStartX + tickOverhang;
+        const tickSpan = usableLineWidth - 2 * tickOverhang; // Space for ticks between the overhangs
         for (const value of sortedNumbers) {
             const normalized = (value - this.min) / (this.max - this.min);
-            const pX = tickBaseX + normalized * usableLineWidth;
+            const pX = tickBaseX + normalized * tickSpan;
 
             // Draw tick
             const tick = new jsvgLine();
@@ -217,7 +209,7 @@ export class omdNumberLine extends jsvgGroup
             if (V < this.min || V > this.max) continue;
             
             const normalized = (V - this.min) / (this.max - this.min);
-            const pX = tickBaseX + normalized * usableLineWidth;
+            const pX = tickBaseX + normalized * tickSpan;
 
             const dot = new jsvgEllipse();
             dot.setFillColor("black");

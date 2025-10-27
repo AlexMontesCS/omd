@@ -14,7 +14,7 @@ export class omdDoubleNumberLine extends jsvgGroup
         this.topNumberLine = new omdNumberLine();
         this.bottomNumberLine = new omdNumberLine();
         
-        this.spacing = 10;
+        this.spacing = 30;
         
         this.updateLayout();
     }
