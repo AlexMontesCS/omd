@@ -87,9 +87,9 @@ export class omdNumberLine extends jsvgGroup
         const leftPadding = this.title ? 80 : 20;
         const rightPadding = 20;
         const arrowSize = 10;
-        const tickOverhang = 5; // How much the line extends past the end ticks
+        const tickOverhang = 5; // How much the line extends past the end ticks (before arrow starts)
         const lineWidth = this.totalWidth;
-        const usableLineWidth = lineWidth - (this.showLeftArrow ? arrowSize : 0) - (this.showRightArrow ? arrowSize : 0);
+        const usableLineWidth = lineWidth - (this.showLeftArrow ? arrowSize + tickOverhang : 0) - (this.showRightArrow ? arrowSize + tickOverhang : 0);
         
         // Set proper dimensions and viewBox for positioning
         this.width = leftPadding + lineWidth + rightPadding;
@@ -109,15 +109,24 @@ export class omdNumberLine extends jsvgGroup
             this.addChild(titleText);
         }
 
-        // Calculate start position for line (with overhang if no arrow)
-        const lineStartX = leftPadding + (this.showLeftArrow ? arrowSize : -tickOverhang);
-        const lineActualWidth = usableLineWidth + (!this.showLeftArrow ? tickOverhang : 0) + (!this.showRightArrow ? tickOverhang : 0);
+        // Calculate line position
+        // Line starts at: leftPadding + (arrow + overhang space if present)
+        const lineStartX = leftPadding + (this.showLeftArrow ? arrowSize + tickOverhang : 0);
+        const lineActualWidth = usableLineWidth;
 
-        // Draw left arrow if needed
+        // Draw main line
+        this.line = new jsvgRect();
+        this.line.setWidthAndHeight(lineActualWidth, 5);
+        this.line.setPosition(lineStartX, 22.5);
+        this.line.setFillColor(omdColor.mediumGray);
+        this.line.setCornerRadius(2.5);
+        this.addChild(this.line);
+
+        // Draw left arrow if needed (starts where line ends on the left)
         if (this.showLeftArrow) {
             const leftArrow = new jsvgPath();
             const arrowY = 25;
-            const arrowX = leftPadding;
+            const arrowX = leftPadding; // Arrow tip position
             leftArrow.addPoint(arrowX + arrowSize, arrowY - 5);
             leftArrow.addPoint(arrowX, arrowY);
             leftArrow.addPoint(arrowX + arrowSize, arrowY + 5);
@@ -127,13 +136,20 @@ export class omdNumberLine extends jsvgGroup
             leftArrow.setStrokeWidth(0);
             leftArrow.path.setAttribute("fill", omdColor.mediumGray);
             this.addChild(leftArrow);
+            
+            // Draw extension line from arrow to first tick
+            const extensionLine = new jsvgRect();
+            extensionLine.setWidthAndHeight(tickOverhang, 5);
+            extensionLine.setPosition(leftPadding + arrowSize, 22.5);
+            extensionLine.setFillColor(omdColor.mediumGray);
+            this.addChild(extensionLine);
         }
 
-        // Draw right arrow if needed
+        // Draw right arrow if needed (starts where line ends on the right)
         if (this.showRightArrow) {
             const rightArrow = new jsvgPath();
             const arrowY = 25;
-            const arrowX = leftPadding + lineWidth - arrowSize;
+            const arrowX = leftPadding + lineWidth - arrowSize; // Arrow tip position
             rightArrow.addPoint(arrowX, arrowY - 5);
             rightArrow.addPoint(arrowX + arrowSize, arrowY);
             rightArrow.addPoint(arrowX, arrowY + 5);
@@ -143,15 +159,14 @@ export class omdNumberLine extends jsvgGroup
             rightArrow.setStrokeWidth(0);
             rightArrow.path.setAttribute("fill", omdColor.mediumGray);
             this.addChild(rightArrow);
+            
+            // Draw extension line from last tick to arrow
+            const extensionLine = new jsvgRect();
+            extensionLine.setWidthAndHeight(tickOverhang, 5);
+            extensionLine.setPosition(lineStartX + lineActualWidth, 22.5);
+            extensionLine.setFillColor(omdColor.mediumGray);
+            this.addChild(extensionLine);
         }
-
-        // Draw main line
-        this.line = new jsvgRect();
-        this.line.setWidthAndHeight(lineActualWidth, 5);
-        this.line.setPosition(lineStartX, 22.5);
-        this.line.setFillColor(omdColor.mediumGray);
-        this.line.setCornerRadius(2.5);
-        this.addChild(this.line);
 
         // Collect all numbers that should be displayed
         const numbersToShow = new Set();
@@ -172,7 +187,7 @@ export class omdNumberLine extends jsvgGroup
 
         // Draw ticks and labels for all numbers
         const sortedNumbers = Array.from(numbersToShow).sort((a, b) => a - b);
-        const tickBaseX = leftPadding + (this.showLeftArrow ? arrowSize : 0);
+        const tickBaseX = lineStartX; // Ticks start at the beginning of the main line
         for (const value of sortedNumbers) {
             const normalized = (value - this.min) / (this.max - this.min);
             const pX = tickBaseX + normalized * usableLineWidth;

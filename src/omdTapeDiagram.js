@@ -161,21 +161,15 @@ export class omdTapeDiagram extends jsvgGroup
             this.addChild(titleText);
         }
 
-        // Calculate width for each segment
-        const segmentWidth = this.values.length > 0 ? this.totalWidth / this.values.length : 0;
+        // Parse values and calculate proportional widths
+        const parsedValues = [];
+        let totalNumericValue = 0;
         
-        // Track x positions for labels
-        var pX = leftPadding;
-        var indexPositions = [];
-        
-        for( var i = 0; i < this.values.length; i++ )
-        {
-            indexPositions.push(pX);
-
-            const valueData = this.values[i];
+        for (const valueData of this.values) {
             let value = "";
             let showLabel = true;
             let color = omdColor.lightGray;
+            let numericValue = 1; // default for non-numeric
 
             // Handle both old format (simple values) and new format (objects)
             if (typeof valueData === "object" && valueData !== null) {
@@ -186,18 +180,42 @@ export class omdTapeDiagram extends jsvgGroup
                 value = valueData.toString();
             }
 
+            // Parse numeric value from string (e.g., "3", "2x", "5y")
+            // Extract coefficient from expressions like "2x", "3", "0.5y"
+            const match = value.match(/^([0-9.]+)?([a-zA-Z]*)$/);
+            if (match) {
+                const coefficient = match[1] ? parseFloat(match[1]) : (match[2] ? 1 : 1);
+                const variable = match[2] || "";
+                numericValue = coefficient;
+            }
+
+            parsedValues.push({ value, showLabel, color, numericValue });
+            totalNumericValue += numericValue;
+        }
+
+        // Calculate width for each segment based on proportion
+        var pX = leftPadding;
+        var indexPositions = [];
+        
+        for (const parsed of parsedValues) {
+            indexPositions.push(pX);
+
+            // Calculate proportional width
+            const proportion = totalNumericValue > 0 ? parsed.numericValue / totalNumericValue : 1 / parsedValues.length;
+            const segmentWidth = this.totalWidth * proportion;
+
             // Make box
             var box = new jsvgRect();
             box.setWidthAndHeight(segmentWidth, 30);
             box.setCornerRadius(5);
             box.setStrokeColor("white");
             box.setStrokeWidth(1);
-            box.setFillColor(color);
+            box.setFillColor(parsed.color);
             box.setPosition(pX, 0);
             this.addChild(box);
 
             // Make box text (if showLabel is true)
-            if (showLabel) {
+            if (parsed.showLabel) {
                 var boxText = new jsvgTextBox();
                 boxText.setWidthAndHeight(segmentWidth, 30);
                 boxText.setFontFamily("Albert Sans");
@@ -205,7 +223,7 @@ export class omdTapeDiagram extends jsvgGroup
                 boxText.setFontSize(18);
                 boxText.setAlignment("center");
                 boxText.setVerticalCentering();
-                boxText.setText(value);
+                boxText.setText(parsed.value);
                 boxText.setPosition(pX, 0);
                 this.addChild(boxText);
             }
