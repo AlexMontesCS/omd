@@ -214,7 +214,7 @@ export class omdNumberLine extends jsvgGroup
             const dot = new jsvgEllipse();
             dot.setFillColor("black");
             dot.setStrokeWidth(0);
-            dot.setWidthAndHeight(9, 9);
+            dot.setWidthAndHeight(8, 8);
             dot.setPosition(pX, 25);
             this.addChild(dot);
         }
