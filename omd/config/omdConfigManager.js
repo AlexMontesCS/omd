@@ -73,20 +73,32 @@ async function loadConfig(configSource = null) {
                 return configData;
                 
             } else {
-                // Node.js environment - use fs
-                const fs = await import('fs');
-                const path = await import('path');
-                const { fileURLToPath } = await import('url');
-                
-                const __dirname = path.dirname(fileURLToPath(import.meta.url));
-                const configPath = configSource || path.join(__dirname, 'omdConfig.json');
-                
+                // Server/Node.js environment - use filesystem access when available
+                const isNodeEnvironment = typeof process !== 'undefined' && !!(process.versions && process.versions.node);
+                if (!isNodeEnvironment) {
+                    console.warn('Config loading skipped: filesystem APIs unavailable in this environment. Using default configuration.');
+                    configData = defaultConfig;
+                    return configData;
+                }
+
                 try {
-                    const fileContent = await fs.promises.readFile(configPath, 'utf-8');
-                    const loadedConfig = JSON.parse(fileContent);
-                    configData = { ...defaultConfig, ...loadedConfig };
-                } catch (err) {
-                    console.warn(`Config file not found at ${configPath}, using default configuration`);
+                    const fs = await import('node:fs/promises');
+                    const path = await import('node:path');
+                    const { fileURLToPath } = await import('node:url');
+                    
+                    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+                    const configPath = configSource || path.join(__dirname, 'omdConfig.json');
+                    
+                    try {
+                        const fileContent = await fs.readFile(configPath, 'utf-8');
+                        const loadedConfig = JSON.parse(fileContent);
+                        configData = { ...defaultConfig, ...loadedConfig };
+                    } catch (err) {
+                        console.warn(`Config file not found at ${configPath}, using default configuration`);
+                        configData = defaultConfig;
+                    }
+                } catch (nodeImportError) {
+                    console.warn('Config loading skipped: unable to access Node filesystem APIs. Using default configuration.', nodeImportError);
                     configData = defaultConfig;
                 }
                 return configData;

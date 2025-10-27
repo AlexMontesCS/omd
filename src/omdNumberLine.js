@@ -39,11 +39,13 @@ export class omdNumberLine extends jsvgGroup
     {
         this.min = min;
         this.max = max;
+        this.updateLayout();
     }
 
     addNumberDot( V )
     {
         this.dotValues.push( V );
+        this.updateLayout();
     }
 
     updateLayout()

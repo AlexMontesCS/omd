@@ -16,8 +16,8 @@ export class omdDisplay {
             centerContent: true,
             topMargin: 40,
             bottomMargin: 16,
-            fitToContent: false,  // Only fit to content when explicitly requested
-            autoScale: true,      // Automatically scale content to fit container
+            fitToContent: true,   // Fit to content size by default
+            autoScale: false,     // Don't auto-scale by default
             maxScale: 1,          // Do not upscale beyond 1 by default
             edgePadding: 16,      // Horizontal padding from edges when scaling
             autoCloseStepVisualizer: true, // Close active step visualizer text boxes before autoscale to avoid shrink
@@ -682,7 +682,7 @@ export class omdDisplay {
     }
 
     /**
-     * Renders a mathematical expression or equation
+     *  s a mathematical expression or equation
      * @param {string|omdNode} expression - Expression string or node
      * @returns {omdNode} The rendered node
      */
@@ -690,7 +690,14 @@ export class omdDisplay {
         // Clear previous node
         if (this.node) {
             if (this._contentGroup && this.node && this.node.svgObject) {
-                this._contentGroup.removeChild(this.node.svgObject);
+                try {
+                    if (this.node.svgObject.parentNode === this._contentGroup) {
+                        this._contentGroup.removeChild(this.node.svgObject);
+                    }
+                } catch (e) {
+                    // Fallback to svg remove
+                    this.svg.removeChild(this.node);
+                }
             } else {
                 this.svg.removeChild(this.node);
             }

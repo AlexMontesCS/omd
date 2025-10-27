@@ -32,7 +32,8 @@
   "license": "MIT",
   "dependencies": {
     "@teachinglab/jsvg": "^0.1.1",
-    "mathjs": "^14.5.2"
+    "mathjs": "^14.5.2",
+    "openai": "6.6.0" 
   },
   "scripts": {
     "dev": "npm run build:docs && vite",
