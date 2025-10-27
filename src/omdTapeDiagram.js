@@ -79,17 +79,18 @@ export class omdTapeLabel extends jsvgGroup
 
          // make label text
         var labelText = new jsvgTextBox();
-        labelText.setWidthAndHeight( W,30 );
+        labelText.setWidthAndHeight( W, 30 );
         labelText.setText ( this.name );
         labelText.setFontFamily( "Albert Sans" );
         labelText.setFontColor( "black" );
         labelText.setFontSize( 14 );
         labelText.setAlignment("center");
+        labelText.setVerticalCentering();
         labelText.setText( this.label );
         if ( this.showBelow )
-            labelText.setPosition( startX, 5 );
+            labelText.setPosition( startX, -15 ); // Center at Y=0 (line is at 0, text height is 30, so -15 centers it)
         else
-            labelText.setPosition( startX, -20 );
+            labelText.setPosition( startX, -15 );
         this.addChild( labelText );
 
         // Calculate dimensions for this label
@@ -276,7 +277,7 @@ export class omdTapeDiagram extends jsvgGroup
                 }
                 bottomLayers[layer].push({ start, end });
                 
-                const yPos = 40 + (layer * 35); // Stack labels with 35px spacing
+                const yPos = 30 + (layer * 35); // Position label line at tape center (15) + spacing
                 T.setPosition(0, yPos);
                 bottomLabelSpace = Math.max(bottomLabelSpace, yPos + 30);
             } else {
