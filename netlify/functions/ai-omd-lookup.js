@@ -46,8 +46,9 @@ async function openAIrequest( topic )
   request += "\tUse when: 'tape diagram', 'bar model', 'strip diagram', 'part-whole model'\n";
   request += "\tRequired: values (array - can be strings or objects with {value, showLabel, color})\n";
   request += "\tOptional: title (string), totalWidth (number - default 300), labelSet (array of {startIndex, endIndex, label, showBelow})\n";
-  request += "\tExample simple: {\"omdType\":\"tapeDiagram\",\"title\":\"Distance\",\"values\":[\"2x\",\"3\",\"x\"],\"labelSet\":[{\"startIndex\":0,\"endIndex\":3,\"label\":\"Total: 3x+3\",\"showBelow\":true}]}\n";
-  request += "\tExample with colors: {\"omdType\":\"tapeDiagram\",\"values\":[{\"value\":\"5\",\"color\":\"#93c5fd\"},{\"value\":\"3\",\"color\":\"#fca5a5\"}],\"totalWidth\":320}\n\n";
+  request += "\tIMPORTANT: Do NOT specify colors unless the user explicitly requests them. Use simple string values by default.\n";
+  request += "\tExample simple (preferred): {\"omdType\":\"tapeDiagram\",\"title\":\"Distance\",\"values\":[\"2x\",\"3\",\"x\"],\"labelSet\":[{\"startIndex\":0,\"endIndex\":3,\"label\":\"Total: 3x+3\",\"showBelow\":true}]}\n";
+  request += "\tExample with colors (only if requested): {\"omdType\":\"tapeDiagram\",\"values\":[{\"value\":\"5\",\"color\":\"#93c5fd\"},{\"value\":\"3\",\"color\":\"#fca5a5\"}],\"totalWidth\":320}\n\n";
   request += "doubleTapeDiagram: Use for comparing two tape diagrams. MUST include topTapeDiagram and bottomTapeDiagram.\n";
   request += "\tUse when: 'double tape diagram', 'comparing tape diagrams', 'two bar models'\n";
   request += "\tRequired: topTapeDiagram (tapeDiagram object), bottomTapeDiagram (tapeDiagram object)\n";
