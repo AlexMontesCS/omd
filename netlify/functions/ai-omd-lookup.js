@@ -93,7 +93,7 @@ async function openAIrequest( topic )
   request += "- For '3': termsAndOpers = [{\"omdType\":\"number\",\"value\":3}]\n";
   request += "SPECIFIC EXAMPLE for '3x+2=3': {\"omdType\":\"equation\",\"leftExpression\":{\"omdType\":\"expression\",\"termsAndOpers\":[{\"omdType\":\"term\",\"coefficient\":3,\"variable\":\"x\"},{\"omdType\":\"operator\",\"symbol\":\"+\"},{\"omdType\":\"number\",\"value\":2}]},\"rightExpression\":{\"omdType\":\"expression\",\"termsAndOpers\":[{\"omdType\":\"number\",\"value\":3}]}}\n\n";
 
-  request += "Request: " + decodeURIComponent(topic) + "\n";
+  request += "Request: " + topic + "\n";
   request += "Schemas (STRICT - adhere to these fields only):\n" + jsonSchemas + "\n";
   request += "Reference samples (use EXACT property names and structure):\n" + jsonSample + "\n";
 

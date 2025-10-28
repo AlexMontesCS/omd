@@ -41,30 +41,37 @@ export class omdDoubleTapeDiagram extends jsvgGroup
     {
         this.removeAllChildren();
 
+        // Calculate total numeric values for both tapes to determine unit width
+        const topTotal = this.calculateTotalValue(this.topTapeDiagram);
+        const bottomTotal = this.calculateTotalValue(this.bottomTapeDiagram);
+        
+        // Find the maximum total to determine a consistent unit width
+        const maxTotal = Math.max(topTotal, bottomTotal);
+        const baseWidth = 300; // Base width for the longest tape
+        const unitWidth = maxTotal > 0 ? baseWidth / maxTotal : baseWidth;
+        
+        // Set each tape's width based on its total value
+        this.topTapeDiagram.totalWidth = topTotal * unitWidth;
+        this.bottomTapeDiagram.totalWidth = bottomTotal * unitWidth;
+        
+        // Force update of both tape diagrams with new widths
+        this.topTapeDiagram.updateLayout();
+        this.bottomTapeDiagram.updateLayout();
+
         // Calculate the maximum left padding needed to align the start of the tapes
         const topLeftPadding = this.topTapeDiagram.title ? 80 : 20;
         const bottomLeftPadding = this.bottomTapeDiagram.title ? 80 : 20;
         const maxLeftPadding = Math.max(topLeftPadding, bottomLeftPadding);
 
-        // Check if top tape has labels above (this affects positioning)
-        let topLabelOffset = 0;
-        for (const labelData of this.topTapeDiagram.labelSet) {
-            if (!labelData.showBelow) {
-                topLabelOffset = 30; // Space needed for top labels
-                break;
-            }
-        }
-
-        // Position top tape diagram (with space for top labels)
+        // Position top tape diagram
         const topXOffset = maxLeftPadding - topLeftPadding;
-        this.topTapeDiagram.setPosition(topXOffset, topLabelOffset);
+        this.topTapeDiagram.setPosition(topXOffset, 0);
         this.addChild(this.topTapeDiagram);
 
         // Position bottom tape diagram
-        // The spacing is the gap between where top tape ends and bottom tape starts
+        // spacing controls the gap between the bottom of top tape and top of bottom tape
         const bottomXOffset = maxLeftPadding - bottomLeftPadding;
-        const topTapeActualHeight = this.topTapeDiagram.height; // This already includes label space
-        const bottomYPosition = topLabelOffset + topTapeActualHeight + this.spacing;
+        const bottomYPosition = this.topTapeDiagram.height + this.spacing;
         this.bottomTapeDiagram.setPosition(bottomXOffset, bottomYPosition);
         this.addChild(this.bottomTapeDiagram);
 
@@ -74,8 +81,35 @@ export class omdDoubleTapeDiagram extends jsvgGroup
             this.bottomTapeDiagram.width + bottomXOffset
         );
         this.width = maxWidth;
-        this.height = topLabelOffset + topTapeActualHeight + this.spacing + this.bottomTapeDiagram.height;
+        this.height = this.topTapeDiagram.height + this.spacing + this.bottomTapeDiagram.height;
         this.svgObject.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
+    }
+
+    calculateTotalValue(tapeDiagram)
+    {
+        let total = 0;
+        
+        for (const valueData of tapeDiagram.values) {
+            let value = "";
+            
+            // Handle both old format (simple values) and new format (objects)
+            if (typeof valueData === "object" && valueData !== null) {
+                value = valueData.value || "";
+            } else {
+                value = valueData.toString();
+            }
+
+            // Parse numeric value from string (e.g., "3", "2x", "5y")
+            const match = value.match(/^([0-9.]+)?([a-zA-Z]*)$/);
+            if (match) {
+                const coefficient = match[1] ? parseFloat(match[1]) : (match[2] ? 1 : 1);
+                total += coefficient;
+            } else {
+                total += 1; // Default for unparseable values
+            }
+        }
+        
+        return total;
     }
 
 }
