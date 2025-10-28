@@ -37,11 +37,11 @@ async function openAIrequest( topic )
   request += "\tOptional: title (string - displayed on left), increment (number - step between ticks, default 1), showLeftArrow (boolean), showRightArrow (boolean), units (string - appended to labels), hideDefaultNumbers (boolean - only show specialNumbers), specialNumbers (array of numbers to always show), totalWidth (number - pixels, default 320), dotValues (array - dots to display)\n";
   request += "\tExample: {\"omdType\":\"numberLine\",\"min\":0,\"max\":10,\"dotValues\":[3,7],\"title\":\"Distance\",\"units\":\" cm\"}\n";
   request += "\tExample with special numbers: {\"omdType\":\"numberLine\",\"min\":0,\"max\":100,\"increment\":10,\"specialNumbers\":[25,75],\"units\":\" m\",\"showRightArrow\":true}\n\n";
-  request += "doubleNumberLine: Use for two aligned number lines. MUST include topNumberLine and bottomNumberLine objects.\n";
+  request += "doubleNumberLine: Use for two aligned number lines. MUST include topNumberLine and bottomNumberLine objects. THESE NUMBERLINES SHOULD HAVE ARROWS ON THE RIGHT AND NOT ON THE LEFT UNLESS OTHERWISE SPECIFIED\n";
   request += "\tUse when: 'double number line', 'two number lines', 'ratio number line', 'aligned number lines'\n";
   request += "\tRequired: topNumberLine (numberLine object), bottomNumberLine (numberLine object)\n";
   request += "\tOptional: spacing (number - vertical spacing in pixels, default and prefer 30)\n";
-  request += "\tExample: {\"omdType\":\"doubleNumberLine\",\"topNumberLine\":{\"min\":0,\"max\":10,\"title\":\"Hours\"},\"bottomNumberLine\":{\"min\":0,\"max\":50,\"title\":\"Miles\",\"increment\":10},\"spacing\":30}\n\n";
+  request += "\tExample: {\"omdType\":\"doubleNumberLine\",\"topNumberLine\":{\"showRightArrow\": true, \"min\":0,\"max\":10,\"title\":\"Hours\"},\"bottomNumberLine\":{\"showRightArrow\": true, \"min\":0,\"max\":50,\"title\":\"Miles\",\"increment\":10},\"spacing\":30}\n\n";
   request += "tapeDiagram: Use for part-whole or proportional relationships. MUST include values array.\n";
   request += "\tUse when: 'tape diagram', 'bar model', 'strip diagram', 'part-whole model'\n";
   request += "\tRequired: values (array - can be strings or objects with {value, showLabel, color})\n";
@@ -51,7 +51,7 @@ async function openAIrequest( topic )
   request += "\tExample simple (preferred): {\"omdType\":\"tapeDiagram\",\"title\":\"Distance\",\"values\":[\"2x\",\"3\",\"x\"]}\n";
   request += "\tExample with labels (only if requested): {\"omdType\":\"tapeDiagram\",\"values\":[\"2\",\"3\"],\"labelSet\":[{\"startIndex\":0,\"endIndex\":2,\"label\":\"Total: 5\",\"showBelow\":true}]}\n";
   request += "\tExample with colors (only if requested): {\"omdType\":\"tapeDiagram\",\"values\":[{\"value\":\"5\",\"color\":\"#93c5fd\"},{\"value\":\"3\",\"color\":\"#fca5a5\"}],\"totalWidth\":320}\n\n";
-  request += "doubleTapeDiagram: Use for comparing two tape diagrams. MUST include topTapeDiagram and bottomTapeDiagram.\n";
+  request += "doubleTapeDiagram: Use for comparing two tape diagrams. MUST include topTapeDiagram and bottomTapeDiagram. \n";
   request += "\tUse when: 'double tape diagram', 'comparing tape diagrams', 'two bar models'\n";
   request += "\tRequired: topTapeDiagram (tapeDiagram object), bottomTapeDiagram (tapeDiagram object)\n";
   request += "\tOptional: spacing (number - vertical gap in pixels, default and prefer 30)\n";

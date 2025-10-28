@@ -527,9 +527,11 @@ This document provides schemas and examples for the `loadFromJSON` method used i
     "title": "Hours",
     "min": 0,
     "max": 10,
+    "showRightArrow": true,
     "increment": 1
   },
   "bottomNumberLine": {
+    "showRightArrow": true,
     "title": "Miles",
     "min": 0,
     "max": 50,
