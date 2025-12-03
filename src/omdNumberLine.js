@@ -120,14 +120,18 @@ export class omdNumberLine extends jsvgGroup
         this.line.setWidthAndHeight(lineActualWidth, 5);
         this.line.setPosition(lineStartX, 22.5);
         this.line.setFillColor(omdColor.mediumGray);
-        // Only round the corners if there are no arrows (arrows will cover the ends)
-        if (!this.showLeftArrow || !this.showRightArrow) {
-            this.line.setCornerRadius(2.5);
-        }
+        this.line.setCornerRadius(2.5);
         this.addChild(this.line);
 
         // Draw left arrow if needed
         if (this.showLeftArrow) {
+            // Cover the rounded corner with a rectangle
+            const coverRect = new jsvgRect();
+            coverRect.setWidthAndHeight(3, 5);
+            coverRect.setPosition(lineStartX, 22.5);
+            coverRect.setFillColor(omdColor.mediumGray);
+            this.addChild(coverRect);
+            
             const leftArrow = new jsvgPath();
             const arrowY = 25;
             const arrowX = leftPadding; // Arrow tip position
@@ -144,6 +148,13 @@ export class omdNumberLine extends jsvgGroup
 
         // Draw right arrow if needed
         if (this.showRightArrow) {
+            // Cover the rounded corner with a rectangle
+            const coverRect = new jsvgRect();
+            coverRect.setWidthAndHeight(3, 5);
+            coverRect.setPosition(lineStartX + lineActualWidth - 3, 22.5);
+            coverRect.setFillColor(omdColor.mediumGray);
+            this.addChild(coverRect);
+            
             const rightArrow = new jsvgPath();
             const arrowY = 25;
             const arrowX = leftPadding + lineWidth - arrowSize; // Arrow tip position
