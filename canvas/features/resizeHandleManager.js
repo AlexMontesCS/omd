@@ -37,6 +37,10 @@ export class ResizeHandleManager {
         if (!element || !element.classList.contains('omd-item')) {
             return;
         }
+
+        if (element?.dataset?.locked === 'true') {
+            return;
+        }
         
         this.selectedElement = element;
         this._createSelectionBorder();

@@ -100,6 +100,7 @@ export class omdFunctionNode extends omdNode {
         // Calculate dimensions using getTextBounds for consistency
         const ratio = fontSize / this.getRootFontSize();
         const spacing = 2 * ratio;
+        const parenSpacing = 2 * ratio; // Spacing between function name and opening parenthesis
         
         const functionNameBounds = getTextBounds(this.functionName, fontSize);
         const openParenBounds = getTextBounds('(', fontSize);
@@ -117,7 +118,7 @@ export class omdFunctionNode extends omdNode {
             }
         });
         
-        const totalWidth = functionNameBounds.width + openParenBounds.width + totalArgWidth + closeParenBounds.width + (spacing * 2);
+        const totalWidth = functionNameBounds.width + parenSpacing + openParenBounds.width + totalArgWidth + closeParenBounds.width + (spacing * 2);
         const totalHeight = Math.max(maxArgHeight, functionNameBounds.height, openParenBounds.height, closeParenBounds.height) + 4 * ratio;
         
         this.setWidthAndHeight(totalWidth, totalHeight);
@@ -132,6 +133,7 @@ export class omdFunctionNode extends omdNode {
         const argFontSize = fontSize * 5/6;
         const ratio = fontSize / this.getRootFontSize();
         const spacing = 2 * ratio;
+        const parenSpacing = 2 * ratio; // Spacing between function name and opening parenthesis
         
         let currentX = 0;
         const textY = this.height / 2;
@@ -140,6 +142,8 @@ export class omdFunctionNode extends omdNode {
         this.functionNameElement.setPosition(currentX, textY);
         currentX += getTextBounds(this.functionName, fontSize).width;
         
+        currentX += parenSpacing;
+
         // Position opening parenthesis
         this.openParenElement.setPosition(currentX, textY);
         currentX += getTextBounds('(', fontSize).width;

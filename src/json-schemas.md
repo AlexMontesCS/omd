@@ -677,9 +677,16 @@ This document provides schemas and examples for the `loadFromJSON` method used i
 
 ## 20. `omdEquation`
 
-`omdEquation` represents a mathematical equation, such as "x + 2 = 5".
+`omdEquation` represents a mathematical equation and now uses the same math.js-powered parser/renderer as the interactive core (functions, rationals, roots, etc.).
 
-### Schema
+### Preferred schema (string form)
+```json
+{
+  "equation": "sin(x) + 2 = 3"
+}
+```
+
+### Structured fallback (legacy)
 ```json
 {
   "leftExpression": "object",
@@ -688,11 +695,10 @@ This document provides schemas and examples for the `loadFromJSON` method used i
 }
 ```
 
-### Example
+### Examples
 ```json
-{
-  "leftExpression": { "omdType": "term", "coefficient": 1, "variable": "x", "exponent": 1 },
-  "rightExpression": { "omdType": "number", "value": 5 },
-  "equation": "x + 2 = 5"
-}
+{ "equation": "sin(x) + 2 = 3" }
+```
+```json
+{ "equation": "(x^2 + 3x - 4)/(2x) = 5" }
 ```

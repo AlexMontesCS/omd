@@ -26,6 +26,12 @@ export { omdFunction } from './omdFunction.js';
 export { omdApp } from './omdApp.js';
 export { omdAppCanvas } from './omdAppCanvas.js';
 export { omd } from './omd.js';
+export { omdDisplay } from '../omd/display/omdDisplay.js';
+export { omdEquationNode } from '../omd/nodes/omdEquationNode.js';
+export { omdEquationStack } from '../omd/core/omdEquationStack.js';
+export { omdEquationSequenceNode } from '../omd/nodes/omdEquationSequenceNode.js';
+export { omdConstantNode } from '../omd/nodes/omdConstantNode.js';
+export { omdNodeOverlay, omdNodeOverlayPresets } from '../omd/utils/omdNodeOverlay.js';
 
 // OMD Utilities and Helpers
 export { omdColor } from './omdColor.js';
@@ -73,6 +79,11 @@ export default {
     app: {
         omdApp: () => import('./omdApp.js').then(m => m.omdApp),
         omdAppCanvas: () => import('./omdAppCanvas.js').then(m => m.omdAppCanvas),
-        omd: () => import('./omd.js').then(m => m.omd)
+        omd: () => import('./omd.js').then(m => m.omd),
+        async createDisplay(container) {
+            const { omdDisplay } = await import('../omd/core/index.js');
+            return new omdDisplay(container);
+        }
     }
 }; 
+// Force reload

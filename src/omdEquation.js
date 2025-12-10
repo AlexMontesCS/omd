@@ -9,6 +9,7 @@ import { omdVariable } from "./omdVariable.js";
 import { omdString } from "./omdString.js";
 import { omdNumber } from "./omdNumber.js";
 import { parseEquationString } from "./omdUtils.js";
+import { omdEquationNode } from "../omd/nodes/omdEquationNode.js";
 
 export class omdEquation extends omdMetaExpression
 {
@@ -37,12 +38,24 @@ export class omdEquation extends omdMetaExpression
 
         this.rightHolder = new jsvgGroup();
         this.equationStack.addChild( this.rightHolder );
+
+        this.equationNode = null;
     }
 
     // make an equation (x + 2) = (2x - 3)
 
     loadFromJSON( data )
     {
+        // Prefer math.js parsing into omdEquationNode for richer rendering (functions, rationals, roots)
+        if (typeof data.equation === 'string' && data.equation.trim()) {
+            try {
+                this._renderWithEquationNode(data.equation, data.fontSize);
+                return;
+            } catch (e) {
+                console.warn('⚠️ omdEquation math.js render failed, falling back to legacy parsing:', e?.message || e);
+            }
+        }
+
         // Helper function to fix operator symbols in termsAndOpers arrays
         function fixOperatorSymbols(expressionData) {
             if (expressionData && expressionData.termsAndOpers && Array.isArray(expressionData.termsAndOpers)) {
@@ -136,6 +149,37 @@ export class omdEquation extends omdMetaExpression
         this.updateLayout();
     }
 
+    _renderWithEquationNode(equationString, fontSize) {
+        if (typeof math === 'undefined' || typeof math.parse !== 'function') {
+            throw new Error('math.js is required to parse equation strings');
+        }
+
+        const eqNode = omdEquationNode.fromString(equationString);
+        if (typeof fontSize === 'number' && eqNode.setFontSize) {
+            eqNode.setFontSize(fontSize);
+        }
+
+        if (eqNode.hideBackgroundByDefault) eqNode.hideBackgroundByDefault();
+        if (eqNode.computeDimensions) eqNode.computeDimensions();
+        if (eqNode.updateLayout) eqNode.updateLayout();
+
+        // Clear the legacy stack and render just the parsed node
+        if (typeof this.equationStack.removeAllChildren === 'function') {
+            this.equationStack.removeAllChildren();
+        } else {
+            this.equationStack.childList = [];
+        }
+        this.equationStack.addChild(eqNode);
+        this.equationStack.setSpacer(0);
+
+        this.equationNode = eqNode;
+        this.leftExpression = null;
+        this.rightExpression = null;
+
+        this.centerEquation = false;
+        this.updateLayout();
+    }
+
 
     setLeftAndRightExpressions( leftExp, rightExp )
     {
@@ -156,6 +200,25 @@ export class omdEquation extends omdMetaExpression
 
     updateLayout()
     {
+        if (this.equationNode) {
+            const node = this.equationNode;
+            if (node.computeDimensions) node.computeDimensions();
+            if (node.updateLayout) node.updateLayout();
+
+            this.equationStack.doHorizontalLayout();
+            this.equationStack.setPosition(this.inset, this.inset);
+
+            const W = node.width || this.equationStack.width;
+            const H = node.height || this.equationStack.height;
+
+            this.backRect.setWidthAndHeight( W + this.inset*2, H + this.inset*2 );
+            this.setWidthAndHeight( this.backRect.width, this.backRect.height );
+            this.width = this.backRect.width;
+            this.height = this.backRect.height;
+            this.svgObject.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
+            return;
+        }
+
         this.leftHolder.setWidthAndHeight( this.leftExpression.width, this.leftExpression.height );
         this.rightHolder.setWidthAndHeight( this.rightExpression.width, this.rightExpression.height );
 

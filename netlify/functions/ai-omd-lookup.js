@@ -66,9 +66,10 @@ async function openAIrequest( topic )
   request += "\tExample: {\"omdType\":\"spinner\",\"divisions\":8,\"arrowPosition\":3}\n\n";
   request += "equationStack: MUST include equations array.\n";
   request += "\tExample: {\"omdType\":\"equationStack\",\"equations\":[\"2x + 3 = 5\",\"x = 1\"]}\n\n";
-  request += "equation: MUST include leftExpression and rightExpression objects. For complex expressions, use 'expression' type with termsAndOpers array.\n";
-  request += "\tSimple equation: {\"omdType\":\"equation\",\"leftExpression\":{\"omdType\":\"term\",\"coefficient\":2,\"variable\":\"x\"},\"rightExpression\":{\"omdType\":\"number\",\"value\":6}}\n";
-  request += "\tComplex equation: {\"omdType\":\"equation\",\"leftExpression\":{\"omdType\":\"expression\",\"termsAndOpers\":[{\"omdType\":\"term\",\"coefficient\":3,\"variable\":\"x\"},{\"omdType\":\"operator\",\"symbol\":\"+\"},{\"omdType\":\"number\",\"value\":2}]},\"rightExpression\":{\"omdType\":\"number\",\"value\":3}}\n\n";
+  request += "equation: ALWAYS prefer the string form so math.js can parse functions/rationals/roots.\n";
+  request += "\tExample: {\"omdType\":\"equation\",\"equation\":\"sin(x)+2=3\"}\n";
+  request += "\tExample: {\"omdType\":\"equation\",\"equation\":\"(x^2 + 3x - 4)/(2x) = 5\"}\n";
+  request += "\tDo NOT expand to leftExpression/rightExpression unless the user explicitly provides that shape.\n\n";
   request += "expression: MUST include termsAndOpers array with alternating terms and operators.\n";
   request += "\tExample: {\"omdType\":\"expression\",\"termsAndOpers\":[{\"omdType\":\"term\",\"coefficient\":2,\"variable\":\"x\"},{\"omdType\":\"operator\",\"symbol\":\"+\"},{\"omdType\":\"number\",\"value\":3}]}\n";
   request += "\tComplex example: {\"omdType\":\"expression\",\"termsAndOpers\":[{\"omdType\":\"term\",\"coefficient\":3,\"variable\":\"x\"},{\"omdType\":\"operator\",\"symbol\":\"+\"},{\"omdType\":\"number\",\"value\":2},{\"omdType\":\"operator\",\"symbol\":\"*\"},{\"omdType\":\"term\",\"coefficient\":1,\"variable\":\"y\"}]}\n\n";
@@ -86,12 +87,7 @@ async function openAIrequest( topic )
   request += "\tExample: {\"omdType\":\"circle\",\"radius\":5}\n\n";
   request += "scatter: output dotValues only (each dot [x,y] or [x,y,color]); no graphEquations/lineSegments\n";
   request += "curves: choose an exact-fit function and verify by testing x-values; function must be continuous on its domain.\n";
-  request += "IMPORTANT: When parsing equation strings like '3x+2=3':\n";
-  request += "- Split by '=' to get left and right sides\n";
-  request += "- Parse each side as an expression with termsAndOpers\n";
-  request += "- For '3x+2': termsAndOpers = [{\"omdType\":\"term\",\"coefficient\":3,\"variable\":\"x\"}, {\"omdType\":\"operator\",\"symbol\":\"+\"}, {\"omdType\":\"number\",\"value\":2}]\n";
-  request += "- For '3': termsAndOpers = [{\"omdType\":\"number\",\"value\":3}]\n";
-  request += "SPECIFIC EXAMPLE for '3x+2=3': {\"omdType\":\"equation\",\"leftExpression\":{\"omdType\":\"expression\",\"termsAndOpers\":[{\"omdType\":\"term\",\"coefficient\":3,\"variable\":\"x\"},{\"omdType\":\"operator\",\"symbol\":\"+\"},{\"omdType\":\"number\",\"value\":2}]},\"rightExpression\":{\"omdType\":\"expression\",\"termsAndOpers\":[{\"omdType\":\"number\",\"value\":3}]}}\n\n";
+  request += "IMPORTANT: For equations, always send the string form; we will parse with math.js for proper formatting of functions, rationals, and roots.\n\n";
 
   request += "Request: " + topic + "\n";
   request += "Schemas (STRICT - adhere to these fields only):\n" + jsonSchemas + "\n";
@@ -134,44 +130,13 @@ const handler = async (event) => {
   try {
     const topic = event.queryStringParameters.topic || 'make a number line';
 
-    // Check if this is a simple equation request that we can parse locally
-    const equationMatch = topic.match(/omdEquation\s+of\s+([^.]+)\.?/i);
+    // If the request looks like an equation, return the string form directly (math.js parsing happens client-side)
+    const equationMatch = topic.match(/(?:omdEquation|equation)\s+(?:of|for|=)?\s*([^.\\n]+)=([^.\\n]+)/i);
     if (equationMatch) {
-      const equationString = equationMatch[1].trim();
+      const equationString = `${equationMatch[1].trim()}=${equationMatch[2].trim()}`;
       console.log("Detected equation string:", equationString);
-      
-      // Try to parse it locally first
-      try {
-        const fs = require('fs');
-        const path = require('path');
-        
-        // Load the parsing utilities
-        const utilsPath = path.resolve(process.cwd(), 'src/omdUtils.js');
-        const utilsCode = fs.readFileSync(utilsPath, 'utf8');
-        
-        // Extract the parseEquationString function
-        const parseEquationString = new Function('str', `
-          ${utilsCode}
-          return parseEquationString(str);
-        `);
-        
-        const parsed = parseEquationString(equationString);
-        if (parsed) {
-          const result = {
-            omdType: 'equation',
-            leftExpression: parsed.leftExpression,
-            rightExpression: parsed.rightExpression
-          };
-          console.log("Parsed equation locally:", JSON.stringify(result, null, 2));
-          return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify(result)
-          };
-        }
-      } catch (parseError) {
-        console.log("Local parsing failed, falling back to AI:", parseError.message);
-      }
+      const result = { omdType: 'equation', equation: equationString };
+      return { statusCode: 200, headers, body: JSON.stringify(result) };
     }
 
     var response = await openAIrequest( topic );
@@ -214,4 +179,3 @@ try {
 } catch (e) {
   jsonSchemas = '';
 }
-

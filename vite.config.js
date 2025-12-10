@@ -13,6 +13,11 @@ export default defineConfig({
       }
     }
   },
+  resolve: {
+    alias: {
+      '@teachinglab/jsvg': resolve(__dirname, 'jsvg/jsvgComponents.js')
+    }
+  },
   // Copy static assets - includes dist/ directory for npm-docs
   publicDir: false, // We'll handle this manually
   // Configure dev server to serve the built npm-docs from dist

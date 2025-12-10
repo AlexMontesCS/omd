@@ -1,4 +1,5 @@
 import { jsvgGroup, jsvgRect, jsvgTextLine, jsvgImage, jsvgClipMask } from './jsvg.js';
+export * from './jsvg.js';
 
 // ================ jsvgButton ================================= //
 

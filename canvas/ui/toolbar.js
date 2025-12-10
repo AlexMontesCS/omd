@@ -11,6 +11,9 @@ export class Toolbar {
         this.buttons = new Map();
         this.activeButton = null;
         this.omdColor = omdColor; // Use omdColor for consistent styling
+        this.toolbarWidth = 64;
+        this.toolbarHeight = 28;
+        this.customPosition = null;
         
         
         
@@ -44,8 +47,7 @@ export class Toolbar {
         
         
     // Initial size, will be updated after buttons are created
-    this.background.setWidthAndHeight(100, 54);
-    this.background.setCornerRadius(27); // Pill shape
+    this._setToolbarSize(this.toolbarWidth, this.toolbarHeight);
     this.background.setFillColor(this.omdColor.mediumGray); // Modern dark, semi-transparent
         
         
@@ -58,7 +60,7 @@ export class Toolbar {
         
         
         // Position the toolbar at bottom center
-        this._updatePosition();``
+        this._updatePosition();
         
     // Add to main SVG so it is rendered
     this.canvas.svg.appendChild(this.toolbarGroup.svgObject);
@@ -70,16 +72,12 @@ export class Toolbar {
      */
     _updatePosition() {
     const canvasRect = this.canvas.container.getBoundingClientRect();
-    const toolbarWidth = this.background.width;
-    const toolbarHeight = this.background.height;
+    const toolbarWidth = this.toolbarWidth;
+    const toolbarHeight = this.toolbarHeight;
             // Bottom center, 24px from bottom
         const x = (canvasRect.width - toolbarWidth) / 2;
         const y = canvasRect.height - toolbarHeight - 24;
-        
-        // Ensure toolbar stays within canvas bounds
-        const clampedX = Math.max(0, Math.min(x, canvasRect.width - toolbarWidth));
-        const clampedY = Math.max(0, Math.min(y, canvasRect.height - toolbarHeight));
-    this.toolbarGroup.setPosition(x, y);
+        this._applyPosition(x, y);
         
         // Debug the SVG object
         
@@ -88,14 +86,7 @@ export class Toolbar {
         this.toolbarGroup.svgObject.style.pointerEvents = 'auto';
         
         // Fix the viewBox to include the toolbar position
-        const bgWidth = this.background.width;
-        const bgHeight = this.background.height;
-        const viewBoxX = x;
-        const viewBoxY = y;
-        const viewBoxWidth = Math.max(500, x + bgWidth);
-        const viewBoxHeight = Math.max(500, y + bgHeight);
-        
-        this.toolbarGroup.svgObject.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
+        this._updateViewBox(x, y);
         
         // Don't set x/y attributes - let setPosition handle it via transform
         // this.toolbarGroup.svgObject.setAttribute('x', x);
@@ -109,9 +100,9 @@ export class Toolbar {
     _createToolButtons() {
         const tools = this.canvas.toolManager.getAllToolMetadata();
         
-        const buttonSize = 48;
-        const spacing = 8;
-        const padding = 6;
+        const buttonSize = 24;
+        const spacing = 4;
+        const padding = 4;
         let xPos = padding;
         const yPos = padding;
         tools.forEach(toolMeta => {
@@ -124,8 +115,7 @@ export class Toolbar {
         // Remove last spacing
         const totalWidth = xPos - spacing + padding;
         const totalHeight = buttonSize + 2 * padding;
-        this.background.setWidthAndHeight(totalWidth, totalHeight);
-        this.background.setCornerRadius(totalHeight / 2);
+        this._setToolbarSize(totalWidth, totalHeight);
         // Reposition after sizing
         this._updatePosition();
         
@@ -214,6 +204,33 @@ export class Toolbar {
         } else {
             this.activeButton = null;
         }
+    }
+
+    _setToolbarSize(width, height) {
+        this.toolbarWidth = width;
+        this.toolbarHeight = height;
+        this.background.setWidthAndHeight(width, height);
+        this.background.setCornerRadius(height / 2);
+    }
+
+    _applyPosition(x, y) {
+        const canvasRect = this.canvas.container.getBoundingClientRect();
+        const clampedX = Math.max(0, Math.min(x, canvasRect.width - this.toolbarWidth));
+        const clampedY = Math.max(0, Math.min(y, canvasRect.height - this.toolbarHeight));
+        this.customPosition = { x: clampedX, y: clampedY };
+        this.toolbarGroup.setPosition(clampedX, clampedY);
+        this._updateViewBox(clampedX, clampedY);
+    }
+
+    _updateViewBox(x, y) {
+        this.toolbarGroup.svgObject.setAttribute('viewBox', `${x} ${y} ${this.toolbarWidth} ${this.toolbarHeight}`);
+    }
+
+    setBoundaryPosition(lineY) {
+        const canvasRect = this.canvas.container.getBoundingClientRect();
+        const x = (canvasRect.width - this.toolbarWidth) / 2;
+        const y = lineY - this.toolbarHeight;
+        this._applyPosition(x, y);
     }
     
     /**

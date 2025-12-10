@@ -13,17 +13,19 @@ import {
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', async () => {
-        // Create renderers for split panes
-        const renderer = new omdDisplay(document.getElementById('equationPane'), {
+    // Create renderers for split panes
+    const renderer = new omdDisplay(document.getElementById('equationPane'), {
         fontSize: 32,
         centerContent: true,
-        topMargin: 40
+        topMargin: 40,
+        fitToContent: false
     });
-        const visualRenderer = new omdDisplay(document.getElementById('visualPane'), {
-            fontSize: 16,
-            centerContent: true,
-            topMargin: 20
-        });
+    const visualRenderer = new omdDisplay(document.getElementById('visualPane'), {
+        fontSize: 16,
+        centerContent: true,
+        topMargin: 20,
+        fitToContent: false
+    });
         // Layout group to stack visuals vertically in the right pane
         const visualLayout = new jsvgLayoutGroup();
         visualLayout.setSpacer(12);

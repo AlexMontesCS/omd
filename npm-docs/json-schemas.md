@@ -460,54 +460,39 @@ Tabular data display with customizable styling.
 
 #### `omdEquation`
 
-Complete mathematical equations with left and right sides.
+Complete mathematical equations. The visual component now uses the same math.js-powered parser and renderer as the interactive core (functions, rationals, roots, etc.).
 
-**Schema (String Form):**
+**Preferred schema (string form):**
 ```json
 {
-  "equation": "2x + 3 = 11"
+  "equation": "sin(x) + 2 = 3"
 }
 ```
 
-**Schema (Structured Form):**
+**Structured fallback (legacy):**
 ```typescript
 {
-  leftExpression: Expression | string,
-  rightExpression: Expression | string,
-  equation?: string
+  leftExpression?: Expression | string,
+  rightExpression?: Expression | string,
+  equation: string
 }
 ```
 
 **Examples:**
 ```json
-{
-  "equation": "2x + 3 = 11"
-}
+{ "equation": "sin(x) + 2 = 3" }
 ```
-
 ```json
-{
-  "leftExpression": {
-    "termsAndOpers": [
-      { "omdType": "term", "coefficient": 2, "variable": "x" },
-      { "omdType": "operator", "operator": "+" },
-      { "omdType": "number", "value": 3 }
-    ]
-  },
-  "rightExpression": {
-    "omdType": "number",
-    "value": 11
-  }
-}
+{ "equation": "(x^2 + 3x - 4)/(2x) = 5" }
 ```
 
 **Usage:**
 ```javascript
-// Simple string form
+// Preferred string form (math.js parsing)
 const eq = new omdEquation();
-eq.loadFromJSON({ equation: '2x + 3 = 11' });
+eq.loadFromJSON({ equation: 'sqrt(x+1) = 4', fontSize: 32 });
 
-// Structured form
+// Legacy structured form (if you already have parsed pieces)
 eq.loadFromJSON({
   leftExpression: { omdType: 'term', coefficient: 2, variable: 'x' },
   rightExpression: { omdType: 'number', value: 11 }

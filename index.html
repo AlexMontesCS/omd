@@ -1,432 +1,397 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMD Rendering with Simplification</title>
-
-    <script src="https://unpkg.com/mathjs@14.5.2/lib/browser/math.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Albert Sans', Arial, sans-serif;
-            display: flex;
-            min-height: 100vh; /* Allow body to grow */
-        }
-        
-        #renderPanel {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: row;
-        }
-        #equationPane, #visualPane {
-            position: relative;
-            overflow: auto;
-            max-height: 100vh; /* Prevent infinite vertical growth */
-        }
-        #equationPane {
-            flex: 0 0 75%; /* 75% of the render panel */
-            max-width: 75%;
-        }
-        #visualPane {
-            flex: 0 0 25%; /* Remaining 25% */
-            max-width: 25%;
-            border-left: 1px solid #eee;
-        }
-        #renderDivider {
-            width: 1px;
-            background: #ddd;
-            margin: 0 0;
-        }
-        #controlsPanel {
-           width: 300px; /* Fixed width for the controls */
-           padding: 20px;
-           box-sizing: border-box;
-           display: flex;
-           flex-direction: column;
-           gap: 20px;
-           height: 100vh; /* Full viewport height */
-           overflow-y: auto; /* Scroll if content overflows */
-           position: sticky;
-           top: 0;
-        }
-        
-        #inputSection, #equationOperations, #filteringSection, #overlayControls, #renderToSection {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        #inputSection h3, #equationOperations h3, #filteringSection h3, #overlayControls h3, #renderToSection h3 {
-            margin: 0 0 15px 0;
-            color: #333;
-            font-size: 16px;
-        }
-        /* Render To control inputs styled like other controls */
-        #renderToSection select, #renderToSection input[type="number"], #renderToSection input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-        }
-        #renderToSection label { display: block; }
-        
-        #expressionInput, #operationValueInput {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-        }
-        
-        .button-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .button-container.four-grid {
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        
-        button {
-            padding: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        
-        #renderButton {
-            background-color: #007bff;
-            color: white;
-        }
-        
-        #renderButton:hover {
-            background-color: #0056b3;
-        }
-        
-        #renderButton:active {
-            background-color: #004085;
-        }
-        
-        #simplifyButton {
-            /* Style moved inline */
-            color: white;
-        }
-        
-        #simplifyButton:hover {
-            background-color: #218838;
-        }
-        
-        #simplifyButton:active {
-            background-color: #1e7e34;
-        }
-        
-        #simplifyAllButton {
-            /* Style moved inline */
-            color: white;
-        }
-        
-        #simplifyAllButton:hover {
-            background-color: #e55a2b;
-        }
-        
-        #simplifyAllButton:active {
-            background-color: #cc4a20;
-        }
-        
-        /* Equation operation buttons */
-        #addBothSidesButton, #subtractBothSidesButton {
-            background-color: #17a2b8;
-            color: white;
-            font-size: 12px;
-        }
-        
-        #addBothSidesButton:hover, #subtractBothSidesButton:hover {
-            background-color: #138496;
-        }
-        
-        #multiplyBothSidesButton, #divideBothSidesButton {
-            background-color: #6f42c1;
-            color: white;
-            font-size: 12px;
-        }
-        
-        #multiplyBothSidesButton:hover, #divideBothSidesButton:hover {
-            background-color: #5a32a3;
-        }
-        
-        /* Function application controls */
-        #functionOperations {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        #functionOperations h3 {
-            margin: 0 0 15px 0;
-            color: #333;
-            font-size: 16px;
-        }
-        
-        #functionNameInput {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-            position: relative;
-            z-index: 1;
-        }
-        
-        #applyFunctionButton {
-            background-color: #6c757d;
-            color: white;
-            width: 100%;
-            font-size: 12px;
-        }
-        
-        #applyFunctionButton:hover {
-            background-color: #545b62;
-        }
-
-        /* Overlay control buttons */
-        #hideLeftButton, #hideRightButton {
-            background-color: #dc3545;
-            color: white;
-            font-size: 12px;
-        }
-        
-        #hideLeftButton:hover, #hideRightButton:hover {
-            background-color: #c82333;
-        }
-        
-        #clearOverlaysButton {
-            background-color: #6c757d;
-            color: white;
-            font-size: 12px;
-        }
-        
-        #clearOverlaysButton:hover {
-            background-color: #545b62;
-        }
-        
-        /* Status message */
-        #statusMessage {
-            margin-top: 10px;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 13px;
-            display: none;
-        }
-        
-        #statusMessage.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        #statusMessage.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        #statusMessage.warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        #simplificationHistory {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        #simplificationHistory h3 {
-            margin: 0 0 15px 0;
-            color: #333;
-            font-size: 16px;
-        }
-
-        #historyList {
-            max-height: 200px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMD | Library Overview & Navigator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap');
+    :root {
+      --bg: #0b1221;
+      --bg-alt: #0f172a;
+      --panel: rgba(255, 255, 255, 0.03);
+      --panel-strong: rgba(255, 255, 255, 0.08);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #7de2d1;
+      --accent-2: #ffb46a;
+      --border: rgba(255, 255, 255, 0.08);
+      --shadow: 0 15px 60px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Space Grotesk', 'Spline Sans Mono', 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 15% 20%, rgba(125, 226, 209, 0.12), transparent 30%),
+                  radial-gradient(circle at 80% 0%, rgba(255, 180, 106, 0.16), transparent 32%),
+                  linear-gradient(145deg, var(--bg), #0d1629 40%, #0c223a 90%);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 0 18px 64px;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: #aaf2e7; }
+    header {
+      max-width: 1120px;
+      margin: 48px auto 28px;
+      padding: 28px 28px 32px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(120deg, rgba(125, 226, 209, 0.08), rgba(255, 180, 106, 0.08)),
+                  rgba(255, 255, 255, 0.02);
+      box-shadow: var(--shadow);
+    }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    h1 { margin: 0 0 10px; font-size: 36px; letter-spacing: -0.02em; }
+    .lede { margin: 0 0 14px; color: #cbd5e1; max-width: 720px; }
+    .tagline { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .btn {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: var(--accent);
+      color: #0b1221;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(125, 226, 209, 0.25);
+    }
+    .btn.secondary {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+    }
+    main { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    section {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel);
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+    }
+    h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -0.01em; }
+    .sub { color: var(--muted); margin-bottom: 12px; font-size: 15px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+    .card {
+      background: var(--panel-strong);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 160px;
+    }
+    .card h3 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
+    .card ul { padding-left: 18px; margin: 0; color: var(--muted); }
+    .card li { margin: 4px 0; }
+    .card .cta { margin-top: auto; font-weight: 600; color: var(--accent); }
+    code, pre {
+      font-family: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #e2e8f0;
+    }
+    pre { padding: 12px; overflow: auto; margin: 0; }
+    .list-inline { display: flex; gap: 8px; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+    .list-inline li { background: var(--panel-strong); padding: 7px 10px; border-radius: 10px; border: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+    .columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+    .note { color: var(--muted); font-size: 13px; margin-top: 10px; }
+    .anchor { color: var(--muted); font-size: 13px; }
+    .divider { height: 1px; background: var(--border); margin: 12px 0 10px; }
+    @media (max-width: 720px) {
+      header { padding: 22px 18px; }
+      h1 { font-size: 28px; }
+      .actions { flex-direction: column; align-items: flex-start; }
+      body { padding: 0 14px 48px; }
+    }
+  </style>
 </head>
 <body>
-    <div id="renderPanel">
-        <div id="equationPane"></div>
-        <div id="renderDivider"></div>
-        <div id="visualPane"></div>
+  <header>
+    <div class="eyebrow">OMD · On-screen Math Display</div>
+    <h1>Library Navigator & Quickstart</h1>
+    <!-- <p class="lede">A single page to orient yourself in OMD. Jump to docs, explore examples, and grab starter snippets for rendering equations, visualizations, and interactive step-by-step math.</p>
+    <div class="tagline">
+      <div class="pill">Interactive math displays</div>
+      <div class="pill">Equation + canvas engines</div>
+      <div class="pill">Visualizations & JSON factory</div>
+      <div class="pill">Docs + example hub linked</div>
+    </div> -->
+    <div class="actions">
+      <a class="btn" href="dist/npm-docs/index.html">Open Docs Home</a>
+      <a class="btn secondary" href="examples/index.html">Examples</a>
+      <a class="btn secondary" href="https://www.npmjs.com/package/@teachinglab/omd">NPM Package</a>
     </div>
-    <div id="controlsPanel">
-        <div id="inputSection">
-            <h3>Mathematical Expression</h3>
-            <input type="text" id="expressionInput" placeholder="Enter equation or expression (e.g., x+2=5 or 2*x)" value="3x+2=14">
-            <p style="font-size: 12px; color: #666; margin: 5px 0 10px 0;">
-                Sequences: separate equations with semicolons (e.g., "x+1=3; 2*x=4")
-            </p>
-            <div style="margin-bottom: 10px;">
-                <button id="renderButton" style="width: 100%;">Render Expression</button>
-            </div>
-            <div class="button-container">
-                <button id="simplifyButton" style="background-color: #28a745; color: white;">Simplify (One Step)</button>
-                <button id="simplifyAllButton" style="background-color: #ff6b35; color: white;">Simplify (All Steps)</button>
-            </div>
-        </div>
+  </header>
 
-        <div id="equationOperations">
-            <h3>Equation Operations</h3>
-            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;">
-                Single equations: operations replace the equation.<br>
-                Sequences: operations add new steps.
-            </p>
-            <input type="text" id="operationValueInput" placeholder="Value (e.g., 3, x, 2x)" value="3">
-            <div class="button-container four-grid">
-                <button id="addBothSidesButton">+ Add to Both</button>
-                <button id="subtractBothSidesButton">− Subtract from Both</button>
-                <button id="multiplyBothSidesButton">× Multiply Both</button>
-                <button id="divideBothSidesButton">÷ Divide Both</button>
-            </div>
-            <div style="margin-top: 15px;">
-                <input type="checkbox" id="autoSimplifyCheckbox" checked>
-                <label for="autoSimplifyCheckbox" style="font-size: 14px; color: #333;">Automatically Simplify after operations</label>
-            </div>
-            <div id="statusMessage"></div>
+  <main>
+    <section id="navigation">
+      <h2>Navigate the Library</h2>
+      <p class="sub">Choose your path: read the full docs, dive into guides, or open curated example pages.</p>
+      <div class="grid">
+        <div class="card">
+          <h3>Docs & Guides</h3>
+          <ul>
+            <li><a href="dist/npm-docs/guides/getting-started.html">Getting started</a> → install, bundle, render</li>
+            <li><a href="dist/npm-docs/guides/quick-examples.html">Quick examples</a> → copy/paste snippets</li>
+            <li><a href="dist/npm-docs/guides/visualizations.html">Visualization guide</a> → number line, ratio, coordinate plane</li>
+            <li><a href="dist/npm-docs/guides/equations.html">Equations guide</a> → expressions, terms, variables</li>
+            <li><a href="dist/npm-docs/guides/factory-functions.html">Factory functions</a> → JSON-driven creation</li>
+          </ul>
+          <a class="cta" href="dist/npm-docs/index.html">Browse docs site →</a>
         </div>
+        <div class="card">
+          <h3>API Reference</h3>
+          <ul>
+            <li><a href="dist/npm-docs/api/api-reference.html">API reference</a> (complete)</li>
+            <li><a href="dist/npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="dist/npm-docs/api/omdCanvas.html">omdCanvas</a></li>
+            <li><a href="dist/npm-docs/api/omdEquationStack.html">omdEquationStack</a> · <a href="dist/npm-docs/api/omdStepVisualizer.html">Step visualizer</a></li>
+            <li><a href="dist/npm-docs/api/configuration-options.html">Config options</a></li>
+            <li><a href="dist/npm-docs/json-schemas.html">JSON schemas</a> for visualizations</li>
+          </ul>
+          <a class="cta" href="dist/npm-docs/api/api-reference.html">Open API docs →</a>
+        </div>
+        <div class="card">
+          <h3>Examples & Demos</h3>
+          <ul>
+            <li><a href="examples/index.html">Example launcher</a> (all demos)</li>
+            <li><a href="examples/simple-usage.html">Simple usage</a> · <a href="examples/minimal.html">Minimal render</a></li>
+            <li><a href="examples/expression-playground.html">Expression playground</a></li>
+            <li><a href="examples/drag-and-drop-playground.html">Drag & drop canvas</a></li>
+            <li><a href="examples/kids-interactive.html">Kids interactive solver</a></li>
+          </ul>
+          <a class="cta" href="examples/index.html">See all examples →</a>
+        </div>
+        <div class="card">
+          <h3>Starter HTML</h3>
+          <ul>
+            <li><a href="index.html">Main site shell</a> · <a href="index-ai.html">AI shell</a></li>
+            <li><a href="npm-docs.html">Docs-only HTML</a> · <a href="readme.html">README HTML</a></li>
+            <li><a href="simple-api-example.html">One-file API demo</a></li>
+            <li><a href="react-demo/index.html">React demo shell</a></li>
+          </ul>
+          <a class="cta" href="simple-api-example.html">Open the API demo →</a>
+        </div>
+      </div>
+    </section>
 
-        <div id="functionOperations">
-            <h3>Function Operations</h3>
-            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;">
-                Apply functions to both sides of equations.
-            </p>
-            <input type="text" id="functionNameInput" placeholder="Function name (e.g., sqrt, sin, cos, ln)" value="sqrt">
-            <button id="applyFunctionButton">Apply Function to Both Sides</button>
+    <section id="quickstart">
+      <h2>Quick Start</h2>
+      <p class="sub">Install, render an equation, and add a visualization in minutes.</p>
+      <div class="columns">
+        <div class="card">
+          <h3>Install</h3>
+          <pre><code class="language-bash">npm install @teachinglab/omd</code></pre>
+          <div class="divider"></div>
+          <p class="anchor">Docs: <a href="dist/npm-docs/guides/getting-started.html">Getting started</a></p>
         </div>
+        <div class="card">
+          <h3>Render an Equation</h3>
+          <pre><code class="language-js">import { omdDisplay, omdEquationNode } from '@teachinglab/omd';
 
-        <div id="evaluationSection">
-            <h3>Evaluate Expression</h3>
-            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;">
-                Provide variable values (e.g., x=2, y=3). For equations, this will check if the solution is correct.
-            </p>
-            <input type="text" id="variablesInput" placeholder="e.g., x=2, y=3" value="x=3" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 14px; margin-bottom: 10px; box-sizing: border-box;">
-            <button id="evaluateButton" style="width: 100%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; transition: background-color 0.2s; background-color: #fd7e14; color: white;">Evaluate</button>
-        </div>
+const root = document.getElementById('math');
+const display = new omdDisplay(root);
 
-        <div id="simplificationHistory">
-            <h3>Simplification History</h3>
-            <div id="historyList" style="font-size: 14px; color: #333; margin-top: 10px;">
-                No simplifications performed yet.
-            </div>
+const equation = omdEquationNode.fromString('2x + 3 = 11');
+display.render(equation);</code></pre>
+          <div class="divider"></div>
+          <p class="anchor">API: <a href="dist/npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="dist/npm-docs/api/omdEquationNode.html">omdEquationNode</a></p>
         </div>
+        <div class="card">
+          <h3>Step-by-Step Stack</h3>
+          <pre><code class="language-js">import { omdEquationStack } from '@teachinglab/omd';
 
-        <div id="overlayControls">
-            <h3>Interactive Overlays</h3>
-            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;">
-                Hide parts of equations for interactive practice:
-            </p>
-            <div class="button-container">
-                <button id="hideLeftButton" style="background-color: #dc3545; color: white;">Hide Left Side</button>
-                <button id="hideRightButton" style="background-color: #dc3545; color: white;">Hide Right Side</button>
-            </div>
-            <div style="margin-top: 10px;">
-                <button id="clearOverlaysButton" style="width: 100%; background-color: #6c757d; color: white;">Clear All Overlays</button>
-            </div>
+const steps = ['2x + 3 = 11', '2x = 8', 'x = 4'];
+const stack = new omdEquationStack(steps);
+display.render(stack);</code></pre>
+          <div class="divider"></div>
+          <p class="anchor">API: <a href="dist/npm-docs/api/omdEquationStack.html">EquationStack</a> · <a href="dist/npm-docs/api/omdStepVisualizer.html">Step Visualizer</a></p>
         </div>
+        <div class="card">
+          <h3>Visualization via JSON</h3>
+          <pre><code class="language-js">import { createFromJSON } from '@teachinglab/omd';
 
-        <div id="renderToSection">
-            <h3>Render To</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
-                <label style="font-size: 12px; color: #333;">Type
-                    <select id="renderToType" style="width: 100%; padding: 8px;">
-                        <option value="graph">Graph</option>
-                        <option value="table">Table</option>
-                        <option value="hanger">Hanger</option>
-                    </select>
-                </label>
-                <label style="font-size: 12px; color: #333;">Side
-                    <select id="renderToSide" style="width: 100%; padding: 8px;">
-                        <option value="both" selected>Both</option>
-                        <option value="left">Left</option>
-                        <option value="right">Right</option>
-                    </select>
-                </label>
-                <label style="font-size: 12px; color: #333;">xMin
-                    <input id="rtXMin" type="number" value="-10" style="width: 100%; padding: 8px;" />
-                </label>
-                <label style="font-size: 12px; color: #333;">xMax
-                    <input id="rtXMax" type="number" value="10" style="width: 100%; padding: 8px;" />
-                </label>
-                <label style="font-size: 12px; color: #333;">yMin (graph)
-                    <input id="rtYMin" type="number" value="-10" style="width: 100%; padding: 8px;" />
-                </label>
-                <label style="font-size: 12px; color: #333;">yMax (graph)
-                    <input id="rtYMax" type="number" value="10" style="width: 100%; padding: 8px;" />
-                </label>
-                <label style="font-size: 12px; color: #333;">stepSize (table)
-                    <input id="rtStep" type="number" value="1" style="width: 100%; padding: 8px;" />
-                </label>
-            </div>
-            <div class="button-container">
-                <button id="renderToButton" style="background-color: #007bff; color: white;">Render To</button>
-                <button id="clearRenderToButton" style="background-color: #6c757d; color: white;">Clear Output</button>
-            </div>
-            <p style="font-size: 12px; color: #666; margin-top: 6px;">Output appears here:</p>
-            <div id="renderToPanel" style="padding: 10px; box-sizing: border-box; border: 1px dashed #ccc; border-radius: 6px;"></div>
-        </div>
+const numberLine = createFromJSON({
+  omdType: 'numberLine',
+  min: 0, max: 10,
+  dotValues: [2, 5, 8]
+});
 
-        <div id="filteringSection">
-            <h3>Step Filtering</h3>
-            <p style="font-size: 12px; color: #666; margin: 0 0 10px 0;">
-                Filter equations by their marking levels:
-            </p>
-            <div style="margin-bottom: 10px;">
-                <label style="display: block; margin: 5px 0; font-size: 13px;">
-                    <input type="checkbox" id="level0" checked> 
-                    <span style="color: #007bff; font-weight: bold;">Level 0</span> - Initial/Final equations
-                </label>
-                <label style="display: block; margin: 5px 0; font-size: 13px;">
-                    <input type="checkbox" id="level1"> 
-                    <span style="color: #17a2b8; font-weight: bold;">Level 1</span> - After operations
-                </label>
-                <label style="display: block; margin: 5px 0; font-size: 13px;">
-                    <input type="checkbox" id="level2"> 
-                    <span style="color: #28a745; font-weight: bold;">Level 2</span> - Intermediate steps
-                </label>
-            </div>
+display.render(numberLine);</code></pre>
+          <div class="divider"></div>
+          <p class="anchor">Guide: <a href="dist/npm-docs/guides/factory-functions.html">Factory functions</a> · <a href="dist/npm-docs/json-schemas.html">JSON schemas</a></p>
         </div>
-    <script type="module" src="./main.js"></script>
+      </div>
+    </section>
+
+    <section id="map">
+      <h2>Library Map</h2>
+      <p class="sub">Understand the major systems and where to look in the repo and docs.</p>
+      <div class="columns">
+        <div class="card">
+          <h3>Foundations</h3>
+          <ul>
+            <li>Displays: <a href="dist/npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="dist/npm-docs/api/omdCanvas.html">omdCanvas</a></li>
+            <li>Config: <a href="dist/npm-docs/api/omdConfigManager.html">Config manager</a> · <a href="dist/npm-docs/api/configuration-options.html">Options</a></li>
+            <li>Events: <a href="dist/npm-docs/api/eventManager.html">Event manager</a></li>
+            <li>Helpers: <a href="dist/npm-docs/api/omdHelpers.html">omdHelpers</a></li>
+            <li>Source: <code>index.js</code>, <code>omd/</code>, <code>canvas/</code></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Equations & Steps</h3>
+          <ul>
+            <li>Nodes: <a href="dist/npm-docs/api/expression-nodes.html">Expression nodes</a>, <a href="dist/npm-docs/api/omdEquationNode.html">EquationNode</a></li>
+            <li>Stacks: <a href="dist/npm-docs/api/omdEquationStack.html">EquationStack</a> · <a href="dist/npm-docs/api/omdStepVisualizer.html">Step Visualizer</a></li>
+            <li>Simplification: <a href="dist/npm-docs/api/omdSimplification.html">Engine</a> · <a href="dist/npm-docs/api/simplificationRules.html">Rules</a></li>
+            <li>Guide: <a href="dist/npm-docs/guides/equations.html">Equations guide</a></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Visualizations</h3>
+          <ul>
+            <li>Number line: <a href="dist/npm-docs/guides/visualizations.html#number-line">omdNumberLine</a> · double line</li>
+            <li>Tape: <a href="dist/npm-docs/guides/visualizations.html#tape-diagrams">omdTapeDiagram</a> · double tape</li>
+            <li>Coordinate & ratios: <a href="dist/npm-docs/api/omdCoordinatePlane.html">Coordinate plane</a> · <a href="dist/npm-docs/guides/visualizations.html#ratio-charts">Ratio chart</a></li>
+            <li>Other: spinner, table, tile equations, balance hanger</li>
+            <li>Source: <code>src/</code> (visual components)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Schema-First / AI-Friendly</h3>
+          <ul>
+            <li><a href="dist/npm-docs/guides/factory-functions.html">Factory functions</a> create objects from JSON</li>
+            <li><a href="dist/npm-docs/json-schemas.html">JSON schemas</a> for validation and generation</li>
+            <li>Examples: <a href="simple-api-example.html">simple API demo</a>, <a href="index-ai.html">AI shell</a></li>
+          </ul>
+          <div class="divider"></div>
+          <p class="anchor">Tip: keep schemas nearby when generating configs from LLMs.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="examples">
+      <h2>Example Gallery</h2>
+      <p class="sub">Open a demo to see live behavior. Start at the launcher, or jump into a focused scenario.</p>
+      <div class="grid">
+        <div class="card">
+          <h3>Core Starters</h3>
+          <ul>
+            <li><a href="examples/index.html">Example launcher</a> (all demos)</li>
+            <li><a href="examples/minimal.html">Minimal</a> – bare render loop</li>
+            <li><a href="examples/simple-usage.html">Simple usage</a> – controls + rendering</li>
+            <li><a href="examples/worked-solution.html">Worked solution</a> – step-by-step flow</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Equation Interactions</h3>
+          <ul>
+            <li><a href="examples/equation-stack-test.html">Equation stack</a> – multi-step</li>
+            <li><a href="examples/highlighting-test.html">Highlighting</a> – linked selections</li>
+            <li><a href="examples/focus-frame-demo.html">Focus frame</a> – canvas controls</li>
+            <li><a href="examples/node-overlay-demo.html">Node overlay</a> + <a href="examples/node-overlay-examples.js">presets</a></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Visual Playground</h3>
+          <ul>
+            <li><a href="examples/expression-playground.html">Expression playground</a></li>
+            <li><a href="examples/drag-and-drop-playground.html">Drag & drop canvas</a></li>
+            <li><a href="examples/canvas/index.html">Canvas module</a> + <a href="examples/canvas/canvas.js">JS</a></li>
+            <li><a href="examples/equation-rendering/index.html">Equation rendering (bundler)</a></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Learning Experiences</h3>
+          <ul>
+            <li><a href="examples/kids-interactive.html">Kids interactive solver</a></li>
+            <li><a href="examples/worked-solution.html">Worked solution</a> – gradual reveal</li>
+            <li><a href="examples/highlighting-test.html">Highlighting test</a> – linked cues</li>
+            <li><a href="simple-api-example.html">Simple API example</a> – single file</li>
+          </ul>
+          <div class="note">See <code>src/</code> for underlying visual components.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="recipes">
+      <h2>Usage Recipes</h2>
+      <p class="sub">Copy/paste snippets for the most common flows.</p>
+      <div class="columns">
+        <div class="card">
+          <h3>Canvas with Multiple Expressions</h3>
+          <pre><code class="language-js">import { omdCanvas } from '@teachinglab/omd';
+
+const canvas = new omdCanvas({
+  width: 800,
+  height: 300,
+  expressions: ['x + 4 = 12', '3x - 2 = 10']
+});
+
+canvas.attachTo('#math-canvas');</code></pre>
+          <div class="divider"></div>
+          <p class="anchor">Docs: <a href="dist/npm-docs/api/omdCanvas.html">omdCanvas</a></p>
+        </div>
+        <div class="card">
+          <h3>Coordinate Plane with Function Graph</h3>
+          <pre><code class="language-js">import { omdCoordinatePlane } from '@teachinglab/omd';
+
+const plane = new omdCoordinatePlane();
+plane.loadFromJSON({
+  xMin: -6, xMax: 6, yMin: -6, yMax: 6,
+  graphEquations: [{ equation: 'y = x^2 - 4', color: '#ff7b72' }]
+});
+
+display.render(plane);</code></pre>
+          <div class="divider"></div>
+          <p class="anchor">Guide: <a href="dist/npm-docs/guides/visualizations.html#coordinate-plane">Coordinate plane</a></p>
+        </div>
+        <div class="card">
+          <h3>JSON Factory (AI / Config-Driven)</h3>
+          <pre><code class="language-js">import { createFromJSON } from '@teachinglab/omd';
+
+const tape = createFromJSON({
+  omdType: 'tapeDiagram',
+  bars: [{ value: 6, label: 'A' }, { value: 9, label: 'B' }],
+  showGrid: true
+});
+
+display.render(tape);</code></pre>
+          <div class="divider"></div>
+          <p class="anchor">Docs: <a href="dist/npm-docs/guides/factory-functions.html">Factory functions</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="links">
+      <h2>Power User Links</h2>
+      <p class="sub">Keep these nearby while building.</p>
+      <ul class="list-inline">
+        <li><a href="dist/npm-docs/api/api-reference.html">Full API</a></li>
+        <li><a href="dist/npm-docs/json-schemas.html">JSON schemas</a></li>
+        <li><a href="dist/npm-docs/guides/visualizations.html">Visualization guide</a></li>
+        <li><a href="dist/npm-docs/guides/equations.html">Equations guide</a></li>
+        <li><a href="dist/npm-docs/guides/factory-functions.html">Factory functions</a></li>
+        <li><a href="examples/index.html">Example launcher</a></li>
+        <li><a href="readme.html">README (HTML)</a></li>
+      </ul>
+      <div class="note">Source layout: <code>omd/</code> core, <code>canvas/</code> rendering stack, <code>src/</code> visualizations, <code>jsvg/</code> SVG helpers.</div>
+    </section>
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
 </body>
 </html>

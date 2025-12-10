@@ -55,6 +55,8 @@ export class omdDisplay {
         const height = this.container.offsetHeight || 600;
 
         this.svg.setViewbox(width, height);
+        this.svg.svgObject.style.width = '100%';
+        this.svg.svgObject.style.height = '100%';
         this.svg.svgObject.style.verticalAlign = "middle";
         // Enable internal scrolling via native SVG scrolling if content overflows
         this.svg.svgObject.style.overflow = 'hidden';
@@ -768,18 +770,7 @@ export class omdDisplay {
     render(expression) {
         // Clear previous node
         if (this.node) {
-            if (this._contentGroup && this.node && this.node.svgObject) {
-                try {
-                    if (this.node.svgObject.parentNode === this._contentGroup) {
-                        this._contentGroup.removeChild(this.node.svgObject);
-                    }
-                } catch (e) {
-                    // Fallback to svg remove
-                    this.svg.removeChild(this.node);
-                }
-            } else {
-                this.svg.removeChild(this.node);
-            }
+            this.removeChild(this.node);
         }
 
         // Create node from expression
@@ -992,7 +983,7 @@ export class omdDisplay {
      */
     clear() {
         if (this.node) {
-            this.svg.removeChild(this.node);
+            this.removeChild(this.node);
             this.node = null;
         }
     }

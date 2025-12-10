@@ -29,6 +29,7 @@ export { EventManager } from './canvas/events/eventManager.js';
 
 // Export utility components
 export { omdNodeOverlay, omdNodeOverlayPresets } from './omd/utils/omdNodeOverlay.js';
+export { omdTranscriptionService } from './omd/utils/omdTranscriptionService.js';
 
 // Re-export the most commonly used components for easy access
 export { omdTable } from './src/omdTable.js';
@@ -77,4 +78,4 @@ export default {
         const { omdDisplay } = await import('./omd/core/index.js');
         return new omdDisplay(container);
     }
-}; 
+};

@@ -72,7 +72,10 @@ export class SelectTool extends Tool {
         }
 
         const segmentSelection = this._findSegmentAtPoint(event.x, event.y);
-        const omdElement = this._findOMDElementAtPoint(event.x, event.y);
+        let omdElement = this._findOMDElementAtPoint(event.x, event.y);
+        if (omdElement?.dataset?.locked === 'true') {
+            omdElement = null;
+        }
 
         if (segmentSelection) {
             // Clicking on a stroke segment - clear OMD selection and handle segment selection
@@ -473,8 +476,11 @@ export class SelectTool extends Tool {
         
         // Check all OMD items in the layer
         const omdItems = omdLayer.querySelectorAll('.omd-item');
-        
+
         for (const item of omdItems) {
+            if (item?.dataset?.locked === 'true') {
+                continue;
+            }
             try {
                 // Get the bounding box of the item
                 const bbox = item.getBBox();
