@@ -131,7 +131,7 @@
       <div class="pill">Docs + example hub linked</div>
     </div> -->
     <div class="actions">
-      <a class="btn" href="dist/npm-docs/index.html">Open Docs Home</a>
+      <a class="btn" href="npm-docs/index.html">Open Docs Home</a>
       <a class="btn secondary" href="examples/index.html">Examples</a>
       <a class="btn secondary" href="https://www.npmjs.com/package/@teachinglab/omd">NPM Package</a>
     </div>
@@ -145,33 +145,32 @@
         <div class="card">
           <h3>Docs & Guides</h3>
           <ul>
-            <li><a href="dist/npm-docs/guides/getting-started.html">Getting started</a> → install, bundle, render</li>
-            <li><a href="dist/npm-docs/guides/quick-examples.html">Quick examples</a> → copy/paste snippets</li>
-            <li><a href="dist/npm-docs/guides/visualizations.html">Visualization guide</a> → number line, ratio, coordinate plane</li>
-            <li><a href="dist/npm-docs/guides/equations.html">Equations guide</a> → expressions, terms, variables</li>
-            <li><a href="dist/npm-docs/guides/factory-functions.html">Factory functions</a> → JSON-driven creation</li>
+            <li><a href="npm-docs/guides/getting-started.html">Getting started</a> → install, bundle, render</li>
+            <li><a href="npm-docs/guides/quick-examples.html">Quick examples</a> → copy/paste snippets</li>
+            <li><a href="npm-docs/guides/visualizations.html">Visualization guide</a> → number line, ratio, coordinate plane</li>
+            <li><a href="npm-docs/guides/equations.html">Equations guide</a> → expressions, terms, variables</li>
+            <li><a href="npm-docs/guides/factory-functions.html">Factory functions</a> → JSON-driven creation</li>
           </ul>
-          <a class="cta" href="dist/npm-docs/index.html">Browse docs site →</a>
+          <a class="cta" href="npm-docs/index.html">Browse docs site →</a>
         </div>
         <div class="card">
           <h3>API Reference</h3>
           <ul>
-            <li><a href="dist/npm-docs/api/api-reference.html">API reference</a> (complete)</li>
-            <li><a href="dist/npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="dist/npm-docs/api/omdCanvas.html">omdCanvas</a></li>
-            <li><a href="dist/npm-docs/api/omdEquationStack.html">omdEquationStack</a> · <a href="dist/npm-docs/api/omdStepVisualizer.html">Step visualizer</a></li>
-            <li><a href="dist/npm-docs/api/configuration-options.html">Config options</a></li>
-            <li><a href="dist/npm-docs/json-schemas.html">JSON schemas</a> for visualizations</li>
+            <li><a href="npm-docs/api/api-reference.html">API reference</a> (complete)</li>
+            <li><a href="npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="npm-docs/api/omdCanvas.html">omdCanvas</a></li>
+            <li><a href="npm-docs/api/omdEquationStack.html">omdEquationStack</a> · <a href="npm-docs/api/omdStepVisualizer.html">Step visualizer</a></li>
+            <li><a href="npm-docs/api/configuration-options.html">Config options</a></li>
+            <li><a href="npm-docs/json-schemas.html">JSON schemas</a> for visualizations</li>
           </ul>
-          <a class="cta" href="dist/npm-docs/api/api-reference.html">Open API docs →</a>
+          <a class="cta" href="npm-docs/api/api-reference.html">Open API docs →</a>
         </div>
         <div class="card">
           <h3>Examples & Demos</h3>
           <ul>
-            <li><a href="examples/index.html">Example launcher</a> (all demos)</li>
-            <li><a href="examples/simple-usage.html">Simple usage</a> · <a href="examples/minimal.html">Minimal render</a></li>
-            <li><a href="examples/expression-playground.html">Expression playground</a></li>
-            <li><a href="examples/drag-and-drop-playground.html">Drag & drop canvas</a></li>
-            <li><a href="examples/kids-interactive.html">Kids interactive solver</a></li>
+            <li><a href="simple-api-example.html">Simple API Example</a></li>
+            <li><a href="examples/equation-rendering/index.html">Equation Rendering Example</a></li>
+            <li><a href="examples/kids-interactive.html">Kids Interactive Solver Example</a></li>
+            <li><a href="https://daydot2.netlify.app/">DayDot Algebra Solver</a></li>
           </ul>
           <a class="cta" href="examples/index.html">See all examples →</a>
         </div>
@@ -196,7 +195,7 @@
           <h3>Install</h3>
           <pre><code class="language-bash">npm install @teachinglab/omd</code></pre>
           <div class="divider"></div>
-          <p class="anchor">Docs: <a href="dist/npm-docs/guides/getting-started.html">Getting started</a></p>
+          <p class="anchor">Docs: <a href="npm-docs/guides/getting-started.html">Getting started</a></p>
         </div>
         <div class="card">
           <h3>Render an Equation</h3>
@@ -208,7 +207,7 @@ const display = new omdDisplay(root);
 const equation = omdEquationNode.fromString('2x + 3 = 11');
 display.render(equation);</code></pre>
           <div class="divider"></div>
-          <p class="anchor">API: <a href="dist/npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="dist/npm-docs/api/omdEquationNode.html">omdEquationNode</a></p>
+          <p class="anchor">API: <a href="npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="npm-docs/api/omdEquationNode.html">omdEquationNode</a></p>
         </div>
         <div class="card">
           <h3>Step-by-Step Stack</h3>
@@ -218,7 +217,7 @@ const steps = ['2x + 3 = 11', '2x = 8', 'x = 4'];
 const stack = new omdEquationStack(steps);
 display.render(stack);</code></pre>
           <div class="divider"></div>
-          <p class="anchor">API: <a href="dist/npm-docs/api/omdEquationStack.html">EquationStack</a> · <a href="dist/npm-docs/api/omdStepVisualizer.html">Step Visualizer</a></p>
+          <p class="anchor">API: <a href="npm-docs/api/omdEquationStack.html">EquationStack</a> · <a href="npm-docs/api/omdStepVisualizer.html">Step Visualizer</a></p>
         </div>
         <div class="card">
           <h3>Visualization via JSON</h3>
@@ -232,7 +231,7 @@ const numberLine = createFromJSON({
 
 display.render(numberLine);</code></pre>
           <div class="divider"></div>
-          <p class="anchor">Guide: <a href="dist/npm-docs/guides/factory-functions.html">Factory functions</a> · <a href="dist/npm-docs/json-schemas.html">JSON schemas</a></p>
+          <p class="anchor">Guide: <a href="npm-docs/guides/factory-functions.html">Factory functions</a> · <a href="npm-docs/json-schemas.html">JSON schemas</a></p>
         </div>
       </div>
     </section>
@@ -244,28 +243,28 @@ display.render(numberLine);</code></pre>
         <div class="card">
           <h3>Foundations</h3>
           <ul>
-            <li>Displays: <a href="dist/npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="dist/npm-docs/api/omdCanvas.html">omdCanvas</a></li>
-            <li>Config: <a href="dist/npm-docs/api/omdConfigManager.html">Config manager</a> · <a href="dist/npm-docs/api/configuration-options.html">Options</a></li>
-            <li>Events: <a href="dist/npm-docs/api/eventManager.html">Event manager</a></li>
-            <li>Helpers: <a href="dist/npm-docs/api/omdHelpers.html">omdHelpers</a></li>
+            <li>Displays: <a href="npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="npm-docs/api/omdCanvas.html">omdCanvas</a></li>
+            <li>Config: <a href="npm-docs/api/omdConfigManager.html">Config manager</a> · <a href="npm-docs/api/configuration-options.html">Options</a></li>
+            <li>Events: <a href="npm-docs/api/eventManager.html">Event manager</a></li>
+            <li>Helpers: <a href="npm-docs/api/omdHelpers.html">omdHelpers</a></li>
             <li>Source: <code>index.js</code>, <code>omd/</code>, <code>canvas/</code></li>
           </ul>
         </div>
         <div class="card">
           <h3>Equations & Steps</h3>
           <ul>
-            <li>Nodes: <a href="dist/npm-docs/api/expression-nodes.html">Expression nodes</a>, <a href="dist/npm-docs/api/omdEquationNode.html">EquationNode</a></li>
-            <li>Stacks: <a href="dist/npm-docs/api/omdEquationStack.html">EquationStack</a> · <a href="dist/npm-docs/api/omdStepVisualizer.html">Step Visualizer</a></li>
-            <li>Simplification: <a href="dist/npm-docs/api/omdSimplification.html">Engine</a> · <a href="dist/npm-docs/api/simplificationRules.html">Rules</a></li>
-            <li>Guide: <a href="dist/npm-docs/guides/equations.html">Equations guide</a></li>
+            <li>Nodes: <a href="npm-docs/api/expression-nodes.html">Expression nodes</a>, <a href="npm-docs/api/omdEquationNode.html">EquationNode</a></li>
+            <li>Stacks: <a href="npm-docs/api/omdEquationStack.html">EquationStack</a> · <a href="npm-docs/api/omdStepVisualizer.html">Step Visualizer</a></li>
+            <li>Simplification: <a href="npm-docs/api/omdSimplification.html">Engine</a> · <a href="npm-docs/api/simplificationRules.html">Rules</a></li>
+            <li>Guide: <a href="npm-docs/guides/equations.html">Equations guide</a></li>
           </ul>
         </div>
         <div class="card">
           <h3>Visualizations</h3>
           <ul>
-            <li>Number line: <a href="dist/npm-docs/guides/visualizations.html#number-line">omdNumberLine</a> · double line</li>
-            <li>Tape: <a href="dist/npm-docs/guides/visualizations.html#tape-diagrams">omdTapeDiagram</a> · double tape</li>
-            <li>Coordinate & ratios: <a href="dist/npm-docs/api/omdCoordinatePlane.html">Coordinate plane</a> · <a href="dist/npm-docs/guides/visualizations.html#ratio-charts">Ratio chart</a></li>
+            <li>Number line: <a href="npm-docs/guides/visualizations.html#number-line">omdNumberLine</a> · double line</li>
+            <li>Tape: <a href="npm-docs/guides/visualizations.html#tape-diagrams">omdTapeDiagram</a> · double tape</li>
+            <li>Coordinate & ratios: <a href="npm-docs/api/omdCoordinatePlane.html">Coordinate plane</a> · <a href="npm-docs/guides/visualizations.html#ratio-charts">Ratio chart</a></li>
             <li>Other: spinner, table, tile equations, balance hanger</li>
             <li>Source: <code>src/</code> (visual components)</li>
           </ul>
@@ -273,8 +272,8 @@ display.render(numberLine);</code></pre>
         <div class="card">
           <h3>Schema-First / AI-Friendly</h3>
           <ul>
-            <li><a href="dist/npm-docs/guides/factory-functions.html">Factory functions</a> create objects from JSON</li>
-            <li><a href="dist/npm-docs/json-schemas.html">JSON schemas</a> for validation and generation</li>
+            <li><a href="npm-docs/guides/factory-functions.html">Factory functions</a> create objects from JSON</li>
+            <li><a href="npm-docs/json-schemas.html">JSON schemas</a> for validation and generation</li>
             <li>Examples: <a href="simple-api-example.html">simple API demo</a>, <a href="index-ai.html">AI shell</a></li>
           </ul>
           <div class="divider"></div>
@@ -343,7 +342,7 @@ const canvas = new omdCanvas({
 
 canvas.attachTo('#math-canvas');</code></pre>
           <div class="divider"></div>
-          <p class="anchor">Docs: <a href="dist/npm-docs/api/omdCanvas.html">omdCanvas</a></p>
+          <p class="anchor">Docs: <a href="npm-docs/api/omdCanvas.html">omdCanvas</a></p>
         </div>
         <div class="card">
           <h3>Coordinate Plane with Function Graph</h3>
@@ -357,7 +356,7 @@ plane.loadFromJSON({
 
 display.render(plane);</code></pre>
           <div class="divider"></div>
-          <p class="anchor">Guide: <a href="dist/npm-docs/guides/visualizations.html#coordinate-plane">Coordinate plane</a></p>
+          <p class="anchor">Guide: <a href="npm-docs/guides/visualizations.html#coordinate-plane">Coordinate plane</a></p>
         </div>
         <div class="card">
           <h3>JSON Factory (AI / Config-Driven)</h3>
@@ -371,7 +370,7 @@ const tape = createFromJSON({
 
 display.render(tape);</code></pre>
           <div class="divider"></div>
-          <p class="anchor">Docs: <a href="dist/npm-docs/guides/factory-functions.html">Factory functions</a></p>
+          <p class="anchor">Docs: <a href="npm-docs/guides/factory-functions.html">Factory functions</a></p>
         </div>
       </div>
     </section>
@@ -380,11 +379,11 @@ display.render(tape);</code></pre>
       <h2>Power User Links</h2>
       <p class="sub">Keep these nearby while building.</p>
       <ul class="list-inline">
-        <li><a href="dist/npm-docs/api/api-reference.html">Full API</a></li>
-        <li><a href="dist/npm-docs/json-schemas.html">JSON schemas</a></li>
-        <li><a href="dist/npm-docs/guides/visualizations.html">Visualization guide</a></li>
-        <li><a href="dist/npm-docs/guides/equations.html">Equations guide</a></li>
-        <li><a href="dist/npm-docs/guides/factory-functions.html">Factory functions</a></li>
+        <li><a href="npm-docs/api/api-reference.html">Full API</a></li>
+        <li><a href="npm-docs/json-schemas.html">JSON schemas</a></li>
+        <li><a href="npm-docs/guides/visualizations.html">Visualization guide</a></li>
+        <li><a href="npm-docs/guides/equations.html">Equations guide</a></li>
+        <li><a href="npm-docs/guides/factory-functions.html">Factory functions</a></li>
         <li><a href="examples/index.html">Example launcher</a></li>
         <li><a href="readme.html">README (HTML)</a></li>
       </ul>

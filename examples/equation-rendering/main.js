@@ -11,6 +11,8 @@ import {
     omdNodeOverlayPresets
 } from '../../index.js';
 
+import { jsvgLayoutGroup } from '../../jsvg/jsvgComponents.js';
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', async () => {
     // Create renderers for split panes
