@@ -138,256 +138,101 @@
   </header>
 
   <main>
-    <section id="navigation">
-      <h2>Navigate the Library</h2>
-      <p class="sub">Choose your path: read the full docs, dive into guides, or open curated example pages.</p>
+    <!-- 1. Installation & Setup -->
+    <section id="installation">
+      <h2>Installation & Setup</h2>
+      <p class="sub">Get OMD running in your project.</p>
       <div class="grid">
         <div class="card">
-          <h3>Docs & Guides</h3>
-          <ul>
-            <li><a href="npm-docs/guides/getting-started.html">Getting started</a> → install, bundle, render</li>
-            <li><a href="npm-docs/guides/quick-examples.html">Quick examples</a> → copy/paste snippets</li>
-            <li><a href="npm-docs/guides/visualizations.html">Visualization guide</a> → number line, ratio, coordinate plane</li>
-            <li><a href="npm-docs/guides/equations.html">Equations guide</a> → expressions, terms, variables</li>
-            <li><a href="npm-docs/guides/factory-functions.html">Factory functions</a> → JSON-driven creation</li>
-          </ul>
-          <a class="cta" href="npm-docs/index.html">Browse docs site →</a>
-        </div>
-        <div class="card">
-          <h3>API Reference</h3>
-          <ul>
-            <li><a href="npm-docs/api/api-reference.html">API reference</a> (complete)</li>
-            <li><a href="npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="npm-docs/api/omdCanvas.html">omdCanvas</a></li>
-            <li><a href="npm-docs/api/omdEquationStack.html">omdEquationStack</a> · <a href="npm-docs/api/omdStepVisualizer.html">Step visualizer</a></li>
-            <li><a href="npm-docs/api/configuration-options.html">Config options</a></li>
-            <li><a href="npm-docs/json-schemas.html">JSON schemas</a> for visualizations</li>
-          </ul>
-          <a class="cta" href="npm-docs/api/api-reference.html">Open API docs →</a>
-        </div>
-        <div class="card">
-          <h3>Examples & Demos</h3>
-          <ul>
-            <li><a href="simple-api-example.html">Simple API Example</a></li>
-            <li><a href="examples/equation-rendering/index.html">Equation Rendering Example</a></li>
-            <li><a href="examples/kids-interactive.html">Kids Interactive Solver Example</a></li>
-            <li><a href="https://daydot2.netlify.app/">DayDot Algebra Solver</a></li>
-          </ul>
-          <a class="cta" href="examples/index.html">See all examples →</a>
-        </div>
-        <div class="card">
-          <h3>Starter HTML</h3>
-          <ul>
-            <li><a href="index.html">Main site shell</a> · <a href="index-ai.html">AI shell</a></li>
-            <li><a href="npm-docs.html">Docs-only HTML</a> · <a href="readme.html">README HTML</a></li>
-            <li><a href="simple-api-example.html">One-file API demo</a></li>
-            <li><a href="react-demo/index.html">React demo shell</a></li>
-          </ul>
-          <a class="cta" href="simple-api-example.html">Open the API demo →</a>
-        </div>
-      </div>
-    </section>
-
-    <section id="quickstart">
-      <h2>Quick Start</h2>
-      <p class="sub">Install, render an equation, and add a visualization in minutes.</p>
-      <div class="columns">
-        <div class="card">
-          <h3>Install</h3>
+          <h3>Installation</h3>
+          <p>Install via NPM:</p>
           <pre><code class="language-bash">npm install @teachinglab/omd</code></pre>
           <div class="divider"></div>
-          <p class="anchor">Docs: <a href="npm-docs/guides/getting-started.html">Getting started</a></p>
+          <p class="anchor"><a href="npm-docs/guides/getting-started.html">Full Installation Guide →</a></p>
         </div>
         <div class="card">
-          <h3>Render an Equation</h3>
-          <pre><code class="language-js">import { omdDisplay, omdEquationNode } from '@teachinglab/omd';
-
-const root = document.getElementById('math');
-const display = new omdDisplay(root);
-
-const equation = omdEquationNode.fromString('2x + 3 = 11');
-display.render(equation);</code></pre>
-          <div class="divider"></div>
-          <p class="anchor">API: <a href="npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="npm-docs/api/omdEquationNode.html">omdEquationNode</a></p>
-        </div>
-        <div class="card">
-          <h3>Step-by-Step Stack</h3>
-          <pre><code class="language-js">import { omdEquationStack } from '@teachinglab/omd';
-
-const steps = ['2x + 3 = 11', '2x = 8', 'x = 4'];
-const stack = new omdEquationStack(steps);
-display.render(stack);</code></pre>
-          <div class="divider"></div>
-          <p class="anchor">API: <a href="npm-docs/api/omdEquationStack.html">EquationStack</a> · <a href="npm-docs/api/omdStepVisualizer.html">Step Visualizer</a></p>
-        </div>
-        <div class="card">
-          <h3>Visualization via JSON</h3>
-          <pre><code class="language-js">import { createFromJSON } from '@teachinglab/omd';
-
-const numberLine = createFromJSON({
-  omdType: 'numberLine',
-  min: 0, max: 10,
-  dotValues: [2, 5, 8]
-});
-
-display.render(numberLine);</code></pre>
-          <div class="divider"></div>
-          <p class="anchor">Guide: <a href="npm-docs/guides/factory-functions.html">Factory functions</a> · <a href="npm-docs/json-schemas.html">JSON schemas</a></p>
+          <h3>Build Tools</h3>
+          <p>Configure Vite, Webpack, or other bundlers for OMD.</p>
+          <a class="cta" href="build-tools.html">Working with Build Tools →</a>
         </div>
       </div>
     </section>
 
-    <section id="map">
-      <h2>Library Map</h2>
-      <p class="sub">Understand the major systems and where to look in the repo and docs.</p>
-      <div class="columns">
-        <div class="card">
-          <h3>Foundations</h3>
-          <ul>
-            <li>Displays: <a href="npm-docs/api/omdDisplay.html">omdDisplay</a> · <a href="npm-docs/api/omdCanvas.html">omdCanvas</a></li>
-            <li>Config: <a href="npm-docs/api/omdConfigManager.html">Config manager</a> · <a href="npm-docs/api/configuration-options.html">Options</a></li>
-            <li>Events: <a href="npm-docs/api/eventManager.html">Event manager</a></li>
-            <li>Helpers: <a href="npm-docs/api/omdHelpers.html">omdHelpers</a></li>
-            <li>Source: <code>index.js</code>, <code>omd/</code>, <code>canvas/</code></li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Equations & Steps</h3>
-          <ul>
-            <li>Nodes: <a href="npm-docs/api/expression-nodes.html">Expression nodes</a>, <a href="npm-docs/api/omdEquationNode.html">EquationNode</a></li>
-            <li>Stacks: <a href="npm-docs/api/omdEquationStack.html">EquationStack</a> · <a href="npm-docs/api/omdStepVisualizer.html">Step Visualizer</a></li>
-            <li>Simplification: <a href="npm-docs/api/omdSimplification.html">Engine</a> · <a href="npm-docs/api/simplificationRules.html">Rules</a></li>
-            <li>Guide: <a href="npm-docs/guides/equations.html">Equations guide</a></li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Visualizations</h3>
-          <ul>
-            <li>Number line: <a href="npm-docs/guides/visualizations.html#number-line">omdNumberLine</a> · double line</li>
-            <li>Tape: <a href="npm-docs/guides/visualizations.html#tape-diagrams">omdTapeDiagram</a> · double tape</li>
-            <li>Coordinate & ratios: <a href="npm-docs/api/omdCoordinatePlane.html">Coordinate plane</a> · <a href="npm-docs/guides/visualizations.html#ratio-charts">Ratio chart</a></li>
-            <li>Other: spinner, table, tile equations, balance hanger</li>
-            <li>Source: <code>src/</code> (visual components)</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Schema-First / AI-Friendly</h3>
-          <ul>
-            <li><a href="npm-docs/guides/factory-functions.html">Factory functions</a> create objects from JSON</li>
-            <li><a href="npm-docs/json-schemas.html">JSON schemas</a> for validation and generation</li>
-            <li>Examples: <a href="simple-api-example.html">simple API demo</a>, <a href="index-ai.html">AI shell</a></li>
-          </ul>
-          <div class="divider"></div>
-          <p class="anchor">Tip: keep schemas nearby when generating configs from LLMs.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="examples">
-      <h2>Example Gallery</h2>
-      <p class="sub">Open a demo to see live behavior. Start at the launcher, or jump into a focused scenario.</p>
+    <!-- 2. Getting Started -->
+    <section id="getting-started">
+      <h2>Getting Started</h2>
+      <p class="sub">Quick ways to start building.</p>
       <div class="grid">
         <div class="card">
-          <h3>Core Starters</h3>
-          <ul>
-            <li><a href="examples/index.html">Example launcher</a> (all demos)</li>
-            <li><a href="examples/minimal.html">Minimal</a> – bare render loop</li>
-            <li><a href="examples/simple-usage.html">Simple usage</a> – controls + rendering</li>
-            <li><a href="examples/worked-solution.html">Worked solution</a> – step-by-step flow</li>
-          </ul>
+          <h3>HTML Example</h3>
+          <p>A single-file example using the OMD API and library directly in the browser.</p>
+          <a class="cta" href="simple-api-example.html">View HTML Example →</a>
         </div>
         <div class="card">
-          <h3>Equation Interactions</h3>
-          <ul>
-            <li><a href="examples/equation-stack-test.html">Equation stack</a> – multi-step</li>
-            <li><a href="examples/highlighting-test.html">Highlighting</a> – linked selections</li>
-            <li><a href="examples/focus-frame-demo.html">Focus frame</a> – canvas controls</li>
-            <li><a href="examples/node-overlay-demo.html">Node overlay</a> + <a href="examples/node-overlay-examples.js">presets</a></li>
-          </ul>
+          <h3>React Example</h3>
+          <p>See how to integrate OMD into a React application.</p>
+          <a class="cta" href="react-demo-guide.html">View React Example →</a>
         </div>
         <div class="card">
-          <h3>Visual Playground</h3>
+          <h3>Common Use Cases</h3>
           <ul>
-            <li><a href="examples/expression-playground.html">Expression playground</a></li>
-            <li><a href="examples/drag-and-drop-playground.html">Drag & drop canvas</a></li>
-            <li><a href="examples/canvas/index.html">Canvas module</a> + <a href="examples/canvas/canvas.js">JS</a></li>
-            <li><a href="examples/equation-rendering/index.html">Equation rendering (bundler)</a></li>
+            <li><a href="examples/simple-usage.html">Simple Equation Display</a></li>
+            <li><a href="examples/worked-solution.html">Step-by-Step Solution</a></li>
+            <li><a href="examples/kids-interactive.html">Interactive Learning App</a></li>
           </ul>
-        </div>
-        <div class="card">
-          <h3>Learning Experiences</h3>
-          <ul>
-            <li><a href="examples/kids-interactive.html">Kids interactive solver</a></li>
-            <li><a href="examples/worked-solution.html">Worked solution</a> – gradual reveal</li>
-            <li><a href="examples/highlighting-test.html">Highlighting test</a> – linked cues</li>
-            <li><a href="simple-api-example.html">Simple API example</a> – single file</li>
-          </ul>
-          <div class="note">See <code>src/</code> for underlying visual components.</div>
         </div>
       </div>
     </section>
 
-    <section id="recipes">
-      <h2>Usage Recipes</h2>
-      <p class="sub">Copy/paste snippets for the most common flows.</p>
-      <div class="columns">
+    <!-- 3. Documentation -->
+    <section id="documentation">
+      <h2>Documentation</h2>
+      <p class="sub">Comprehensive guides and API references.</p>
+      <div class="grid">
         <div class="card">
-          <h3>Canvas with Multiple Expressions</h3>
-          <pre><code class="language-js">import { omdCanvas } from '@teachinglab/omd';
-
-const canvas = new omdCanvas({
-  width: 800,
-  height: 300,
-  expressions: ['x + 4 = 12', '3x - 2 = 10']
-});
-
-canvas.attachTo('#math-canvas');</code></pre>
-          <div class="divider"></div>
-          <p class="anchor">Docs: <a href="npm-docs/api/omdCanvas.html">omdCanvas</a></p>
+          <h3>Core Systems</h3>
+          <ul>
+            <li><a href="omd-display.html">omdDisplay</a> – Main rendering engine</li>
+            <li><a href="omd-canvas.html">omdCanvas</a> – Multi-object surface</li>
+          </ul>
         </div>
         <div class="card">
-          <h3>Coordinate Plane with Function Graph</h3>
-          <pre><code class="language-js">import { omdCoordinatePlane } from '@teachinglab/omd';
-
-const plane = new omdCoordinatePlane();
-plane.loadFromJSON({
-  xMin: -6, xMax: 6, yMin: -6, yMax: 6,
-  graphEquations: [{ equation: 'y = x^2 - 4', color: '#ff7b72' }]
-});
-
-display.render(plane);</code></pre>
-          <div class="divider"></div>
-          <p class="anchor">Guide: <a href="npm-docs/guides/visualizations.html#coordinate-plane">Coordinate plane</a></p>
+          <h3>Features</h3>
+          <ul>
+            <li><a href="npm-docs/guides/visualizations.html">Visualizations</a> – Number lines, charts, etc.</li>
+            <li><a href="npm-docs/guides/equations.html">Equations & Expressions</a> – Math logic</li>
+            <li><a href="npm-docs/json-schemas.html">JSON Schemas</a> – Data structures</li>
+          </ul>
         </div>
         <div class="card">
-          <h3>JSON Factory (AI / Config-Driven)</h3>
-          <pre><code class="language-js">import { createFromJSON } from '@teachinglab/omd';
-
-const tape = createFromJSON({
-  omdType: 'tapeDiagram',
-  bars: [{ value: 6, label: 'A' }, { value: 9, label: 'B' }],
-  showGrid: true
-});
-
-display.render(tape);</code></pre>
-          <div class="divider"></div>
-          <p class="anchor">Docs: <a href="npm-docs/guides/factory-functions.html">Factory functions</a></p>
+          <h3>Full Reference</h3>
+          <p>Browse the complete API documentation.</p>
+          <a class="cta" href="npm-docs/index.html">Open Docs Home →</a>
         </div>
       </div>
     </section>
 
-    <section id="links">
-      <h2>Power User Links</h2>
-      <p class="sub">Keep these nearby while building.</p>
-      <ul class="list-inline">
-        <li><a href="npm-docs/api/api-reference.html">Full API</a></li>
-        <li><a href="npm-docs/json-schemas.html">JSON schemas</a></li>
-        <li><a href="npm-docs/guides/visualizations.html">Visualization guide</a></li>
-        <li><a href="npm-docs/guides/equations.html">Equations guide</a></li>
-        <li><a href="npm-docs/guides/factory-functions.html">Factory functions</a></li>
-        <li><a href="examples/index.html">Example launcher</a></li>
-        <li><a href="readme.html">README (HTML)</a></li>
-      </ul>
-      <div class="note">Source layout: <code>omd/</code> core, <code>canvas/</code> rendering stack, <code>src/</code> visualizations, <code>jsvg/</code> SVG helpers.</div>
+    <!-- 4. Examples & Demos -->
+    <section id="examples">
+      <h2>Examples & Demos</h2>
+      <p class="sub">Explore what's possible with OMD.</p>
+      <div class="grid">
+        <div class="card">
+          <h3>Simple API Example</h3>
+          <p>The bare minimum code to render visuals from the API.</p>
+          <a class="cta" href="simple-api-example.html">Open Example →</a>
+        </div>
+        <div class="card">
+          <h3>Equation Rendering</h3>
+          <p>Examples of rendering various mathematical expressions.</p>
+          <a class="cta" href="examples/equation-rendering/index.html">Open Examples →</a>
+        </div>
+        <div class="card">
+          <h3>All Examples</h3>
+          <p>A gallery of all available demos and test cases.</p>
+          <a class="cta" href="examples/index.html">Browse All Examples →</a>
+        </div>
+      </div>
     </section>
   </main>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>

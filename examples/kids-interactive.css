@@ -1,20 +1,21 @@
 /* Only one #math-display block, with all properties */
 #math-display {
     width: 100%;
-    min-height: 200px;
-    max-height: 75vh;
+    max-width: 600px;
+    aspect-ratio: 1 / 1; /* Force square */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    overflow-y: auto;
+    overflow: hidden;
     border: 3px solid #e2e8f0;
     background: #f7fafc;
-    border-radius: 15px;
-    margin: 20px 0;
+    border-radius: 25px;
+    margin: 20px auto;
     position: relative;
     padding: 20px;
     box-sizing: border-box;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
 }
 #math-display > svg {
     max-height: 100%;
@@ -71,23 +72,6 @@ h1 {
     background: #5a67d8;
     color: white;
     border-color: #5a67d8;
-}
-#math-display {
-    width: 100%;
-    min-height: 200px;
-    max-height: 75vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    overflow-y: auto;
-    border: 3px solid #e2e8f0;
-    background: #f7fafc;
-    border-radius: 15px;
-    margin: 20px 0;
-    position: relative;
-    padding: 20px;
-    box-sizing: border-box;
 }
 .hint-area {
     background: #c6f6d5;

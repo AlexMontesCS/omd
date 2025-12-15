@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMD | React Example Setup</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap');
+    :root {
+      --bg: #0b1221;
+      --bg-alt: #0f172a;
+      --panel: rgba(255, 255, 255, 0.03);
+      --panel-strong: rgba(255, 255, 255, 0.08);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #7de2d1;
+      --accent-2: #ffb46a;
+      --border: rgba(255, 255, 255, 0.08);
+      --shadow: 0 15px 60px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Space Grotesk', 'Spline Sans Mono', 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 15% 20%, rgba(125, 226, 209, 0.12), transparent 30%),
+                  radial-gradient(circle at 80% 0%, rgba(255, 180, 106, 0.16), transparent 32%),
+                  linear-gradient(145deg, var(--bg), #0d1629 40%, #0c223a 90%);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 0 18px 64px;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: #aaf2e7; }
+    header {
+      max-width: 900px;
+      margin: 48px auto 28px;
+      padding: 28px 28px 32px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(120deg, rgba(125, 226, 209, 0.08), rgba(255, 180, 106, 0.08)),
+                  rgba(255, 255, 255, 0.02);
+      box-shadow: var(--shadow);
+    }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    h1 { margin: 0 0 10px; font-size: 36px; letter-spacing: -0.02em; }
+    main { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    section {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel);
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+    }
+    h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -0.01em; }
+    .sub { color: var(--muted); margin-bottom: 12px; font-size: 15px; }
+    code, pre {
+      font-family: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #e2e8f0;
+    }
+    pre { padding: 12px; overflow: auto; margin: 0; }
+    .back-link { display: inline-block; margin-bottom: 20px; font-size: 14px; }
+    .warning {
+      background: rgba(255, 180, 106, 0.1);
+      border: 1px solid rgba(255, 180, 106, 0.3);
+      color: #ffb46a;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">← Back to Home</a>
+  <header>
+    <div class="eyebrow">OMD · Examples</div>
+    <h1>React Example Setup</h1>
+  </header>
+
+  <main>
+    <section>
+      <div class="warning">
+        <strong>Note:</strong> The React example cannot be run directly in the browser like the other HTML examples. It requires a build step to compile the JSX code.
+      </div>
+
+      <h2>How to Run</h2>
+      <p>To run the React demo, you need to start the development server using Node.js.</p>
+      
+      <h3>1. Open a Terminal</h3>
+      <p>Navigate to the <code>react-demo</code> directory:</p>
+      <pre><code class="language-bash">cd react-demo</code></pre>
+
+      <h3>2. Install Dependencies</h3>
+      <pre><code class="language-bash">npm install</code></pre>
+
+      <h3>3. Start the Server</h3>
+      <pre><code class="language-bash">npm run dev</code></pre>
+
+      <p>Once the server starts, open the URL shown in the terminal (usually <code>http://localhost:5173</code>).</p>
+    </section>
+
+    <section>
+      <h2>Why is this necessary?</h2>
+      <p>React uses <strong>JSX</strong> (JavaScript XML) to write HTML-like syntax in JavaScript. Browsers cannot understand JSX directly; it must be "transpiled" into standard JavaScript using a tool like Vite or Webpack.</p>
+      <p>The other examples in this library use standard HTML and JavaScript modules, which modern browsers can run natively.</p>
+    </section>
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</body>
+</html>

@@ -46,46 +46,11 @@
         import { omdDisplay, omdEquationNode, omdEquationStack } from '../omd/core/index.js';
         
         class KidsMathSolver {
-            fitDisplayToSVG(retries = 10) {
-                // Wait for next frame to ensure DOM is updated
-                requestAnimationFrame(() => {
-                    if (!this.display || !this.display.container) {
-                        if (retries > 0) this.fitDisplayToSVG(retries - 1);
-                        else console.debug('[fitDisplayToSVG] this.display.container is undefined');
-                        return;
-                    }
-                    const displayDiv = this.display.container;
-                    const svg = displayDiv.querySelector('svg');
-                    if (!svg) {
-                        if (retries > 0) this.fitDisplayToSVG(retries - 1);
-                        else console.debug('[fitDisplayToSVG] SVG not found in displayDiv');
-                        return;
-                    }
-
-                    // Get SVG height (prefer attribute, fallback to bounding box)
-                    let svgHeight = parseFloat(svg.getAttribute('height'));
-                    if (isNaN(svgHeight)) {
-                        svgHeight = svg.getBoundingClientRect().height;
-                    }
-
-                    // Get padding from CSS
-                    const style = getComputedStyle(displayDiv);
-                    const paddingTop = parseFloat(style.paddingTop);
-                    const paddingBottom = parseFloat(style.paddingBottom);
-                    const minHeight = parseFloat(style.minHeight) || 0;
-                    const maxHeight = parseFloat(style.maxHeight) || window.innerHeight * 0.75;
-
-                    let requiredHeight = svgHeight + paddingTop + paddingBottom;
-                    requiredHeight = Math.max(minHeight, Math.min(requiredHeight, maxHeight));
-
-                    displayDiv.style.height = requiredHeight + 'px';
-                });
-            }
-
             constructor() {
                 this.display = new omdDisplay(document.getElementById('math-display'), {
                     backgroundColor: '#f7fafc',
-                    autoResize: true,
+                    fitToContent: false,
+                    centerContent: true,
                     fontSize: 48 
                 });
                 
@@ -192,7 +157,6 @@
                         seq.updateStepsVisibility(step => (step.stepMark ?? 0) === 0); // Show step 0, filter out 1 and 2
                         this.currentEquationStack.updateLayout();
                         this.display.centerNode();
-                        setTimeout(() => this.fitDisplayToSVG(), 0);
                     }
                 };
             }
@@ -244,7 +208,6 @@
 
                 this.display.render(this.currentEquationStack);
                 this.display.centerNode();
-                setTimeout(() => this.fitDisplayToSVG(), 0);
 
                 this.resetUI();
             }
@@ -262,7 +225,8 @@
                         // Recreate display fresh so no lingering references remain
                         this.display = new omdDisplay(md, {
                             backgroundColor: '#f7fafc',
-                            autoResize: true,
+                            fitToContent: false,
+                            centerContent: true,
                             fontSize: 48 
                         });
                     }
