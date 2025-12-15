@@ -29,9 +29,9 @@ async function handler(event, context) {
         }
 
         const resultJson = await aiNextEquationStep(equation, {
-            apiKey: process.env.GEMINI_API_KEY,
-            baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
-            model: 'gemini-2.0-flash'
+            apiKey: process.env.OPENAI_API_KEY,
+            baseURL: 'https://api.openai.com/v1',
+            model: 'gpt-4o'
         });
 
         return { statusCode: 200, headers, body: JSON.stringify(resultJson) };
