@@ -71,6 +71,78 @@
       border-radius: 8px;
       margin-bottom: 20px;
     }
+
+    /* Tabs Styling */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: none;
+      color: var(--muted);
+      padding: 10px 16px;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      border-radius: 8px 8px 0 0;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .tab-btn.active {
+      color: var(--accent);
+      background: var(--panel);
+      border-color: var(--border);
+      border-bottom-color: var(--panel);
+      margin-bottom: -1px;
+      font-weight: 500;
+    }
+    .tab-content {
+      display: none;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .tab-content pre {
+      margin: 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+    }
+    .file-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'Spline Sans Mono', monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .copy-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      color: var(--text);
+      border-color: var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -86,6 +158,113 @@
         <strong>Note:</strong> The React example cannot be run directly in the browser like the other HTML examples. It requires a build step to compile the JSX code.
       </div>
 
+      <h2>Project Structure & Code</h2>
+      <p class="sub">Explore the key files needed to integrate OMD into a React application.</p>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'app-jsx')">src/App.jsx</button>
+        <button class="tab-btn" onclick="openTab(event, 'main-jsx')">src/main.jsx</button>
+        <button class="tab-btn" onclick="openTab(event, 'vite-config')">vite.config.js</button>
+        <button class="tab-btn" onclick="openTab(event, 'package-json')">package.json</button>
+      </div>
+
+      <div id="app-jsx" class="tab-content active">
+        <div class="file-header">
+          <span>src/App.jsx</span>
+          <!-- <button class="copy-btn">Copy</button> -->
+        </div>
+        <pre><code class="language-jsx">import { useEffect, useRef } from 'react';
+import { omdDisplay, omdNumberLine } from '@teachinglab/omd';
+import '@teachinglab/omd/register-math'; // Important: Registers math.js extensions
+
+function App() {
+  const equationRef = useRef(null);
+  const numberLineRef = useRef(null);
+
+  useEffect(() => {
+    // 1. Render an Equation
+    // We use a ref to tell OMD where to mount the SVG
+    const display = new omdDisplay(equationRef.current);
+    display.render("x^2 + 3x + 2 = 0");
+
+    // 2. Create and Render a Visualization (Number Line)
+    const numberLine = new omdNumberLine();
+    numberLine.loadFromJSON({
+      min: -5,
+      max: 10,
+      dotValues: [4]
+    });
+    
+    const numberLineDisplay = new omdDisplay(numberLineRef.current);
+    numberLineDisplay.render(numberLine);
+
+    // Example: Updating the visualization dynamically
+    // numberLine.addNumberDot(7);
+    // numberLineDisplay.render(numberLine);
+  }, []);
+
+  return (
+    &lt;div style={{ padding: '2rem' }}&gt;
+      &lt;h1&gt;OMD React Demo&lt;/h1&gt;
+      &lt;div ref={equationRef}&gt;&lt;/div&gt;
+      &lt;div ref={numberLineRef} style={{ marginTop: '2rem' }}&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;</code></pre>
+      </div>
+
+      <div id="main-jsx" class="tab-content">
+        <div class="file-header">src/main.jsx</div>
+        <pre><code class="language-jsx">import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  &lt;React.StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/React.StrictMode&gt;
+);</code></pre>
+      </div>
+
+      <div id="vite-config" class="tab-content">
+        <div class="file-header">vite.config.js</div>
+        <pre><code class="language-javascript">import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  optimizeDeps: {
+    // Ensure mathjs and openai are pre-bundled if needed
+    include: ['mathjs', 'openai'],
+    // Exclude OMD from optimization to ensure proper loading of its internal modules
+    exclude: ['@teachinglab/omd', '@teachinglab/jsvg']
+  }
+});</code></pre>
+      </div>
+
+      <div id="package-json" class="tab-content">
+        <div class="file-header">package.json</div>
+        <pre><code class="language-json">{
+  "name": "react-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@teachinglab/jsvg": "^0.1.1",
+    "@teachinglab/omd": "^0.6.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.0"
+  }
+}</code></pre>
+      </div>
+    </section>
+
+    <section>
       <h2>How to Run</h2>
       <p>To run the React demo, you need to start the development server using Node.js.</p>
       
@@ -109,6 +288,28 @@
     </section>
   </main>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script>hljs.highlightAll();</script>
+  <script>
+    hljs.highlightAll();
+
+    function openTab(evt, tabName) {
+      // Hide all tab content
+      const tabContents = document.getElementsByClassName("tab-content");
+      for (let i = 0; i < tabContents.length; i++) {
+        tabContents[i].style.display = "none";
+        tabContents[i].classList.remove("active");
+      }
+
+      // Remove active class from all tab buttons
+      const tabBtns = document.getElementsByClassName("tab-btn");
+      for (let i = 0; i < tabBtns.length; i++) {
+        tabBtns[i].className = tabBtns[i].className.replace(" active", "");
+      }
+
+      // Show the current tab, and add an "active" class to the button that opened the tab
+      document.getElementById(tabName).style.display = "block";
+      document.getElementById(tabName).classList.add("active");
+      evt.currentTarget.className += " active";
+    }
+  </script>
 </body>
 </html>

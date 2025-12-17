@@ -240,7 +240,7 @@ export class omdEquationStack extends jsvgGroup {
         const effectivePadding = (typeof padding === 'number') ? padding : this.overlayPadding;
 
         // Compute top-left of toolbar in container coordinates using UN-SCALED toolbar size
-        // because we counter-scale the toolbar by 1/s to keep constant on-screen size.
+        // because we counter-scale the toolbar by 1/s to keep constant Open size.
         let containerX = (containerWidth - toolbarWidth) / 2;
         let containerY = containerHeight - toolbarHeight - effectivePadding;
         // Snap to integer pixels to avoid subpixel jitter when scaling
@@ -259,7 +259,7 @@ export class omdEquationStack extends jsvgGroup {
         const svgViewBox = rootSVG?.getAttribute?.('viewBox') || 'unknown';
         
         
-        // Counter-scale the toolbar so it remains a constant on-screen size
+        // Counter-scale the toolbar so it remains a constant Open size
         if (typeof toolbarGroup.setScale === 'function') {
             toolbarGroup.setScale(1 / s);
         }
@@ -287,7 +287,7 @@ export class omdEquationStack extends jsvgGroup {
      * @param {number} [opts.offsetX=0] - Horizontal offset in screen pixels (positive -> right)
      * @param {number} [opts.offsetY=0] - Vertical offset in screen pixels (positive -> down)
      * @param {number} [opts.padding=16] - Padding from edges when computing anchor
-     * @param {boolean} [opts.counterScale=true] - Whether to counter-scale the child to keep constant on-screen size
+     * @param {boolean} [opts.counterScale=true] - Whether to counter-scale the child to keep constant Open size
      * @param {boolean} [opts.addToStack=true] - Whether to add the child to this stack's children (default true)
      * @param {{x:number,y:number}|null} [opts.customCoords=null] - If anchor==='custom', use these screen coords
      * @returns {object|null} The child or null if not applicable
@@ -352,7 +352,7 @@ export class omdEquationStack extends jsvgGroup {
         const x = (containerX - stackX) / s;
         const y = (containerY - stackY) / s;
 
-        // Optionally counter-scale child to keep constant on-screen size
+        // Optionally counter-scale child to keep constant Open size
         if (counterScale && child && typeof child.setScale === 'function') {
             try { child.setScale(1 / s); } catch (_) {}
         }

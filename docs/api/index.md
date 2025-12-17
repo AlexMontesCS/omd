@@ -1,6 +1,6 @@
 # OMD Library Entry Point
 
-This module (`omd/core/index.js`) serves as the main entry point for the OMD (On-screen Math Display) library. It re-exports all core classes, visualization components, and utility functions, making them easily accessible from a single import.
+This module (`omd/core/index.js`) serves as the main entry point for the OMD (Open Math Display) library. It re-exports all core classes, visualization components, and utility functions, making them easily accessible from a single import.
 
 ## Overview
 

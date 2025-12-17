@@ -1,7 +1,7 @@
 /**
  * OMD Library - Main Entry Point
  * 
- * This is the main entry point for the OMD (On-screen Math Display) library.
+ * This is the main entry point for the OMD (Open Math Display) library.
  * It exports all core OMD components and visualization tools from a single endpoint.
  * 
  * Usage:

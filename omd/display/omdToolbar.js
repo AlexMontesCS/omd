@@ -165,7 +165,7 @@ export class omdToolbar {
         }
 
         if (popupGroup) {
-            // Attach to toolbar group so it inherits toolbar counter-scaling (keeps constant on-screen size)
+            // Attach to toolbar group so it inherits toolbar counter-scaling (keeps constant Open size)
             this.elements.toolbarGroup.addChild(popupGroup);
             this.state.activePopup = { type: popupType, group: popupGroup };
             // Ensure the toolbar and popup are on top of all siblings inside the SVG

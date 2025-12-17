@@ -9,7 +9,10 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         ai: resolve(__dirname, 'index-ai.html'),
-        simpleApi: resolve(__dirname, 'simple-api-example.html')
+        simpleApi: resolve(__dirname, 'simple-api-example.html'),
+        buildTools: resolve(__dirname, 'build-tools.html'),
+        htmlExampleGuide: resolve(__dirname, 'html-example-guide.html'),
+        commonUseCases: resolve(__dirname, 'common-use-cases.html')
       }
     }
   },

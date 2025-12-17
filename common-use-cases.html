@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMD | Common Use Cases</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap');
+    :root {
+      --bg: #0b1221;
+      --bg-alt: #0f172a;
+      --panel: rgba(255, 255, 255, 0.03);
+      --panel-strong: rgba(255, 255, 255, 0.08);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #7de2d1;
+      --accent-2: #ffb46a;
+      --border: rgba(255, 255, 255, 0.08);
+      --shadow: 0 15px 60px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Space Grotesk', 'Spline Sans Mono', 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 15% 20%, rgba(125, 226, 209, 0.12), transparent 30%),
+                  radial-gradient(circle at 80% 0%, rgba(255, 180, 106, 0.16), transparent 32%),
+                  linear-gradient(145deg, var(--bg), #0d1629 40%, #0c223a 90%);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 0 18px 64px;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: #aaf2e7; }
+    header {
+      max-width: 1120px;
+      margin: 48px auto 28px;
+      padding: 28px 28px 32px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(120deg, rgba(125, 226, 209, 0.08), rgba(255, 180, 106, 0.08)),
+                  rgba(255, 255, 255, 0.02);
+      box-shadow: var(--shadow);
+    }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    h1 { margin: 0 0 10px; font-size: 36px; letter-spacing: -0.02em; }
+    main { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    section {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel);
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+    }
+    h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -0.01em; }
+    .sub { color: var(--muted); margin-bottom: 12px; font-size: 15px; }
+    code, pre {
+      font-family: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #e2e8f0;
+    }
+    pre { padding: 12px; overflow: auto; margin: 0; }
+    .back-link { display: inline-block; margin-bottom: 20px; font-size: 14px; }
+    .btn {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: var(--accent);
+      color: #0b1221;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(125, 226, 209, 0.25);
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    /* Tabs Styling */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: none;
+      color: var(--muted);
+      padding: 10px 16px;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      border-radius: 8px 8px 0 0;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .tab-btn.active {
+      color: var(--accent);
+      background: var(--panel);
+      border-color: var(--border);
+      border-bottom-color: var(--panel);
+      margin-bottom: -1px;
+      font-weight: 500;
+    }
+    
+    /* Sub-tabs styling (smaller) */
+    .sub-tabs .tab-btn {
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+
+    .tab-content {
+      display: none;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+      padding: 20px;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Nested tab content shouldn't have padding/border if it's just a container for code */
+    .code-tab-content {
+        display: none;
+    }
+    .code-tab-content.active {
+        display: block;
+    }
+    
+    .tab-content pre {
+      margin: 0;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+    }
+    .file-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'Spline Sans Mono', monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--panel-strong);
+      border-radius: 8px 8px 0 0;
+      margin-top: 0; /* Changed from 20px */
+    }
+    .file-header + pre {
+      border-radius: 0 0 8px 8px;
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">← Back to Home</a>
+  <header>
+    <div class="eyebrow">OMD · Examples</div>
+    <h1>Common Use Cases</h1>
+  </header>
+
+  <main>
+    <section>
+      <!-- Main Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'simple', 'main-tab')">Simple Usage</button>
+        <button class="tab-btn" onclick="openTab(event, 'worked', 'main-tab')">Worked Solution</button>
+        <button class="tab-btn" onclick="openTab(event, 'interactive', 'main-tab')">Interactive App</button>
+      </div>
+
+      <!-- Simple Usage Tab -->
+      <div id="simple" class="tab-content active main-tab">
+        <h2>Simple Equation Display</h2>
+        <p class="sub">A basic example showing how to render an equation and perform simple operations like simplification.</p>
+        
+        <a class="btn" href="examples/simple-usage.html">Open Live Preview</a>
+
+        <!-- Sub Tabs for Simple Usage -->
+        <div class="tabs sub-tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'simple-html', 'simple-code')">index.html</button>
+            <button class="tab-btn" onclick="openTab(event, 'simple-css', 'simple-code')">styles.css</button>
+            <button class="tab-btn" onclick="openTab(event, 'simple-js', 'simple-code')">script.js</button>
+        </div>
+
+        <div id="simple-html" class="code-tab-content active simple-code">
+            <div class="file-header">index.html (Structure)</div>
+            <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Simple OMD Library Usage&lt;/title&gt;
+    &lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Simple OMD Library Example&lt;/h1&gt;
+    
+    &lt;div id="math-container"&gt;&lt;/div&gt;
+    
+    &lt;div class="controls"&gt;
+        &lt;input id="expression" type="text" value="2*x + 3 = 7" placeholder="Enter expression..."&gt;
+        &lt;button id="render"&gt;Render&lt;/button&gt;
+        &lt;button id="simplify"&gt;Simplify Step&lt;/button&gt;
+        &lt;button id="simplifyAll"&gt;Simplify All&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"&gt;&lt;/script&gt;
+    &lt;script src="../jsvg/jsvg.js"&gt;&lt;/script&gt;
+    &lt;script src="../jsvg/jsvgComponents.js"&gt;&lt;/script&gt;
+    &lt;script type="module" src="script.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        </div>
+
+        <div id="simple-css" class="code-tab-content simple-code">
+            <div class="file-header">styles.css</div>
+            <pre><code class="language-css">body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#math-container {
+    width: 100%;
+    height: 400px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    position: relative;
+}
+
+.controls {
+    margin-top: 20px;
+}
+
+button {
+    margin: 5px;
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+input {
+    padding: 8px;
+    width: 300px;
+    margin: 5px;
+}</code></pre>
+        </div>
+
+        <div id="simple-js" class="code-tab-content simple-code">
+            <div class="file-header">script.js</div>
+            <pre><code class="language-javascript">import { omdDisplay, omdEquationSequenceNode, omdEquationNode } from '@teachinglab/omd';
+
+let renderer;
+let currentSequence;
+
+function renderExpression(expr) {
+    // Always render as a sequence for simplification functionality
+    const initialNode = omdEquationNode.fromString(expr);
+    currentSequence = new omdEquationSequenceNode([initialNode]);
+    renderer.render(currentSequence);
+    refreshDisplay();
+}
+
+function refreshDisplay() {
+    if (currentSequence) {
+        currentSequence.computeDimensions();
+        currentSequence.updateLayout();
+        renderer.centerNode();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Create renderer (config loads automatically)
+    const container = document.getElementById('math-container');
+    renderer = new omdDisplay(container, {
+        fontSize: 32,
+        centerContent: true
+    });
+    
+    // Expose refresh function globally for omdEquationSequenceNode to call
+    window.refreshDisplayAndFilters = refreshDisplay;
+
+    // Render initial expression
+    renderExpression('2*x + 3 = 7');
+    
+    // Handle button clicks
+    document.getElementById('render').onclick = () => {
+        const expression = document.getElementById('expression').value;
+        try {
+            renderExpression(expression);
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    };
+    
+    document.getElementById('simplify').onclick = () => {
+        if (currentSequence) {
+            const result = currentSequence.simplify();
+            if (!result.success) alert(result.message);
+        }
+    };
+    
+    document.getElementById('simplifyAll').onclick = () => {
+        if (currentSequence) {
+            const result = currentSequence.simplifyAll();
+            alert(result.message);
+        }
+    };
+});</code></pre>
+        </div>
+      </div>
+
+      <!-- Worked Solution Tab -->
+      <div id="worked" class="tab-content main-tab">
+        <h2>Step-by-Step Solution</h2>
+        <p class="sub">Demonstrates how to build an interactive step-by-step solver with filtering for different levels of detail.</p>
+        
+        <a class="btn" href="examples/worked-solution.html">Open Live Preview</a>
+
+        <!-- Sub Tabs for Worked Solution -->
+        <div class="tabs sub-tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'worked-html', 'worked-code')">index.html</button>
+            <button class="tab-btn" onclick="openTab(event, 'worked-css', 'worked-code')">styles.css</button>
+            <button class="tab-btn" onclick="openTab(event, 'worked-js', 'worked-code')">script.js</button>
+        </div>
+
+        <div id="worked-html" class="code-tab-content active worked-code">
+            <div class="file-header">index.html (Structure)</div>
+            <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;OMD - Worked Solution Example&lt;/title&gt;
+    &lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="container"&gt;
+        &lt;h1&gt;Worked Solution Example&lt;/h1&gt;
+        
+        &lt;div class="problem"&gt;
+            &lt;strong&gt;Problem:&lt;/strong&gt; Solve for x: &lt;code&gt;3x + 5 = 14&lt;/code&gt;
+        &lt;/div&gt;
+        
+        &lt;div class="controls"&gt;
+            &lt;button id="subtract5"&gt;Subtract 5 from both sides&lt;/button&gt;
+            &lt;button id="divide3"&gt;Divide both sides by 3&lt;/button&gt;
+            &lt;button id="simplifyAll"&gt;Simplify All&lt;/button&gt;
+            &lt;button id="reset"&gt;Reset&lt;/button&gt;
+            &lt;button id="autoSolve"&gt;Auto Solve&lt;/button&gt;
+        &lt;/div&gt;
+        
+        &lt;div id="solution-display"&gt;&lt;/div&gt;
+        
+        &lt;div class="step-filters"&gt;
+            &lt;strong&gt;Step Filtering:&lt;/strong&gt;
+            &lt;div class="filter-option"&gt;
+                &lt;label&gt;
+                    &lt;input type="radio" name="filter" value="all" checked&gt; Show All Steps
+                &lt;/label&gt;
+            &lt;/div&gt;
+            &lt;div class="filter-option"&gt;
+                &lt;label&gt;
+                    &lt;input type="radio" name="filter" value="0"&gt; Level 0 Only (Major Steps)
+                &lt;/label&gt;
+            &lt;/div&gt;
+            &lt;div class="filter-option"&gt;
+                &lt;label&gt;
+                    &lt;input type="radio" name="filter" value="1"&gt; Level 1 Only (Intermediate Steps)
+                &lt;/label&gt;
+            &lt;/div&gt;
+            &lt;div class="filter-option"&gt;
+                &lt;label&gt;
+                    &lt;input type="radio" name="filter" value="2"&gt; Level 2 Only (Detailed Steps)
+                &lt;/label&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        
+        &lt;div id="explanation" class="explanation"&gt;&lt;/div&gt;
+        &lt;div id="status" class="status"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"&gt;&lt;/script&gt;
+    &lt;script src="../jsvg/jsvg.js"&gt;&lt;/script&gt;
+    &lt;script src="../jsvg/jsvgComponents.js"&gt;&lt;/script&gt;
+    &lt;script type="module" src="script.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        </div>
+
+        <div id="worked-css" class="code-tab-content worked-code">
+            <div class="file-header">styles.css</div>
+            <pre><code class="language-css">body {
+    font-family: Arial;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f5f5f5;
+}
+.container {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+h1 {
+    color: #2196F3;
+    margin-bottom: 10px;
+}
+.problem {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #e3f2fd;
+    border-radius: 8px;
+}
+#solution-display {
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 1 / 1;
+    border: 2px solid #e2e8f0;
+    background: #fafafa;
+    border-radius: 16px;
+    margin: 40px auto;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+button {
+    padding: 12px 24px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+button:hover {
+    background: #45a049;
+}
+button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+.step-filters {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f0f0f0;
+    border-radius: 5px;
+}
+.filter-option {
+    margin: 5px 0;
+}
+.explanation {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 4px;
+    display: none;
+}
+.status {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    display: none;
+}
+.status.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.status.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}</code></pre>
+        </div>
+
+        <div id="worked-js" class="code-tab-content worked-code">
+            <div class="file-header">script.js</div>
+            <pre><code class="language-javascript">import { omdDisplay, omdEquationSequenceNode, omdEquationNode } from '@teachinglab/omd';
+
+let renderer;
+let currentSequence;
+
+function updateStatus(message, type = 'info') {
+    const status = document.getElementById('status');
+    status.textContent = message;
+    status.className = `status ${type}`;
+    status.style.display = 'block';
+    setTimeout(() => status.style.display = 'none', 3000);
+}
+
+function refreshDisplayAndFilters() {
+    if (!currentSequence) return;
+
+    const filterValue = document.querySelector('input[name="filter"]:checked').value;
+    const maxImportance = filterValue === 'all' ? 3 : parseInt(filterValue); // 3 to show all steps
+
+    currentSequence.updateStepsVisibility(step => {
+        const stepMark = step.stepMark ?? 0;
+        return stepMark &lt;= maxImportance;
+    });
+    
+    // Ensure the sequence and display are updated after visibility changes
+    currentSequence.computeDimensions();
+    currentSequence.updateLayout();
+    renderer.centerNode();
+}
+
+function initializeProblem() {
+    const initialEquation = omdEquationNode.fromString('3x + 5 = 14');
+    currentSequence = new omdEquationSequenceNode([initialEquation]);
+    renderer.render(currentSequence);
+    updateStatus('Problem loaded. Ready to solve!');
+    refreshDisplayAndFilters();
+    updateButtonStates();
+}
+
+function updateButtonStates() {
+    const currentEquationStr = currentSequence.getCurrentEquation()?.toString();
+    document.getElementById('subtract5').disabled = currentEquationStr !== '3x + 5 = 14';
+    document.getElementById('divide3').disabled = currentEquationStr !== '3x = 9';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderer = new omdDisplay(document.getElementById('solution-display'), {
+        fontSize: 36,
+        fitToContent: false,
+        centerContent: true,
+        topMargin: 50
+    });
+
+    // Expose refresh function globally for omdEquationSequenceNode to call
+    window.refreshDisplayAndFilters = refreshDisplayAndFilters;
+
+    initializeProblem();
+    
+    document.getElementById('subtract5').onclick = () => {
+        if (document.getElementById('subtract5').disabled) return;
+        currentSequence.applyEquationOperation(5, 'subtract');
+        currentSequence.simplify(); // Simplify the result of the operation
+        updateStatus('Subtracted 5 from both sides: 3x = 9', 'success');
+        updateButtonStates();
+    };
+    
+    document.getElementById('divide3').onclick = () => {
+        if (document.getElementById('divide3').disabled) return;
+        currentSequence.applyEquationOperation(3, 'divide');
+        currentSequence.simplify(); // Simplify the result of the operation
+        updateStatus('Divided both sides by 3: x = 3', 'success');
+        updateButtonStates();
+    };
+    
+    document.getElementById('simplifyAll').onclick = () => {
+        currentSequence.simplifyAll();
+        updateStatus('Problem solved!', 'success');
+        updateButtonStates();
+    };
+    
+    document.getElementById('reset').onclick = () => {
+        initializeProblem();
+    };
+    
+    document.getElementById('autoSolve').onclick = () => {
+        currentSequence.simplifyAll();
+        updateStatus('Auto-solved!', 'success');
+        updateButtonStates();
+    };
+    
+    document.querySelectorAll('input[name="filter"]').forEach(radio => {
+        radio.onchange = refreshDisplayAndFilters;
+    });
+});</code></pre>
+        </div>
+      </div>
+
+      <!-- Interactive App Tab -->
+      <div id="interactive" class="tab-content main-tab">
+        <h2>Interactive Learning App</h2>
+        <p class="sub">A complete mini-application for kids to solve math problems, featuring hints, feedback, and progress tracking.</p>
+        
+        <a class="btn" href="examples/kids-interactive.html">Open Live Preview</a>
+
+        <!-- Sub Tabs for Interactive App -->
+        <div class="tabs sub-tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'interactive-html', 'interactive-code')">index.html</button>
+            <button class="tab-btn" onclick="openTab(event, 'interactive-css', 'interactive-code')">kids-interactive.css</button>
+            <button class="tab-btn" onclick="openTab(event, 'interactive-js', 'interactive-code')">script.js</button>
+        </div>
+
+        <div id="interactive-html" class="code-tab-content active interactive-code">
+            <div class="file-header">index.html (Structure)</div>
+            <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Math Problem Solver for Kids&lt;/title&gt;
+    &lt;link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"&gt;
+    &lt;link rel="stylesheet" href="kids-interactive.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="container"&gt;
+        &lt;h1&gt;Math Problem Solver for Kids&lt;/h1&gt;
+        
+        &lt;div class="problem-selector"&gt;
+            &lt;!-- Problem cards will be dynamically inserted here --&gt;
+        &lt;/div&gt;
+        
+        &lt;div class="progress"&gt;
+            &lt;div class="progress-bar"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        
+        &lt;div id="math-display"&gt;&lt;/div&gt;
+        
+        &lt;div class="hint-area" id="hint-area"&gt;&lt;/div&gt;
+        
+        &lt;div class="answer-input"&gt;
+            &lt;label style="font-size: 20px; font-weight: bold;"&gt;What is x equal to?&lt;/label&gt;&lt;br&gt;
+            &lt;input type="number" id="answer" placeholder="?"&gt;
+        &lt;/div&gt;
+        
+        &lt;div class="controls"&gt;
+            &lt;button class="btn btn-hint" id="hint-btn"&gt;💡 Show Next Step&lt;/button&gt;
+            &lt;button class="btn btn-check" id="check-btn"&gt;✓ Check Answer&lt;/button&gt;
+            &lt;button class="btn btn-next" id="next-btn" style="display: none;"&gt;Next Problem →&lt;/button&gt;
+        &lt;/div&gt;
+        
+        &lt;div class="feedback" id="feedback"&gt;&lt;/div&gt;
+        
+        &lt;div class="stars" id="stars"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"&gt;&lt;/script&gt;
+    &lt;script src="../jsvg/jsvg.js"&gt;&lt;/script&gt;
+    &lt;script src="../jsvg/jsvgComponents.js"&gt;&lt;/script&gt;
+    &lt;script type="module" src="script.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        </div>
+
+        <div id="interactive-css" class="code-tab-content interactive-code">
+            <div class="file-header">kids-interactive.css</div>
+            <pre><code class="language-css">/* Only one #math-display block, with all properties */
+#math-display {
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 1 / 1; /* Force square */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border: 3px solid #e2e8f0;
+    background: #f7fafc;
+    border-radius: 25px;
+    margin: 20px auto;
+    position: relative;
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+#math-display > svg {
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+}
+body {
+    font-family: 'Albert Sans', 'Arial', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #5a67d8;
+    min-height: 100vh;
+}
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+h1 {
+    color: #5a67d8;
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+.problem-selector {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.problem-card {
+    background: #f7fafc;
+    border: 3px solid #e2e8f0;
+    padding: 15px 25px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 20px;
+    font-weight: bold;
+}
+.problem-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border-color: #5a67d8;
+    background: #edf2f7;
+}
+.problem-card.selected {
+    background: #5a67d8;
+    color: white;
+    border-color: #5a67d8;
+}
+.hint-area {
+    background: #c6f6d5;
+    border: 2px solid #9ae6b4;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    font-size: 18px;
+    display: none;
+    animation: slideIn 0.5s ease-out;
+}
+@keyframes slideIn {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+.controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+.btn {
+    padding: 15px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.btn-hint {
+    background: #f6e05e;
+    color: #744210;
+}
+.btn-hint:hover {
+    background: #f6d743;
+    transform: scale(1.05);
+}
+.btn-hint:disabled {
+    background: #e2e8f0;
+    color: #a0aec0;
+    cursor: not-allowed;
+    transform: none;
+}
+.btn-check {
+    background: #48bb78;
+    color: white;
+}
+.btn-check:hover {
+    background: #38a169;
+    transform: scale(1.05);
+}
+.btn-next {
+    background: #667eea;
+    color: white;
+}
+.btn-next:hover {
+    background: #5a67d8;
+    transform: scale(1.05);
+}
+.answer-input {
+    text-align: center;
+    margin: 20px 0;
+}
+.answer-input input {
+    padding: 15px;
+    font-size: 24px;
+    width: 150px;
+    text-align: center;
+    border: 3px solid #e2e8f0;
+    border-radius: 10px;
+    font-weight: bold;
+}
+.answer-input input:focus {
+    outline: none;
+    border-color: #5a67d8;
+}
+.feedback {
+    text-align: center;
+    font-size: 24px;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 10px;
+    display: none;
+    font-weight: bold;
+}
+.feedback.correct {
+    background: #c6f6d5;
+    color: #22543d;
+    animation: bounce 0.5s ease-out;
+}
+.feedback.incorrect {
+    background: #feb2b2;
+    color: #742a2a;
+    animation: shake 0.5s ease-out;
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+.stars {
+    text-align: center;
+    font-size: 40px;
+    margin: 20px 0;
+}
+.star {
+    color: #f6e05e;
+    display: inline-block;
+    margin: 0 5px;
+    animation: starPop 0.5s ease-out;
+}
+@keyframes starPop {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+.progress {
+    background: #e2e8f0;
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+.progress-bar {
+    background: linear-gradient(90deg, #48bb78, #38a169);
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease-out;
+}</code></pre>
+        </div>
+
+        <div id="interactive-js" class="code-tab-content interactive-code">
+            <div class="file-header">script.js</div>
+            <pre><code class="language-javascript">import { omdDisplay, omdEquationNode, omdEquationStack } from '@teachinglab/omd';
+
+class KidsMathSolver {
+    constructor() {
+        this.display = new omdDisplay(document.getElementById('math-display'), {
+            backgroundColor: '#f7fafc',
+            fitToContent: false,
+            centerContent: true,
+            fontSize: 48 
+        });
+        
+        this.problems = {
+            'x + 3 = 7': { 
+                answer: 4, 
+                hint: 'Subtract 3 from both sides to find x',
+                operations: [
+                    { type: 'subtract', value: 3, description: 'Subtract 3 from both sides' },
+                ]
+            },
+            '2x + 4 = 10': { 
+                answer: 3, 
+                hint: 'First subtract 4, then divide by 2',
+                operations: [
+                    { type: 'subtract', value: 4, description: 'Subtract 4 from both sides' },
+                    { type: 'divide', value: 2, description: 'Divide both sides by 2' }
+                ]
+            },
+            '3x - 6 = 9': { 
+                answer: 5, 
+                hint: 'First add 6, then divide by 3',
+                operations: [
+                    { type: 'add', value: 6, description: 'Add 6 to both sides' },
+                    { type: 'divide', value: 3, description: 'Divide both sides by 3' }
+                ]
+            },
+            '2x+4=3x+2': { 
+                answer: 2, 
+                hint: 'First subtract 2x from both sides, then subtract 2 from both sides',
+                operations: [
+                    { type: 'subtract', value: '2x', description: 'Subtract 2x from both sides' },
+                    { type: 'subtract', value: 2, description: 'Subtract 2 from both sides' }
+                ]
+            },
+            'x + 5 = 12': {
+                answer: 7,
+                hint: 'Subtract 5 from both sides to find x',
+                operations: [
+                    { type: 'subtract', value: 5, description: 'Subtract 5 from both sides' }
+                ]
+            },
+            '4x - 8 = 0': {
+                answer: 2,
+                hint: 'Add 8 to both sides, then divide by 4',
+                operations: [
+                    { type: 'add', value: 8, description: 'Add 8 to both sides' },
+                    { type: 'divide', value: 4, description: 'Divide both sides by 4' }
+                ]
+            },  
+            'x/3 + 2 = 5': {
+                answer: 9,
+                hint: 'First subtract 2 from both sides, then multiply by 3',
+                operations: [
+                    { type: 'subtract', value: 2, description: 'Subtract 2 from both sides' },
+                    { type: 'multiply', value: 3, description: 'Multiply both sides by 3' }
+                ]
+            },
+            '6x - 3 = 15': {
+                answer: 3, 
+                hint: 'First add 3 to both sides, then divide by 6',
+                operations: [
+                    { type: 'add', value: 3, description: 'Add 3 to both sides' },
+                    { type: 'divide', value: 6, description: 'Divide both sides by 6' }
+                ]
+            }, 
+            '2x+3=4': {
+                answer: 0.5,
+                hint: 'First subtract 3 from both sides, then divide by 2',
+                operations: [
+                    { type: 'subtract', value: 3, description: 'Subtract 3 from both sides' },
+                    { type: 'divide', value: 2, description: 'Divide both sides by 2' }
+                ]
+            }
+            
+        };
+        
+        this.problemKeys = Object.keys(this.problems);
+        this.currentProblemIndex = -1;
+        this.score = 0;
+        this.currentEquationStack = null;
+        this.currentOperationIndex = 0;
+        
+        this.elements = {
+            problemSelector: document.querySelector('.problem-selector'),
+            answerInput: document.getElementById('answer'),
+            hintArea: document.getElementById('hint-area'),
+            feedback: document.getElementById('feedback'),
+            nextBtn: document.getElementById('next-btn'),
+            hintBtn: document.getElementById('hint-btn'),
+            checkBtn: document.getElementById('check-btn'),
+            stars: document.getElementById('stars'),
+            progressBar: document.querySelector('.progress-bar')
+        };
+
+        this.createProblemSelector();
+        this.initializeEventHandlers();
+        this.loadNextProblem(); // Load the first problem
+        // Set up the automatic filtering like in equation-stack-test
+        window.refreshDisplayAndFilters = () => {
+            if (this.currentEquationStack) {
+                const seq = this.currentEquationStack.getSequence();
+                seq.simplifyAll();
+                seq.updateStepsVisibility(step => (step.stepMark ?? 0) === 0); // Show step 0, filter out 1 and 2
+                this.currentEquationStack.updateLayout();
+                this.display.centerNode();
+            }
+        };
+    }
+
+    createProblemSelector() {
+        this.elements.problemSelector.innerHTML = ''; // Clear existing cards
+        this.problemKeys.forEach(problemString => {
+            const card = document.createElement('div');
+            card.className = 'problem-card';
+            card.dataset.problem = problemString;
+            card.textContent = problemString;
+            this.elements.problemSelector.appendChild(card);
+        });
+    }
+    
+    initializeEventHandlers() {
+        this.elements.problemSelector.addEventListener('click', (e) => {
+            if (e.target.classList.contains('problem-card')) {
+                this.loadProblem(e.target.dataset.problem);
+            }
+        });
+        
+        this.elements.hintBtn.addEventListener('click', () => this.showHint());
+        this.elements.checkBtn.addEventListener('click', () => this.checkAnswer());
+        this.elements.nextBtn.addEventListener('click', () => this.loadNextProblem());
+        this.elements.answerInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.checkAnswer();
+        });
+    }
+
+    loadProblem(problemString) {
+        // Ensure previous problem is completely cleared (handles residual SVG/viewBox)
+        this.clearCurrentProblem();
+        document.querySelectorAll('.problem-card').forEach(c => c.classList.remove('selected'));
+        const selectedCard = document.querySelector(`.problem-card[data-problem="${problemString}"]`);
+        if (selectedCard) selectedCard.classList.add('selected');
+
+        this.currentProblem = problemString;
+        this.currentOperationIndex = 0;
+        // (clearCurrentProblem already recreated display)
+        
+        // Create equation stack like in equation-stack-test
+        const initialEquation = omdEquationNode.fromString(problemString);
+        this.currentEquationStack = new omdEquationStack([initialEquation], {
+            stepVisualizer: true,
+            toolbar: false
+        });
+        
+
+        this.display.render(this.currentEquationStack);
+        this.display.centerNode();
+
+        this.resetUI();
+    }
+
+    clearCurrentProblem() {
+        // Fully clear current visual + state
+        try {
+            const md = document.getElementById('math-display');
+            if (this.display) {
+                try { this.display.destroy(); } catch(_) {}
+            }
+            if (md) {
+                // Hard reset container
+                md.innerHTML = '';
+                // Recreate display fresh so no lingering references remain
+                this.display = new omdDisplay(md, {
+                    backgroundColor: '#f7fafc',
+                    fitToContent: false,
+                    centerContent: true,
+                    fontSize: 48 
+                });
+            }
+        } catch(_) {}
+        this.currentEquationStack = null;
+        this.currentOperationIndex = 0;
+        // UI cleanup
+        this.elements.hintArea.style.display = 'none';
+        this.elements.feedback.style.display = 'none';
+        this.elements.nextBtn.style.display = 'none';
+    }
+
+    loadNextProblem() {
+        // Ensure previous problem visuals are cleared before proceeding
+        this.clearCurrentProblem();
+        this.currentProblemIndex++;
+        if (this.currentProblemIndex >= this.problemKeys.length) {
+            this.showCompletionMessage();
+            this.currentProblemIndex = 0; // Loop back to start
+            this.score = 0;
+        }
+        this.loadProblem(this.problemKeys[this.currentProblemIndex]);
+        this.updateScoreDisplay();
+    }
+    
+    showCompletionMessage() {
+        this.elements.feedback.textContent = '🎊 Amazing! You completed all problems! Starting over...';
+        this.elements.feedback.className = 'feedback correct';
+        this.elements.feedback.style.display = 'block';
+        setTimeout(() => {
+            this.elements.feedback.style.display = 'none';
+        }, 3000);
+    }
+
+    resetUI() {
+        this.elements.answerInput.value = '';
+        this.elements.feedback.style.display = 'none';
+        this.elements.hintArea.style.display = 'none';
+        this.elements.nextBtn.style.display = 'none';
+        this.elements.hintBtn.style.display = 'inline-block';
+        this.elements.checkBtn.style.display = 'inline-block';
+        
+        this.currentOperationIndex = 0;
+    }
+
+    showHint() {
+        if (!this.currentProblem || !this.currentEquationStack) return;
+        
+        const problemData = this.problems[this.currentProblem];
+        
+        // Check if we have more operations to apply
+        if (this.currentOperationIndex &lt; problemData.operations.length) {
+            const operation = problemData.operations[this.currentOperationIndex];
+            const sequence = this.currentEquationStack.getSequence();
+            const currentEquation = sequence.getCurrentEquation();
+            
+            if (!currentEquation) return;
+            
+            // Apply the operation using the sequence's built-in methods
+            let result;
+            switch (operation.type) {
+                case 'add':
+                    result = sequence.applyEquationOperation(operation.value, 'add');
+                    break;
+                case 'subtract':
+                    result = sequence.applyEquationOperation(operation.value, 'subtract');
+                    break;
+                case 'multiply':
+                    result = sequence.applyEquationOperation(operation.value, 'multiply');
+                    break;
+                case 'divide':
+                    result = sequence.applyEquationOperation(operation.value, 'divide');
+                    break;
+                default:
+                    console.error('Unknown operation type:', operation.type);
+                    return;
+            }
+            
+            this.currentOperationIndex++;
+            
+            // Show hint text
+            this.elements.hintArea.textContent = `💡 ${operation.description}!`;
+            this.elements.hintArea.style.display = 'block';
+            
+            // Check if we've applied all operations
+            if (this.currentOperationIndex >= problemData.operations.length) {
+                this.elements.hintBtn.style.display = 'none';
+                this.elements.hintArea.textContent += ' Now you can see the answer!';
+            }
+        } else {
+            this.elements.hintBtn.style.display = 'none';
+        }
+    }
+
+    checkAnswer() {
+        if (!this.currentProblem) return;
+        
+        const userAnswer = parseInt(this.elements.answerInput.value);
+        const correctAnswer = this.problems[this.currentProblem].answer;
+        
+        if (userAnswer === correctAnswer) {
+            this.elements.feedback.textContent = '🎉 Correct! Great job!';
+            this.elements.feedback.className = 'feedback correct';
+            this.elements.nextBtn.style.display = 'inline-block';
+            this.score++;
+            this.elements.hintBtn.style.display = 'none';
+            this.elements.checkBtn.style.display = 'none';
+            
+            // Show the complete solution if not already shown
+            const problemData = this.problems[this.currentProblem];
+            while (this.currentOperationIndex &lt; problemData.operations.length) {
+                this.showHint();
+            }
+        } else {
+            this.elements.feedback.textContent = '❌ Try again! Use the hint to see the next step.';
+            this.elements.feedback.className = 'feedback incorrect';
+        }
+        this.elements.feedback.style.display = 'block';
+        this.updateScoreDisplay();
+    }
+
+    updateScoreDisplay() {
+        this.elements.stars.innerHTML = '⭐'.repeat(this.score);
+        this.elements.progressBar.style.width = `${(this.score / this.problemKeys.length) * 100}%`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.math = math; // Make math.js globally available for OMD
+    new KidsMathSolver();
+});</code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>
+    hljs.highlightAll();
+
+    function openTab(evt, tabId, groupClass) {
+        // Hide all contents with the specific group class
+        const contents = document.getElementsByClassName(groupClass);
+        for (let i = 0; i < contents.length; i++) {
+            contents[i].style.display = "none";
+            contents[i].classList.remove("active");
+        }
+        
+        // Deactivate all buttons that control this group
+        // We find the parent .tabs container and remove active from its children
+        const buttons = evt.currentTarget.parentElement.getElementsByClassName("tab-btn");
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove("active");
+        }
+        
+        // Activate the selected tab content
+        document.getElementById(tabId).style.display = "block";
+        document.getElementById(tabId).classList.add("active");
+        
+        // Activate the clicked button
+        evt.currentTarget.classList.add("active");
+    }
+
+    // Check URL hash to open specific tab
+    window.addEventListener('DOMContentLoaded', () => {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            const btn = document.querySelector(`.tab-btn[onclick*="'${hash}'"]`);
+            if (btn) {
+                btn.click();
+            }
+        }
+    });
+  </script>
+</body>
+</html>

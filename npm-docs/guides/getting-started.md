@@ -1,6 +1,6 @@
 # Getting Started with OMD
 
-This guide will help you install and start using OMD (On-screen Math Display) in your project.
+This guide will help you install and start using OMD (Open Math Display) in your project.
 
 ## Installation
 
