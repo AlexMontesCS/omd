@@ -204,6 +204,10 @@ export class omdCanvas {
     addStroke(stroke) {
         const id = `stroke_${++this.strokeCounter}`;
         stroke.id = id;
+        if (stroke.element) {
+            stroke.element.setAttribute('data-stroke-id', id);
+            stroke.element.id = id;
+        }
         this.strokes.set(id, stroke);
         this.drawingLayer.appendChild(stroke.element);
         

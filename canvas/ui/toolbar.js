@@ -41,6 +41,11 @@ export class Toolbar {
         // Create a jsvgGroup for the toolbar
         this.toolbarGroup = new jsvgGroup();
         
+        // Stop pointer events from bubbling to canvas to prevent drawing while interacting with toolbar
+        const stopPropagation = (e) => e.stopPropagation();
+        this.toolbarGroup.svgObject.addEventListener('pointerdown', stopPropagation);
+        this.toolbarGroup.svgObject.addEventListener('pointermove', stopPropagation);
+        this.toolbarGroup.svgObject.addEventListener('pointerup', stopPropagation);
         
         // Create background rectangle
         this.background = new jsvgRect();
@@ -135,7 +140,7 @@ export class Toolbar {
         const button = new jsvgButton();
         button.setWidthAndHeight(size, size);
         button.setCornerRadius(size / 2); // Make it circular
-        button.setFillColor('white');
+        button.setFillColor(this.omdColor.lightGray);
         
         // Remove any default text from the button group (if present)
         // jsvgButton may add a <text> element by default; remove it
@@ -193,13 +198,13 @@ export class Toolbar {
     _updateActiveButton(toolName) {
         // Reset all buttons
         this.buttons.forEach(button => {
-            button.setFillColor('white');
+            button.setFillColor(this.omdColor.lightGray);
         });
         
         // Highlight active button
         const activeButton = this.buttons.get(toolName);
         if (activeButton) {
-            activeButton.setFillColor(this.omdColor.lightGray);
+            activeButton.setFillColor('white');
             this.activeButton = activeButton;
         } else {
             this.activeButton = null;
