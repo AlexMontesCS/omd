@@ -12,7 +12,13 @@ export default defineConfig({
         simpleApi: resolve(__dirname, 'simple-api-example.html'),
         buildTools: resolve(__dirname, 'build-tools.html'),
         htmlExampleGuide: resolve(__dirname, 'html-example-guide.html'),
-        commonUseCases: resolve(__dirname, 'common-use-cases.html')
+        commonUseCases: resolve(__dirname, 'common-use-cases.html'),
+        reactDemoGuide: resolve(__dirname, 'react-demo-guide.html'),
+        omdCanvas: resolve(__dirname, 'omd-canvas.html'),
+        omdDisplay: resolve(__dirname, 'omd-display.html'),
+        readme: resolve(__dirname, 'readme.html'),
+        docs: resolve(__dirname, 'docs.html'),
+        npmDocs: resolve(__dirname, 'npm-docs.html')
       }
     }
   },
