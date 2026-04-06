@@ -20,11 +20,12 @@ export class ResizeHandleManager {
         this.selectionBorderColor = '#007bff';
         this.selectionBorderWidth = 2;
         this.selectionBorder = null;
+        this.selectionBorderPadding = { top: 8, right: 8, bottom: 8, left: 8 };
         
         // Resize constraints
         this.minSize = 20;
         this.maxSize = 800;
-        this.maintainAspectRatio = false; // Can be toggled with shift key
+        this.maintainAspectRatio = true; // Always maintain aspect ratio by default
     }
     
     /**
@@ -195,25 +196,23 @@ export class ResizeHandleManager {
                 break;
         }
         
-        // Maintain aspect ratio if requested
+        // Maintain aspect ratio — use the larger delta to drive the resize
         if (this.maintainAspectRatio) {
             const aspectRatio = startWidth / startHeight;
-            
-            if (handle.type.includes('e') || handle.type.includes('w')) {
-                // Width-based resize
+            const widthChange = Math.abs(newWidth - startWidth);
+            const heightChange = Math.abs(newHeight - startHeight);
+
+            if (widthChange >= heightChange) {
                 newHeight = newWidth / aspectRatio;
-            } else if (handle.type.includes('n') || handle.type.includes('s')) {
-                // Height-based resize
-                newWidth = newHeight * aspectRatio;
+                // Correct offsetY for top-anchored corners
+                if (handle.type.includes('n')) {
+                    offsetY = startHeight - newHeight;
+                }
             } else {
-                // Corner resize - use the dimension with larger change
-                const widthChange = Math.abs(newWidth - startWidth);
-                const heightChange = Math.abs(newHeight - startHeight);
-                
-                if (widthChange > heightChange) {
-                    newHeight = newWidth / aspectRatio;
-                } else {
-                    newWidth = newHeight * aspectRatio;
+                newWidth = newHeight * aspectRatio;
+                // Correct offsetX for left-anchored corners
+                if (handle.type.includes('w')) {
+                    offsetX = startWidth - newWidth;
                 }
             }
         }
@@ -265,6 +264,77 @@ export class ResizeHandleManager {
     }
     
     /**
+     * Style the selection border.
+     * @param {Object} style
+     * @param {string}  [style.color]       - Stroke colour of the border (e.g. '#007bff')
+     * @param {number}  [style.width]       - Stroke width in px
+     * @param {string}  [style.dasharray]   - SVG stroke-dasharray value (e.g. '4,2' or 'none')
+     * @param {number}  [style.cornerRadius]- rx/ry corner radius of the border rect
+     */
+    setSelectionStyle({ color, width, dasharray, cornerRadius, padding, paddingX, paddingY, paddingTop, paddingRight, paddingBottom, paddingLeft } = {}) {
+        if (color !== undefined)       this.selectionBorderColor = color;
+        if (width !== undefined)       this.selectionBorderWidth = width;
+        if (dasharray !== undefined)   this.selectionBorderDasharray = dasharray;
+        if (cornerRadius !== undefined) this.selectionBorderCornerRadius = cornerRadius;
+        const basePadding = padding ?? null;
+        const nextPadding = {
+            top: paddingTop ?? paddingY ?? basePadding ?? this.selectionBorderPadding.top,
+            right: paddingRight ?? paddingX ?? basePadding ?? this.selectionBorderPadding.right,
+            bottom: paddingBottom ?? paddingY ?? basePadding ?? this.selectionBorderPadding.bottom,
+            left: paddingLeft ?? paddingX ?? basePadding ?? this.selectionBorderPadding.left
+        };
+        this.selectionBorderPadding = nextPadding;
+
+        // Re-apply to live border if one exists
+        if (this.selectionBorder) {
+            this.selectionBorder.setAttribute('stroke', this.selectionBorderColor);
+            this.selectionBorder.setAttribute('stroke-width', this.selectionBorderWidth);
+            this.selectionBorder.setAttribute('stroke-dasharray',
+                this.selectionBorderDasharray !== undefined ? this.selectionBorderDasharray : '4,2');
+            if (this.selectionBorderCornerRadius !== undefined) {
+                this.selectionBorder.setAttribute('rx', this.selectionBorderCornerRadius);
+                this.selectionBorder.setAttribute('ry', this.selectionBorderCornerRadius);
+            }
+            this._updateSelectionBorder();
+        }
+    }
+
+    /**
+     * Style the resize handles.
+     * @param {Object} style
+     * @param {number}  [style.size]         - Handle square size in px
+     * @param {string}  [style.color]        - Fill colour
+     * @param {string}  [style.strokeColor]  - Border colour
+     * @param {number}  [style.strokeWidth]  - Border width
+     * @param {number}  [style.cornerRadius] - rx/ry corner radius (0 = square, size/2 = circle)
+     */
+    setHandleStyle({ size, color, strokeColor, strokeWidth, cornerRadius } = {}) {
+        if (size !== undefined)         this.handleSize = size;
+        if (color !== undefined)        this.handleColor = color;
+        if (strokeColor !== undefined)  this.handleStrokeColor = strokeColor;
+        if (strokeWidth !== undefined)  this.handleStrokeWidth = strokeWidth;
+        if (cornerRadius !== undefined) this.handleCornerRadius = cornerRadius;
+
+        // Re-apply to any live handles
+        const radius = this.handleCornerRadius !== undefined
+            ? this.handleCornerRadius
+            : 1;
+        this.handles.forEach(h => {
+            h.element.setAttribute('width',  this.handleSize);
+            h.element.setAttribute('height', this.handleSize);
+            h.element.setAttribute('fill',   this.handleColor);
+            h.element.setAttribute('stroke', this.handleStrokeColor);
+            h.element.setAttribute('stroke-width', this.handleStrokeWidth);
+            h.element.setAttribute('rx', radius);
+        });
+
+        // Reposition so centres stay correct after a size change
+        if (this.handles.length > 0) {
+            this._updateHandlePositions();
+        }
+    }
+
+    /**
      * Update handle positions for currently selected element (called externally)
      */
     updateIfSelected(element) {
@@ -304,7 +374,12 @@ export class ResizeHandleManager {
         this.selectionBorder.setAttribute('fill', 'none');
         this.selectionBorder.setAttribute('stroke', this.selectionBorderColor);
         this.selectionBorder.setAttribute('stroke-width', this.selectionBorderWidth);
-        this.selectionBorder.setAttribute('stroke-dasharray', '4,2');
+        this.selectionBorder.setAttribute('stroke-dasharray',
+            this.selectionBorderDasharray !== undefined ? this.selectionBorderDasharray : '4,2');
+        if (this.selectionBorderCornerRadius !== undefined) {
+            this.selectionBorder.setAttribute('rx', this.selectionBorderCornerRadius);
+            this.selectionBorder.setAttribute('ry', this.selectionBorderCornerRadius);
+        }
         this.selectionBorder.style.pointerEvents = 'none';
         this.selectionBorder.classList.add('omd-selection-border');
         
@@ -320,12 +395,12 @@ export class ResizeHandleManager {
         if (!this.selectionBorder || !this.selectedElement) return;
         
         const bounds = this._getTransformedBounds();
-        const padding = 3;
+        const padding = this.selectionBorderPadding;
         
-        this.selectionBorder.setAttribute('x', bounds.x - padding);
-        this.selectionBorder.setAttribute('y', bounds.y - padding);
-        this.selectionBorder.setAttribute('width', bounds.width + padding * 2);
-        this.selectionBorder.setAttribute('height', bounds.height + padding * 2);
+        this.selectionBorder.setAttribute('x', bounds.x - padding.left);
+        this.selectionBorder.setAttribute('y', bounds.y - padding.top);
+        this.selectionBorder.setAttribute('width', bounds.width + padding.left + padding.right);
+        this.selectionBorder.setAttribute('height', bounds.height + padding.top + padding.bottom);
     }
     
     /**
@@ -346,15 +421,12 @@ export class ResizeHandleManager {
     _createResizeHandles() {
         if (!this.selectedElement) return;
         
+        // Only corner handles — mid-edge handles would break aspect ratio
         const handleTypes = [
             { type: 'nw', pos: 'top-left' },
-            { type: 'n', pos: 'top-center' },
             { type: 'ne', pos: 'top-right' },
-            { type: 'e', pos: 'middle-right' },
             { type: 'se', pos: 'bottom-right' },
-            { type: 's', pos: 'bottom-center' },
-            { type: 'sw', pos: 'bottom-left' },
-            { type: 'w', pos: 'middle-left' }
+            { type: 'sw', pos: 'bottom-left' }
         ];
         
         handleTypes.forEach(handleDef => {
@@ -371,12 +443,13 @@ export class ResizeHandleManager {
     _createHandle(type, position) {
         const handle = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         
+        const cornerRadius = this.handleCornerRadius !== undefined ? this.handleCornerRadius : 1;
         handle.setAttribute('width', this.handleSize);
         handle.setAttribute('height', this.handleSize);
         handle.setAttribute('fill', this.handleColor);
         handle.setAttribute('stroke', this.handleStrokeColor);
         handle.setAttribute('stroke-width', this.handleStrokeWidth);
-        handle.setAttribute('rx', 1);
+        handle.setAttribute('rx', cornerRadius);
         handle.style.cursor = this.getCursorForHandle(type);
         handle.classList.add('resize-handle', `resize-handle-${type}`);
         
@@ -445,13 +518,64 @@ export class ResizeHandleManager {
         if (!this.selectedElement) return { x: 0, y: 0, width: 0, height: 0 };
         
         try {
-            // Get bounding box of the content inside the wrapper
+            // Get the content inside the wrapper (usually an SVG element)
             const content = this.selectedElement.firstElementChild;
-            if (content) {
-                return content.getBBox();
-            } else {
+            if (!content) {
                 return this.selectedElement.getBBox();
             }
+            
+            // For elements with clip paths (like coordinate planes), 
+            // the graph lines extend beyond the visible area causing getBBox() to be too large.
+            // We need to find the clip rect to get the actual visible bounds.
+            const clipPaths = content.querySelectorAll('clipPath');
+            
+            if (clipPaths.length > 0) {
+                let maxArea = 0;
+                let clipBounds = null;
+                
+                for (const clipPath of clipPaths) {
+                    const rect = clipPath.querySelector('rect');
+                    if (rect) {
+                        const w = parseFloat(rect.getAttribute('width')) || 0;
+                        const h = parseFloat(rect.getAttribute('height')) || 0;
+                        const x = parseFloat(rect.getAttribute('x')) || 0;
+                        const y = parseFloat(rect.getAttribute('y')) || 0;
+                        
+                        const area = w * h;
+                        if (area > maxArea) {
+                            maxArea = area;
+                            
+                            // Find the transform on the content group
+                            const contentGroup = content.firstElementChild;
+                            let tx = 0, ty = 0;
+                            if (contentGroup) {
+                                const transform = contentGroup.getAttribute('transform');
+                                if (transform) {
+                                    const translateMatch = transform.match(/translate\(\s*([^,]+)(?:,\s*([^)]+))?\s*\)/);
+                                    if (translateMatch) {
+                                        tx = parseFloat(translateMatch[1]) || 0;
+                                        ty = parseFloat(translateMatch[2]) || 0;
+                                    }
+                                }
+                            }
+                            
+                            clipBounds = {
+                                x: x + tx,
+                                y: y + ty,
+                                width: w,
+                                height: h
+                            };
+                        }
+                    }
+                }
+                
+                if (clipBounds) {
+                    return clipBounds;
+                }
+            }
+            
+            // Fallback to getBBox if no clip path found
+            return content.getBBox();
         } catch (error) {
             // Fallback if getBBox fails
             return { x: 0, y: 0, width: 100, height: 100 };

@@ -400,6 +400,25 @@ export class jsvgEllipse extends jsvgObject
         this.height = h;
         this.svgObject.setAttribute("ry", (this.height/2).toString() );
     }
+
+    setPosition( x, y )
+    {
+        this.xpos = x;
+        this.ypos = y;
+        this.svgObject.setAttribute("cx", x.toString() );
+        this.svgObject.setAttribute("cy", y.toString() );
+        this.svgObject.setAttribute("transform", "" );
+    }
+
+    updateTransform()
+    {
+        var transformParams = "";
+        if ( this.scale != 1.0 )
+            transformParams += " scale(" + this.scale.toString()  + ")";
+        if ( this.rotation != 0.0 )
+            transformParams += " rotate(" + this.rotation + ")";
+        this.svgObject.setAttribute("transform", transformParams.trim() );
+    }
 }
 
 
@@ -725,84 +744,320 @@ export class jsvgTextLine extends jsvgObject
 }
 
 
-// ================ jsvgTextBox (Div) ================================= //
+// ================ jsvgTextBox ================================= //
 
 export class jsvgTextBox extends jsvgGroup
 {
-    constructor()
+    constructor( options = {} )
     {
         super();
 
         this.text = "";
-        
-        var ns = 'http://www.w3.org/2000/svg';
-        this.foreignObject = document.createElementNS( ns, 'foreignObject');
+        this._useForeignObject = options.useForeignObject === true;
+        this._textAlign = "left";
+        this._verticalCenter = false;
+        this._lineHeight = null;
+        this._fontSize = 16;
+        this._fontFamily = "Arial, Helvetica, sans-serif";
+        this._fontWeight = "normal";
+        this._fontColor = "black";
 
-        this.foreignObject.style.backgroundColor = 'none';
-        this.svgObject.appendChild( this.foreignObject );
+        const ns = 'http://www.w3.org/2000/svg';
 
-        this.div = document.createElement('div');
-        this.foreignObject.appendChild( this.div ); 
+        if ( this._useForeignObject )
+        {
+            this.foreignObject = document.createElementNS( ns, 'foreignObject');
+            this.foreignObject.style.backgroundColor = 'none';
+            this.svgObject.appendChild( this.foreignObject );
+
+            this.div = document.createElement('div');
+            this.foreignObject.appendChild( this.div ); 
+        }
+        else
+        {
+            this.textElement = document.createElementNS( ns, 'text');
+            this.textElement.setAttribute('x', '0');
+            this.textElement.setAttribute('y', '0');
+            this.textElement.setAttribute('fill', this._fontColor);
+            this.textElement.setAttribute('xml:space', 'preserve');
+            this.textElement.style.fontFamily = this._fontFamily;
+            this.textElement.style.fontSize = this._fontSize.toString() + "px";
+            this.svgObject.appendChild( this.textElement );
+        }
 
         this.setWidthAndHeight( 200,100 );
     }
 
-    setText( T ) { this.text = T; this.div.innerHTML = T; }
+    _getLineHeight()
+    {
+        return this._lineHeight || this._fontSize;
+    }
+
+    _getTextX()
+    {
+        if ( this._textAlign === "center" )
+            return this.width / 2;
+        if ( this._textAlign === "right" || this._textAlign === "end" )
+            return this.width;
+        return 0;
+    }
+
+    _applyTextAnchor()
+    {
+        if ( !this.textElement ) return;
+        if ( this._textAlign === "center" )
+            this.textElement.setAttribute("text-anchor", "middle");
+        else if ( this._textAlign === "right" || this._textAlign === "end" )
+            this.textElement.setAttribute("text-anchor", "end");
+        else
+            this.textElement.setAttribute("text-anchor", "start");
+    }
+
+    _parseHtmlToLines( html )
+    {
+        const hasMarkup = /<\s*(sup|sub|br)\b/i.test( html || "" );
+        if ( !hasMarkup )
+            return [ [ { text: html || "", mode: null } ] ];
+
+        const container = document.createElement('div');
+        container.innerHTML = html || "";
+        const lines = [ [] ];
+
+        const walk = (node, mode) => {
+            if ( node.nodeType === 3 )
+            {
+                const value = node.nodeValue || "";
+                if ( value.length > 0 )
+                    lines[ lines.length - 1 ].push({ text: value, mode: mode });
+                return;
+            }
+            if ( node.nodeType !== 1 ) return;
+            const tag = node.tagName.toLowerCase();
+            if ( tag === "br" )
+            {
+                lines.push([]);
+                return;
+            }
+            let nextMode = mode;
+            if ( tag === "sup" ) nextMode = "sup";
+            if ( tag === "sub" ) nextMode = "sub";
+            for ( let i = 0; i < node.childNodes.length; i++ )
+                walk( node.childNodes[i], nextMode );
+        };
+
+        for ( let i = 0; i < container.childNodes.length; i++ )
+            walk( container.childNodes[i], null );
+
+        if ( lines.length > 1 && lines[ lines.length - 1 ].length === 0 )
+            lines.pop();
+
+        return lines;
+    }
+
+    _renderSvgText( html )
+    {
+        if ( !this.textElement ) return;
+
+        const ns = 'http://www.w3.org/2000/svg';
+        const lines = this._parseHtmlToLines( html );
+        const lineHeight = this._getLineHeight();
+        const blockHeight = lineHeight * lines.length;
+        const startY = this._verticalCenter ? Math.max(0, (this.height - blockHeight) / 2) : 0;
+        const startX = this._getTextX();
+
+        while ( this.textElement.firstChild )
+            this.textElement.removeChild( this.textElement.firstChild );
+
+        this._applyTextAnchor();
+        this.textElement.setAttribute('dominant-baseline', 'hanging');
+
+        for ( let lineIndex = 0; lineIndex < lines.length; lineIndex++ )
+        {
+            const line = lines[lineIndex];
+            if ( line.length === 0 )
+                line.push({ text: "", mode: null });
+
+            for ( let segIndex = 0; segIndex < line.length; segIndex++ )
+            {
+                const seg = line[segIndex];
+                const tspan = document.createElementNS( ns, 'tspan' );
+                tspan.textContent = seg.text;
+
+                if ( seg.mode === "sup" )
+                {
+                    tspan.setAttribute("baseline-shift", "super");
+                    tspan.setAttribute("font-size", "0.7em");
+                }
+                else if ( seg.mode === "sub" )
+                {
+                    tspan.setAttribute("baseline-shift", "sub");
+                    tspan.setAttribute("font-size", "0.7em");
+                }
+
+                if ( segIndex === 0 )
+                {
+                    tspan.setAttribute("x", startX);
+                    if ( lineIndex === 0 )
+                        tspan.setAttribute("y", startY);
+                    else
+                        tspan.setAttribute("dy", lineHeight);
+                }
+
+                this.textElement.appendChild( tspan );
+            }
+        }
+    }
+
+    _updateSvgLayout()
+    {
+        if ( this.textElement )
+            this._renderSvgText( this.text );
+    }
+
+    setText( T )
+    {
+        this.text = T || "";
+        if ( this._useForeignObject )
+            this.div.innerHTML = this.text;
+        else
+            this._renderSvgText( this.text );
+    }
 
     getText() { return this.text; }
 
     setStyle( S )   // for style setting with CSS
     { 
-        this.div.className = S; 
-        this.div.style.position = 'fixed';      // for safari
+        if ( this._useForeignObject )
+        {
+            this.div.className = S; 
+            this.div.style.position = 'fixed';      // for safari
+        }
+        else if ( this.textElement )
+        {
+            this.textElement.setAttribute('class', S);
+        }
     };       
 
-    setFontFamily( F ) { this.div.style.fontFamily = F; }
+    setFontFamily( F )
+    {
+        this._fontFamily = F;
+        if ( this._useForeignObject )
+            this.div.style.fontFamily = F;
+        else if ( this.textElement )
+            this.textElement.style.fontFamily = F;
+    }
 
-    setFontSize( S ) { this.div.style.fontSize = S.toString() + "px"; }
+    setFontSize( S )
+    {
+        this._fontSize = S;
+        if ( this._useForeignObject )
+            this.div.style.fontSize = S.toString() + "px";
+        else if ( this.textElement )
+        {
+            this.textElement.style.fontSize = S.toString() + "px";
+            this._updateSvgLayout();
+        }
+    }
 
-    setLineHeight( H ) { this.div.style.lineHeight = H + 'px'; }
+    setLineHeight( H )
+    {
+        this._lineHeight = H;
+        if ( this._useForeignObject )
+            this.div.style.lineHeight = H + 'px';
+        else
+            this._updateSvgLayout();
+    }
 
-    setFontWeight( W ) { this.div.style.fontWeight = W; }
+    setFontWeight( W )
+    {
+        this._fontWeight = W;
+        if ( this._useForeignObject )
+            this.div.style.fontWeight = W;
+        else if ( this.textElement )
+            this.textElement.style.fontWeight = W;
+    }
 
-    setFontColor( C )  { this.div.style.color = C; }
+    setFontColor( C )
+    {
+        this._fontColor = C;
+        if ( this._useForeignObject )
+            this.div.style.color = C;
+        else if ( this.textElement )
+            this.textElement.setAttribute('fill', C);
+    }
 
-    setAlignment( A )  { this.div.style.textAlign = A; }
+    setAlignment( A )
+    {
+        this._textAlign = A;
+        if ( this._useForeignObject )
+            this.div.style.textAlign = A;
+        else
+            this._updateSvgLayout();
+    }
     
     setVerticalCentering()
     {
-        this.div.style.display = "flex";
-        this.div.style.flexFlow = "column"
-        this.div.style.justifyContent = "center";
-        this.div.style.alignItems = "center";
+        if ( this._useForeignObject )
+        {
+            this.div.style.display = "flex";
+            this.div.style.flexFlow = "column"
+            this.div.style.justifyContent = "center";
+            this.div.style.alignItems = "center";
+        }
+        else
+        {
+            this._verticalCenter = true;
+            this._updateSvgLayout();
+        }
     }
 
     makeEditable()
     {
-        this.div.style.contentEditable = 'true';
-        this.div.onclick = function() { console.log("here"); this.focus(); };
+        if ( this._useForeignObject )
+        {
+            this.div.style.contentEditable = 'true';
+            this.div.onclick = function() { console.log("here"); this.focus(); };
+        }
     }
 
-    setBorderWidthAndColor( width, color ) { this.div.style.border = width + "px solid " + color; }
+    setBorderWidthAndColor( width, color )
+    {
+        if ( this._useForeignObject )
+            this.div.style.border = width + "px solid " + color;
+    }
 
     setWidth( W )
     { 
         this.width = W;
-        if ( this.div )
-            this.div.style.width = W  + 'px' 
+        if ( this._useForeignObject )
+        {
+            if ( this.div )
+                this.div.style.width = W  + 'px';
 
-        if ( this.foreignObject )
-            this.foreignObject.setAttribute('width', W );
+            if ( this.foreignObject )
+                this.foreignObject.setAttribute('width', W );
+        }
+        else
+        {
+            this._updateSvgLayout();
+        }
     }
 
     setHeight( H )
     { 
         this.height = H;
-        if ( this.div )
-            this.div.style.height = H  + 'px' 
+        if ( this._useForeignObject )
+        {
+            if ( this.div )
+                this.div.style.height = H  + 'px'; 
 
-        if ( this.foreignObject )
-            this.foreignObject.setAttribute('height', H );
+            if ( this.foreignObject )
+                this.foreignObject.setAttribute('height', H );
+        }
+        else
+        {
+            this._updateSvgLayout();
+        }
     }
 }
 
@@ -814,7 +1069,7 @@ export class jsvgTextInput extends jsvgTextBox
 {
     constructor()
     {
-        super();
+        super({ useForeignObject: true });
 
         this.callback = null;
         
@@ -861,7 +1116,7 @@ export class jsvgTextArea extends jsvgTextBox
 {
     constructor()
     {
-        super();
+        super({ useForeignObject: true });
 
         this.callback = null;
         

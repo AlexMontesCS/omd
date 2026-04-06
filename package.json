@@ -1,6 +1,6 @@
 {
   "name": "@teachinglab/omd",
-  "version": "0.7.2",
+  "version": "0.7.33",
   "description": "omd",
   "main": "./index.js",
   "module": "./index.js",
@@ -16,7 +16,7 @@
     "omd/",
     "docs/",
     "canvas/",
-    "jsvg/"  ,
+    "jsvg/",
     "npm-docs/",
     "README.md"
   ],
@@ -34,7 +34,7 @@
   "dependencies": {
     "@teachinglab/jsvg": "^0.1.1",
     "mathjs": "^14.5.2",
-    "openai": "6.6.0" 
+    "openai": "6.6.0"
   },
   "scripts": {
     "dev": "npm run build:docs && vite",

@@ -172,22 +172,46 @@ export class omdTable extends jsvgGroup
         this.data = [];
         this.headers = ['x', 'y'];
 
-        // Basic normalization for inline math
         let expression = this.equation;
-        if (expression.toLowerCase().startsWith('y=')) {
-            expression = expression.substring(2).trim();
+        // Remove "y=" from start or "=y" from end, case insensitive, handling spaces
+        expression = expression.replace(/^\s*y\s*=\s*/i, '').replace(/\s*=\s*y\s*$/i, '');
+
+        try {
+            // Use math.js if available (preferred)
+            if (typeof math !== 'undefined' && math.compile) {
+                const compiled = math.compile(expression);
+                for (let x = this.xMin; x <= this.xMax; x += this.stepSize) {
+                    try {
+                        let y = compiled.evaluate({ x });
+                        // Round to 2 decimal places for display
+                        y = Math.round(y * 100) / 100;
+                        this.data.push([x, y]);
+                    } catch (e) {
+                        // Skip points that fail to evaluate
+                    }
+                }
+                return;
+            }
+        } catch (e) {
+            console.warn("math.js evaluation failed, falling back to simple parser:", e);
         }
+
+        // Fallback to simple regex-based parsing
         expression = expression
             .replace(/(\d)([a-z])/gi, '$1*$2')
             .replace(/([a-z])(\d)/gi, '$1*$2')
             .replace(/\^/g, '**');
 
-        const evaluateExpression = new Function('x', `return ${expression};`);
+        try {
+            const evaluateExpression = new Function('x', `return ${expression};`);
 
-        for (let x = this.xMin; x <= this.xMax; x += this.stepSize) {
-            let y = evaluateExpression(x);
-            y = Math.round(y * 100) / 100;
-            this.data.push([x, y]);
+            for (let x = this.xMin; x <= this.xMax; x += this.stepSize) {
+                let y = evaluateExpression(x);
+                y = Math.round(y * 100) / 100;
+                this.data.push([x, y]);
+            }
+        } catch (e) {
+            console.error("Error generating table data from equation:", e);
         }
     }
 

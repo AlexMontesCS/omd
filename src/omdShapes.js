@@ -2,6 +2,39 @@
 import { omdColor } from "./omdColor.js";
 import { jsvgGroup, jsvgPath, jsvgLine, jsvgTextLine, jsvgEllipse } from "@teachinglab/jsvg";
 
+const DEFAULT_SHAPE_PADDING = 10;
+const LABEL_SHAPE_PADDING = 38;
+
+function getShapePadding(showLabels) {
+    return showLabels ? LABEL_SHAPE_PADDING : DEFAULT_SHAPE_PADDING;
+}
+
+function getClosedPolygonVertices(shapePath) {
+    const points = Array.isArray(shapePath?.points) ? shapePath.points : [];
+    if (points.length <= 1) return points.slice();
+
+    const first = points[0];
+    const last = points[points.length - 1];
+    const isClosed = first.x === last.x && first.y === last.y;
+    return isClosed ? points.slice(0, -1) : points.slice();
+}
+
+function getPolygonCentroid(points) {
+    if (!points.length) return { x: 0, y: 0 };
+
+    let sumX = 0;
+    let sumY = 0;
+    for (const point of points) {
+        sumX += point.x;
+        sumY += point.y;
+    }
+
+    return {
+        x: sumX / points.length,
+        y: sumY / points.length
+    };
+}
+
 export class omdRightTriangle extends jsvgGroup
 {
     constructor()
@@ -69,8 +102,9 @@ export class omdRightTriangle extends jsvgGroup
     updateLayout()
     {
         // Center the triangle within the viewBox
-        const offsetX = 10; // Left margin
-        const offsetY = this.unitScale * this.verticalLeg + 10; // Bottom margin
+        const padding = getShapePadding(this.showLabels);
+        const offsetX = padding;
+        const offsetY = this.unitScale * this.verticalLeg + padding;
 
         this.shapePath.clearPoints();
         this.shapePath.addPoint(offsetX, offsetY);
@@ -92,8 +126,8 @@ export class omdRightTriangle extends jsvgGroup
         }
 
         // Set viewBox to center the shape
-        this.width = this.unitScale * this.horizontalLeg + 20;
-        this.height = this.unitScale * this.verticalLeg + 20;
+        this.width = this.unitScale * this.horizontalLeg + padding * 2;
+        this.height = this.unitScale * this.verticalLeg + padding * 2;
         this.svgObject.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
     }
 }
@@ -148,10 +182,16 @@ export class omdIsoscelesTriangle extends jsvgGroup
     {
         this.shapePath.clearPoints();
 
-        this.shapePath.addPoint( -0.5*this.unitScale*this.triangleBase, 0 );
-        this.shapePath.addPoint(  0.5*this.unitScale*this.triangleBase, 0 );
-        this.shapePath.addPoint( 0, -1.0*this.unitScale*this.triangleHeight );
-        this.shapePath.addPoint( -0.5*this.unitScale*this.triangleBase, 0 );
+        const baseWidth = this.unitScale * this.triangleBase;
+        const triangleHeight = this.unitScale * this.triangleHeight;
+        const padding = getShapePadding(this.showLabels);
+        const offsetX = padding;
+        const offsetY = triangleHeight + padding;
+
+        this.shapePath.addPoint( offsetX, offsetY );
+        this.shapePath.addPoint( offsetX + baseWidth, offsetY );
+        this.shapePath.addPoint( offsetX + baseWidth * 0.5, offsetY - triangleHeight );
+        this.shapePath.addPoint( offsetX, offsetY );
 
         this.shapePath.updatePath();
 
@@ -164,8 +204,8 @@ export class omdIsoscelesTriangle extends jsvgGroup
         }
 
         // Set dimensions and viewBox for API compatibility
-        this.width = this.unitScale * this.triangleBase + 20;
-        this.height = this.unitScale * this.triangleHeight + 20;
+        this.width = this.unitScale * this.triangleBase + padding * 2;
+        this.height = this.unitScale * this.triangleHeight + padding * 2;
         this.svgObject.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
     }
 }
@@ -217,8 +257,9 @@ export class omdRectangle extends jsvgGroup
     updateLayout()
     {
         // Center the rectangle within the viewBox
-        const offsetX = 10;
-        const offsetY = this.unitScale * this.rectHeight + 10;
+        const padding = getShapePadding(this.showLabels);
+        const offsetX = padding;
+        const offsetY = this.unitScale * this.rectHeight + padding;
 
         this.shapePath.clearPoints();
         this.shapePath.addPoint(offsetX, offsetY);
@@ -240,8 +281,8 @@ export class omdRectangle extends jsvgGroup
         }
 
         // Set viewBox
-        this.width = this.unitScale * this.rectWidth + 20;
-        this.height = this.unitScale * this.rectHeight + 20;
+        this.width = this.unitScale * this.rectWidth + padding * 2;
+        this.height = this.unitScale * this.rectHeight + padding * 2;
         this.svgObject.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
     }
 }
@@ -259,6 +300,7 @@ export class omdEllipse extends jsvgGroup
         this.rectWidth = 10;
         this.rectHeight = 5;
         this.unitScale = 10;
+        this.showLabels = false;
 
         this.shapePath = new jsvgEllipse();
         this.shapePath.setWidthAndHeight( this.rectWidth*this.unitScale, this.rectHeight*this.unitScale );
@@ -266,6 +308,9 @@ export class omdEllipse extends jsvgGroup
         this.shapePath.setStrokeWidth( 2 );
         this.shapePath.setFillColor( omdColor.lightGray );
         this.addChild( this.shapePath );
+
+        this.labelsHolder = new jsvgGroup();
+        this.addChild( this.labelsHolder );
 
         this.updateLayout();
     }
@@ -281,12 +326,32 @@ export class omdEllipse extends jsvgGroup
         if ( typeof data.unitScale != "undefined" )
             this.unitScale = data.unitScale;
 
+        if ( typeof data.showLabels != "undefined" )
+            this.showLabels = data.showLabels;
+
         this.updateLayout();
     }
 
     updateLayout()
     {
-        this.shapePath.setWidthAndHeight( this.rectWidth*this.unitScale, this.rectHeight*this.unitScale );
+        const ellipseWidth = this.rectWidth * this.unitScale;
+        const ellipseHeight = this.rectHeight * this.unitScale;
+
+        this.shapePath.setWidthAndHeight( ellipseWidth, ellipseHeight );
+        this.shapePath.setPosition( ellipseWidth * 0.5 + 10, ellipseHeight * 0.5 + 10 );
+
+        this.labelsHolder.removeAllChildren();
+        if ( this.showLabels )
+        {
+            const label = new jsvgTextLine();
+            label.setAlignment("center");
+            label.setFontFamily( "Albert Sans" );
+            label.setFontColor( "black" );
+            label.setFontSize( 12 );
+            label.setPosition( ellipseWidth * 0.5 + 10, ellipseHeight * 0.5 + 14 );
+            label.setText( `${this.rectWidth} × ${this.rectHeight}` );
+            this.labelsHolder.addChild( label );
+        }
 
         // Set dimensions and viewBox for API compatibility
         this.width = this.rectWidth * this.unitScale + 20;
@@ -306,6 +371,7 @@ export class omdCircle extends jsvgGroup
 
         this.radius = 5;
         this.unitScale = 10;
+        this.showLabels = false;
 
         this.shapePath = new jsvgEllipse();
         this.shapePath.setWidthAndHeight( this.radius*this.unitScale, this.radius*this.unitScale );
@@ -313,6 +379,9 @@ export class omdCircle extends jsvgGroup
         this.shapePath.setStrokeWidth( 2 );
         this.shapePath.setFillColor( omdColor.lightGray );
         this.addChild( this.shapePath );
+
+        this.labelsHolder = new jsvgGroup();
+        this.addChild( this.labelsHolder );
 
         this.updateLayout();
     }
@@ -325,12 +394,49 @@ export class omdCircle extends jsvgGroup
         if ( typeof data.unitScale != "undefined" )
             this.unitScale = data.unitScale;
 
+        if ( typeof data.showLabels != "undefined" )
+            this.showLabels = data.showLabels;
+
         this.updateLayout();
     }
 
     updateLayout()
     {
-        this.shapePath.setWidthAndHeight( 2.0*this.radius*this.unitScale, 2.0*this.radius*this.unitScale );
+        const diameter = 2.0 * this.radius * this.unitScale;
+        const radiusPx = this.radius * this.unitScale;
+        const centerX = radiusPx + 10;
+        const centerY = radiusPx + 10;
+
+        this.shapePath.setWidthAndHeight( diameter, diameter );
+        this.shapePath.setPosition( centerX, centerY );
+
+        this.labelsHolder.removeAllChildren();
+        if ( this.showLabels )
+        {
+            const angleRadians = -Math.PI / 6;
+            const endX = centerX + Math.cos(angleRadians) * radiusPx * 0.82;
+            const endY = centerY + Math.sin(angleRadians) * radiusPx * 0.82;
+
+            const radiusLine = new jsvgLine();
+            radiusLine.setStrokeColor("black");
+            radiusLine.setStrokeWidth(1.5);
+            radiusLine.setEndpoints(centerX, centerY, endX, endY);
+            this.labelsHolder.addChild(radiusLine);
+
+            const label = new jsvgTextLine();
+            label.setAlignment("center");
+            label.setFontFamily( "Albert Sans" );
+            label.setFontColor( "black" );
+            label.setFontSize( 12 );
+            label.svgObject.setAttribute('dominant-baseline', 'middle');
+            label.setRotation(angleRadians * 180 / Math.PI);
+            label.setPosition(
+                (centerX + endX) * 0.5 + 3,
+                (centerY + endY) * 0.5 - 4
+            );
+            label.setText( `r=${this.radius}` );
+            this.labelsHolder.addChild( label );
+        }
 
         // Set dimensions and viewBox for API compatibility
         this.width = 2.0 * this.radius * this.unitScale + 20;
@@ -388,6 +494,10 @@ export class omdRegularPolygon extends jsvgGroup
     updateLayout()
     {
         this.shapePath.clearPoints();
+        const radiusPx = this.radius * this.unitScale;
+        const padding = this.showLabels ? 48 : 14;
+        const centerX = radiusPx + padding;
+        const centerY = radiusPx + padding;
 
         var angleOffset = 0;
         if ( this.numberOfSides % 2 == 1 )
@@ -401,8 +511,8 @@ export class omdRegularPolygon extends jsvgGroup
         {
             var A = -2.0 * Math.PI / this.numberOfSides * i;
             A += angleOffset;
-            var pX = Math.cos(A) * this.radius * this.unitScale;
-            var pY = Math.sin(A) * this.radius * this.unitScale;
+            var pX = centerX + Math.cos(A) * radiusPx;
+            var pY = centerY + Math.sin(A) * radiusPx;
             this.shapePath.addPoint( pX, pY );
         }
 
@@ -420,9 +530,9 @@ export class omdRegularPolygon extends jsvgGroup
         }
 
         // Set dimensions and viewBox for API compatibility
-        this.width = 2.0 * this.radius * this.unitScale + 20;
-        this.height = 2.0 * this.radius * this.unitScale + 20;
-        this.svgObject.setAttribute('viewBox', `-${this.width/2} -${this.height/2} ${this.width} ${this.height}`);
+        this.width = 2.0 * radiusPx + padding * 2;
+        this.height = 2.0 * radiusPx + padding * 2;
+        this.svgObject.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
     }
 }
 
@@ -437,76 +547,77 @@ export class omdShapeLabelSet extends jsvgGroup
 
     initializeWithShapePath( shapePath, labelTextArray=[] )
     {
-        // this assumes counterclockwise path
+        const polygonPoints = getClosedPolygonVertices(shapePath);
+        const centroid = getPolygonCentroid(polygonPoints);
 
         // create lines
-        for( var i=0; i<shapePath.points.length-1; i++ )
+        for (let i = 0; i < polygonPoints.length; i++)
         {
-            if ( i >= labelTextArray.length || labelTextArray[i].length == 0 )
+            if ( i >= labelTextArray.length )
+                continue;
+
+            const labelValue = labelTextArray[i];
+            const labelString = String(labelValue ?? "");
+            if ( labelString.length === 0 )
                 continue;
             
             // get points
-            var point0 = shapePath.points[i];
-            var x0 = point0.x;
-            var y0 = point0.y;
+            const point0 = polygonPoints[i];
+            const x0 = point0.x;
+            const y0 = point0.y;
 
-            var point1 = shapePath.points[i+1];
-            var x1 = point1.x;
-            var y1 = point1.y;
+            const point1 = polygonPoints[(i + 1) % polygonPoints.length];
+            const x1 = point1.x;
+            const y1 = point1.y;
 
             // get normalized vector
-            var dX = x1 - x0;
-            var dY = y1 - y0;
-            var L = Math.sqrt( dX*dX + dY*dY );
+            let dX = x1 - x0;
+            let dY = y1 - y0;
+            const L = Math.sqrt( dX*dX + dY*dY );
             dX /= L;
             dY /= L;
             
-            // get normal
-            var normalX = -1.0 * dY;
-            var normalY = dX;
+            // get outward normal based on the polygon centroid rather than path winding
+            const centerX = (x0 + x1) / 2.0;
+            const centerY = (y0 + y1) / 2.0;
+            let normalX = -1.0 * dY;
+            let normalY = dX;
+            const toMidX = centerX - centroid.x;
+            const toMidY = centerY - centroid.y;
+            if ( toMidX * normalX + toMidY * normalY < 0 )
+            {
+                normalX *= -1.0;
+                normalY *= -1.0;
+            }
 
             // make line
-            var labelLine = new jsvgLine();
-            var newLineX0 = x0 + normalX * 10.0;
-            var newLineY0 = y0 + normalY * 10.0;
-            var newLineX1 = x1 + normalX * 10.0;
-            var newLineY1 = y1 + normalY * 10.0;
+            const labelLine = new jsvgLine();
+            const newLineX0 = x0 + normalX * 10.0;
+            const newLineY0 = y0 + normalY * 10.0;
+            const newLineX1 = x1 + normalX * 10.0;
+            const newLineY1 = y1 + normalY * 10.0;
             labelLine.setEndpoints( newLineX0, newLineY0, newLineX1, newLineY1 );
             this.addChild( labelLine );
 
-            // center point
-            var centerX = (x0 + x1) / 2.0;
-            var centerY = (y0 + y1) / 2.0;
-
-            var angle = Math.atan2( dY, dX );
-            angle *= 180 / Math.PI;
-            angle += 180.0;
-            angle = angle % 360.0;
-            var originalAngle = angle;            
-
-            // flip upside-down text
-            var offset = 0;
-            if ( angle > 90 && angle < 270 )
-            {
-                angle -= 180.0;
-                offset += 10.0;
-            }
+            let angle = Math.atan2( dY, dX ) * 180 / Math.PI;
+            if ( angle > 90 || angle < -90 )
+                angle += 180.0;
 
             // label text
-            var textCenterX = centerX + normalX * (15.0+offset);
-            var textCenterY = centerY + normalY * (15.0+offset);
-            var labelText = new jsvgTextLine();
+            const textCenterX = centerX + normalX * 18.0;
+            const textCenterY = centerY + normalY * 18.0;
+            const labelText = new jsvgTextLine();
             labelText.setAlignment("center");
             labelText.setFontFamily( "Albert Sans" );
             labelText.setFontColor( "black" );
             labelText.setFontSize( 12 );
             labelText.setPosition( textCenterX, textCenterY );
             labelText.setRotation( angle );
+            labelText.svgObject.setAttribute('dominant-baseline', 'middle');
             this.addChild( labelText );
 
-            labelText.setText( labelTextArray[i] );
+            labelText.setText( labelString );
         }
     }
 
 }
-

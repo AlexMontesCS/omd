@@ -1,0 +1,13 @@
+{
+  "name": "@teachinglab/jsvg",
+  "version": "0.1.2",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.js"
+    },
+    "./jsvg.js": "./jsvg.js",
+    "./jsvgComponents.js": "./jsvgComponents.js"
+  },
+  "module": "./index.js"
+}

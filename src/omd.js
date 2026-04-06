@@ -28,6 +28,7 @@ import { omdRectangle } from "./omdShapes.js";
 import { omdEllipse } from "./omdShapes.js";
 import { omdCircle } from "./omdShapes.js";
 import { omdRegularPolygon } from "./omdShapes.js";
+import { omdLabel } from "./omdLabel.js";
 import { jsvgContainer } from "@teachinglab/jsvg";
 
 export class omd extends jsvgContainer
@@ -171,6 +172,9 @@ export class omd extends jsvgContainer
                 break;
             case "regularPolygon":
                 N = new omdRegularPolygon();
+                break;
+            case "label":
+                N = new omdLabel();
                 break;
             default:
                 console.error(`Unsupported OMD type: ${omdType}. Available types: number, variable, operator, term, expression, powerExpression, rationalExpression, function, equation, numberLine, balanceHanger, tapeDiagram, numberTile, ratioChart, coordinatePlane, spinner, table, tileEquation, rightTriangle, isoscelesTriangle, rectangle, ellipse, circle, regularPolygon`);

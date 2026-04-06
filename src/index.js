@@ -48,6 +48,7 @@ export {
     omdShapeLabelSet 
 } from './omdShapes.js';
 export { omdSpinner } from './omdSpinner.js';
+export { omdLabel } from './omdLabel.js';
 export { omdProblem } from './omdProblem.js';
 
 // Default export for organized access

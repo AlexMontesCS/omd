@@ -28,6 +28,11 @@ export class Toolbar {
             this._updateActiveButton(event.detail.name);
         });
         
+        // Listen for canvas resize events to reposition toolbar
+        this.canvas.on('resized', () => {
+            this._updatePosition();
+        });
+        
         
     }
     
@@ -40,12 +45,25 @@ export class Toolbar {
         
         // Create a jsvgGroup for the toolbar
         this.toolbarGroup = new jsvgGroup();
+        this.toolbarGroup.svgObject.style.cursor = 'pointer';
         
         // Stop pointer events from bubbling to canvas to prevent drawing while interacting with toolbar
         const stopPropagation = (e) => e.stopPropagation();
+        const hideCanvasCursor = (e) => {
+            e.stopPropagation();
+            this.canvas.cursor?.hide?.();
+        };
+        const restoreCanvasCursor = (e) => {
+            e.stopPropagation();
+            this._restoreCanvasCursor(e);
+        };
+
         this.toolbarGroup.svgObject.addEventListener('pointerdown', stopPropagation);
         this.toolbarGroup.svgObject.addEventListener('pointermove', stopPropagation);
         this.toolbarGroup.svgObject.addEventListener('pointerup', stopPropagation);
+        this.toolbarGroup.svgObject.addEventListener('pointerenter', hideCanvasCursor);
+        this.toolbarGroup.svgObject.addEventListener('pointerleave', restoreCanvasCursor);
+        this.toolbarGroup.svgObject.addEventListener('pointercancel', restoreCanvasCursor);
         
         // Create background rectangle
         this.background = new jsvgRect();
@@ -305,5 +323,32 @@ export class Toolbar {
             this.toolbarGroup.svgObject.parentNode.removeChild(this.toolbarGroup.svgObject);
         }
         this.buttons.clear();
+    }
+
+    _restoreCanvasCursor(event) {
+        if (!this.canvas?.cursor) return;
+
+        const nextTarget = event?.relatedTarget;
+        const isStillInsideCanvas = !!(nextTarget && this.canvas?.svg?.contains?.(nextTarget));
+
+        if (!isStillInsideCanvas) {
+            this.canvas.cursor.hide();
+            return;
+        }
+
+        if (this.canvas.clientToSVG && typeof event?.clientX === 'number' && typeof event?.clientY === 'number') {
+            const canvasCoords = this.canvas.clientToSVG(event.clientX, event.clientY);
+            this.canvas.cursor.setPosition(canvasCoords.x, canvasCoords.y);
+        }
+
+        const activeTool = this.canvas.toolManager?.getActiveTool?.();
+        if (activeTool?.getCursor) {
+            this.canvas.cursor.setShape(activeTool.getCursor());
+        }
+        if (activeTool?.config) {
+            this.canvas.cursor.updateFromToolConfig(activeTool.config);
+        }
+
+        this.canvas.cursor.show();
     }
 } 

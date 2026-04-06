@@ -14,7 +14,7 @@ export class CanvasConfig {
         this.gridSpacing = options.gridSpacing || 20;
         
         // Tool configuration
-        this.enabledTools = options.enabledTools || ['pointer', 'pencil', 'eraser', 'select'];
+        this.enabledTools = options.enabledTools || ['pointer', 'pencil', 'eraser'];
         this.defaultTool = options.defaultTool || 'pointer';
         
         // Feature flags
@@ -36,11 +36,6 @@ export class CanvasConfig {
                 size: 20,
                 hardness: 0.8,
                 ...options.tools?.eraser
-            },
-            select: {
-                selectionColor: '#007bff',
-                selectionOpacity: 0.3,
-                ...options.tools?.select
             }
         };
         
@@ -53,7 +48,26 @@ export class CanvasConfig {
             danger: '#dc3545',
             ...options.theme
         };
-        
+
+        // Selection / resize-handle styling
+        this.selection = {
+            // Selection border
+            border: {
+                color:        options.selection?.border?.color        ?? '#007bff',
+                width:        options.selection?.border?.width        ?? 2,
+                dasharray:    options.selection?.border?.dasharray    ?? '4,2',
+                cornerRadius: options.selection?.border?.cornerRadius ?? undefined,
+            },
+            // Resize handles
+            handle: {
+                size:         options.selection?.handle?.size         ?? 8,
+                color:        options.selection?.handle?.color        ?? '#007bff',
+                strokeColor:  options.selection?.handle?.strokeColor  ?? '#ffffff',
+                strokeWidth:  options.selection?.handle?.strokeWidth  ?? 1,
+                cornerRadius: options.selection?.handle?.cornerRadius ?? 1,
+            },
+        };
+
         // Validate configuration
         this._validate();
     }
@@ -69,13 +83,13 @@ export class CanvasConfig {
         }
         
         // Validate enabled tools
-        const availableTools = ['pointer', 'pencil', 'eraser', 'select'];
+        const availableTools = ['pointer', 'pencil', 'eraser'];
         const invalidTools = this.enabledTools.filter(tool => !availableTools.includes(tool));
         if (invalidTools.length > 0) {
             console.warn(`Invalid tools specified: ${invalidTools.join(', ')}`);
             this.enabledTools = this.enabledTools.filter(tool => availableTools.includes(tool));
         }
-        
+
         // Ensure at least one tool is enabled
         if (this.enabledTools.length === 0) {
             this.enabledTools = ['pencil'];
@@ -110,13 +124,8 @@ export class CanvasConfig {
         if (this.tools.eraser.hardness < 0 || this.tools.eraser.hardness > 1) {
             this.tools.eraser.hardness = 0.8;
         }
-        
-        // Validate select config
-        if (this.tools.select.selectionOpacity < 0 || this.tools.select.selectionOpacity > 1) {
-            this.tools.select.selectionOpacity = 0.3;
-        }
     }
-    
+
     /**
      * Update configuration
      * @param {Object} updates - Configuration updates
@@ -166,7 +175,8 @@ export class CanvasConfig {
             enableKeyboardShortcuts: this.enableKeyboardShortcuts,
             enableMultiTouch: this.enableMultiTouch,
             tools: JSON.parse(JSON.stringify(this.tools)),
-            theme: { ...this.theme }
+            theme: { ...this.theme },
+            selection: JSON.parse(JSON.stringify(this.selection))
         });
     }
     
@@ -188,7 +198,8 @@ export class CanvasConfig {
             enableKeyboardShortcuts: this.enableKeyboardShortcuts,
             enableMultiTouch: this.enableMultiTouch,
             tools: this.tools,
-            theme: this.theme
+            theme: this.theme,
+            selection: this.selection
         };
     }
     

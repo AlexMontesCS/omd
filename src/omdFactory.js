@@ -42,6 +42,7 @@ import {
     omdCircle,
     omdRegularPolygon
 } from './omdShapes.js';
+import { omdLabel } from './omdLabel.js';
 
 /**
  * Map of omdType strings to their corresponding class constructors
@@ -71,7 +72,8 @@ const OMD_TYPE_MAP = {
     'rectangle': omdRectangle,
     'ellipse': omdEllipse,
     'circle': omdCircle,
-    'regularPolygon': omdRegularPolygon
+    'regularPolygon': omdRegularPolygon,
+    'label': omdLabel,
 };
 
 /**

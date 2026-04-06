@@ -60,8 +60,8 @@ export class Cursor {
             this.element.appendChild(shape);
         });
         
-        // Show default shape initially
-        this.setShape('default');
+        // Show pencil (blue dot) shape initially so the first visible cursor is always a dot
+        this.setShape('pencil');
     }
     
     /**
@@ -196,12 +196,13 @@ export class Cursor {
         const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         group.setAttribute('data-shape', 'pointer');
         
-        // Standard arrow pointer cursor
+        // Use the same pointer cursor as the toolbar icon
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', 'M 2,2 L 2,16 L 7,11 L 10,18 L 12,17 L 9,10 L 16,10 Z');
+        path.setAttribute('d', 'M1.63448 2.04462C1.60922 1.98633 1.60208 1.92179 1.61397 1.85938C1.62585 1.79697 1.65623 1.73958 1.70116 1.69466C1.74608 1.64973 1.80347 1.61935 1.86588 1.60747C1.92829 1.59558 1.99283 1.60272 2.05112 1.62798L12.2911 5.78798C12.3534 5.81335 12.4061 5.85768 12.4417 5.91469C12.4774 5.9717 12.4941 6.03849 12.4897 6.10557C12.4852 6.17266 12.4597 6.23663 12.4169 6.28842C12.374 6.3402 12.3159 6.37717 12.2508 6.39406L8.33144 7.40526C8.11 7.46219 7.90784 7.5774 7.74599 7.73891C7.58415 7.90042 7.46852 8.10234 7.41112 8.32366L6.40056 12.2443C6.38367 12.3094 6.3467 12.3675 6.29492 12.4104C6.24313 12.4532 6.17916 12.4787 6.11207 12.4832C6.04499 12.4876 5.9782 12.4709 5.92119 12.4352C5.86419 12.3996 5.81985 12.3469 5.79448 12.2846L1.63448 2.04462Z');
         path.setAttribute('fill', 'white');
         path.setAttribute('stroke', '#000000');
-        path.setAttribute('stroke-width', '1.2');
+        path.setAttribute('stroke-width', '1.28');
+        path.setAttribute('stroke-linecap', 'round');
         path.setAttribute('stroke-linejoin', 'round');
         
         group.appendChild(path);
@@ -459,5 +460,14 @@ export class Cursor {
         if (this.element.parentNode) {
             this.element.parentNode.removeChild(this.element);
         }
+    }
+
+    /**
+     * Reattach the cursor element to a specific parent so it can sit above other SVG UI.
+     * @param {SVGElement} parent
+     */
+    attachTo(parent) {
+        if (!parent || !this.element) return;
+        parent.appendChild(this.element);
     }
 } 

@@ -1064,16 +1064,29 @@ _propagateBackgroundStyle(style, visited = new Set()) {
         const rightExpr = this._normalizeExpressionString(this.getRight().toString());
 
         let graphEquations = [];
+        
+        // Helper to check if expression is just 'y' (case-insensitive)
+        const isY = (expr) => expr.trim().toLowerCase() === 'y';
+
         if (options.side === 'left') {
-            graphEquations = [{ equation: `y = ${leftExpr}`, domain: { min: options.xMin, max: options.xMax }, color: 'blue', strokeWidth: 2 }];
+            if (!isY(leftExpr)) {
+                graphEquations.push({ equation: `y = ${leftExpr}`, domain: { min: options.xMin, max: options.xMax }, color: 'blue', strokeWidth: 2 });
+            }
         } else if (options.side === 'right') {
-            graphEquations = [{ equation: `y = ${rightExpr}`, domain: { min: options.xMin, max: options.xMax }, color: 'red', strokeWidth: 2 }];
+            if (!isY(rightExpr)) {
+                graphEquations.push({ equation: `y = ${rightExpr}`, domain: { min: options.xMin, max: options.xMax }, color: 'red', strokeWidth: 2 });
+            }
         } else {
             // both: plot left and right as two functions; intersection corresponds to equality
-            graphEquations = [
-                { equation: `y = ${leftExpr}`, domain: { min: options.xMin, max: options.xMax }, color: 'blue', strokeWidth: 2 },
-                { equation: `y = ${rightExpr}`, domain: { min: options.xMin, max: options.xMax }, color: 'red', strokeWidth: 2 }
-            ];
+            // Skip 'y' sides to avoid plotting "y=y"
+            if (!isY(leftExpr)) {
+                graphEquations.push({ equation: `y = ${leftExpr}`, domain: { min: options.xMin, max: options.xMax }, color: 'blue', strokeWidth: 2 });
+            }
+            if (!isY(rightExpr)) {
+                // If we skipped left because it was y, use blue for right side (primary function color)
+                const color = isY(leftExpr) ? 'blue' : 'red';
+                graphEquations.push({ equation: `y = ${rightExpr}`, domain: { min: options.xMin, max: options.xMax }, color: color, strokeWidth: 2 });
+            }
         }
 
         return {
@@ -1108,14 +1121,26 @@ _propagateBackgroundStyle(style, visited = new Set()) {
      * @private
      */
     _renderToTable(options) {
+        // Helper to format expression - if it already has "y =" or starts with variable, use as-is, else prepend "y ="
+        const formatEquation = (expr) => {
+            const normalized = this._normalizeExpressionString(expr);
+            // Check if expression already has "y =" or other variable assignment
+            if (/^[a-zA-Z]\s*=/.test(normalized)) {
+                return normalized;
+            }
+            // Otherwise prepend "y ="
+            return `y = ${normalized}`;
+        };
+
         // Single side: let omdTable generate rows from equation
         if (options.side === 'left') {
             const expr = this._normalizeExpressionString(this.getLeft().toString());
+            const equation = formatEquation(expr);
             return {
                 omdType: "table",
-                title: `Function Table: y = ${expr}`,
+                title: `Function Table: ${equation}`,
                 headers: ["x", "y"],
-                equation: `y = ${expr}`,
+                equation: equation,
                 xMin: options.xMin,
                 xMax: options.xMax,
                 stepSize: options.stepSize,
@@ -1132,11 +1157,12 @@ _propagateBackgroundStyle(style, visited = new Set()) {
             };
         } else if (options.side === 'right') {
             const expr = this._normalizeExpressionString(this.getRight().toString());
+            const equation = formatEquation(expr);
             return {
                 omdType: "table",
-                title: `Function Table: y = ${expr}`,
+                title: `Function Table: ${equation}`,
                 headers: ["x", "y"],
-                equation: `y = ${expr}`,
+                equation: equation,
                 xMin: options.xMin,
                 xMax: options.xMax,
                 stepSize: options.stepSize,
@@ -1153,7 +1179,60 @@ _propagateBackgroundStyle(style, visited = new Set()) {
             };
         }
 
-        // Both sides: compute data for x, left(x), right(x)
+        // Both sides: use equation format for proper table generation
+        // The omdTable class can handle this better than manually computing data
+        const leftExpr = this._normalizeExpressionString(this.getLeft().toString());
+        const rightExpr = this._normalizeExpressionString(this.getRight().toString());
+        
+        // If left side is just "y", use right side as the equation
+        if (leftExpr.toLowerCase().trim() === 'y') {
+            const equation = formatEquation(rightExpr);
+            return {
+                omdType: "table",
+                title: `Function Table: ${equation}`,
+                headers: ["x", "y"],
+                equation: equation,
+                xMin: options.xMin,
+                xMax: options.xMax,
+                stepSize: options.stepSize,
+                // Background customization options
+                backgroundColor: (options.backgroundColor !== undefined) ? options.backgroundColor : undefined,
+                backgroundCornerRadius: (options.backgroundCornerRadius !== undefined) ? options.backgroundCornerRadius : undefined,
+                backgroundOpacity: (options.backgroundOpacity !== undefined) ? options.backgroundOpacity : undefined,
+                showBackground: (options.showBackground !== undefined) ? options.showBackground : undefined,
+                // Alternating row color options
+                alternatingRowColors: (options.alternatingRowColors !== undefined) ? options.alternatingRowColors : undefined,
+                evenRowColor: (options.evenRowColor !== undefined) ? options.evenRowColor : undefined,
+                oddRowColor: (options.oddRowColor !== undefined) ? options.oddRowColor : undefined,
+                alternatingRowOpacity: (options.alternatingRowOpacity !== undefined) ? options.alternatingRowOpacity : undefined
+            };
+        }
+        
+        // If right side is just "y", use left side as the equation
+        if (rightExpr.toLowerCase().trim() === 'y') {
+            const equation = formatEquation(leftExpr);
+            return {
+                omdType: "table",
+                title: `Function Table: ${equation}`,
+                headers: ["x", "y"],
+                equation: equation,
+                xMin: options.xMin,
+                xMax: options.xMax,
+                stepSize: options.stepSize,
+                // Background customization options
+                backgroundColor: (options.backgroundColor !== undefined) ? options.backgroundColor : undefined,
+                backgroundCornerRadius: (options.backgroundCornerRadius !== undefined) ? options.backgroundCornerRadius : undefined,
+                backgroundOpacity: (options.backgroundOpacity !== undefined) ? options.backgroundOpacity : undefined,
+                showBackground: (options.showBackground !== undefined) ? options.showBackground : undefined,
+                // Alternating row color options
+                alternatingRowColors: (options.alternatingRowColors !== undefined) ? options.alternatingRowColors : undefined,
+                evenRowColor: (options.evenRowColor !== undefined) ? options.evenRowColor : undefined,
+                oddRowColor: (options.oddRowColor !== undefined) ? options.oddRowColor : undefined,
+                alternatingRowOpacity: (options.alternatingRowOpacity !== undefined) ? options.alternatingRowOpacity : undefined
+            };
+        }
+
+        // Both sides have expressions: compute data for x, left(x), right(x)
         const leftSide = this.getLeft();
         const rightSide = this.getRight();
         const leftLabel = leftSide.toString();

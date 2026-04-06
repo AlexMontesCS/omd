@@ -22,12 +22,32 @@ export function parseExpressionString(str) {
         // term or number/variable
         const m = tok.match(/^([+-]?)(\d*\.?\d*)([a-zA-Z]?)(?:\^(\d+))?$/);
         if (m) {
-            const sign = m[1] === '-' ? -1 : 1;
+            const signStr = m[1];
+            let sign = signStr === '-' ? -1 : 1;
             const coefRaw = m[2];
             const varChar = m[3] || '';
             const exp = m[4] ? Number(m[4]) : 1;
             let coef = 1;
             if (coefRaw && coefRaw.length > 0) coef = Number(coefRaw);
+
+            // Logic to split sign into operator if needed
+            // If we have a sign (+ or -), and we are NOT at the start and NOT following an operator,
+            // we should split it into an operator and a positive term.
+            let splitSign = false;
+            if (signStr) {
+                const isStart = out.length === 0;
+                const prevIsOperator = !isStart && out[out.length-1].omdType === 'operator';
+                
+                if (!isStart && !prevIsOperator) {
+                    splitSign = true;
+                }
+            }
+
+            if (splitSign) {
+                out.push({ omdType: 'operator', operator: signStr });
+                sign = 1; // Term becomes positive
+            }
+
             if (!varChar && coefRaw) {
                 // pure number
                 out.push({ omdType: 'number', value: sign * coef });
@@ -41,21 +61,27 @@ export function parseExpressionString(str) {
     }
 
     // If first token is an operator like '+' or '-', and followed by a term/number, fold it
+    // ONLY if it is a unary operator (at start or after another operator)
     const folded = [];
     for (let i = 0; i < out.length; i++) {
         const t = out[i];
         if (t.omdType === 'operator' && (t.operator === '+' || t.operator === '-')) {
-            // If it's a leading sign attached to next term, merge
-            const next = out[i+1];
-            if (next && (next.omdType === 'term' || next.omdType === 'number')) {
-                if (next.omdType === 'number') {
-                    next.value = (t.operator === '-') ? -next.value : next.value;
-                } else if (next.omdType === 'term') {
-                    next.coefficient = (t.operator === '-') ? -next.coefficient : next.coefficient;
+            const isStart = folded.length === 0;
+            const prevIsOperator = !isStart && folded[folded.length-1].omdType === 'operator';
+
+            // Only fold if it's unary
+            if (isStart || prevIsOperator) {
+                const next = out[i+1];
+                if (next && (next.omdType === 'term' || next.omdType === 'number')) {
+                    if (next.omdType === 'number') {
+                        next.value = (t.operator === '-') ? -next.value : next.value;
+                    } else if (next.omdType === 'term') {
+                        next.coefficient = (t.operator === '-') ? -next.coefficient : next.coefficient;
+                    }
+                    i++; // skip next because we've merged
+                    folded.push(next);
+                    continue;
                 }
-                i++; // skip next because we've merged
-                folded.push(next);
-                continue;
             }
         }
         folded.push(t);

@@ -214,10 +214,15 @@ export class EventManager {
         // Show custom cursor when entering canvas
         if (this.canvas.cursor) {
             this.canvas.cursor.show();
-            // Update cursor from current tool config
+            // Ensure the cursor shape matches the active tool (fixes stale crosshair on first entry)
             const activeTool = this.canvas.toolManager.getActiveTool();
-            if (activeTool && activeTool.config) {
-                this.canvas.cursor.updateFromToolConfig(activeTool.config);
+            if (activeTool) {
+                if (activeTool.getCursor) {
+                    this.canvas.cursor.setShape(activeTool.getCursor());
+                }
+                if (activeTool.config) {
+                    this.canvas.cursor.updateFromToolConfig(activeTool.config);
+                }
             }
         }
         // If mouse is down (event.buttons !== 0), start drawing

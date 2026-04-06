@@ -12,7 +12,6 @@ export { ToolManager } from './tools/toolManager.js';
 export { Tool } from './tools/tool.js';
 export { PencilTool } from './tools/PencilTool.js';
 export { EraserTool } from './tools/EraserTool.js';
-export { SelectTool } from './tools/SelectTool.js';
 
 // UI components
 export { Toolbar } from './ui/toolbar.js';

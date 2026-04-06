@@ -3,12 +3,67 @@ import { EventManager } from '../events/eventManager.js';
 import { ToolManager } from '../tools/toolManager.js';
 import { PencilTool } from '../tools/PencilTool.js';
 import { EraserTool } from '../tools/EraserTool.js';
-import { SelectTool } from '../tools/SelectTool.js';
 import { PointerTool } from '../tools/PointerTool.js';
 import { Cursor } from '../ui/cursor.js';
 import { Toolbar } from '../ui/toolbar.js';
 import { FocusFrameManager } from '../features/focusFrameManager.js';
 import {jsvgGroup} from '@teachinglab/jsvg'
+
+// Create a clone that is safe to draw onto an HTML canvas.
+// Chrome will taint canvases if an SVG contains <foreignObject> nodes,
+// so we replace them with basic <text> nodes during export.
+function cloneSVGForExport(svgRoot, options = {}) {
+    const { stripForeignObjects = true } = options;
+    const clone = svgRoot.cloneNode(true);
+
+    if (stripForeignObjects) {
+        const ns = 'http://www.w3.org/2000/svg';
+        clone.querySelectorAll('foreignObject').forEach((fo) => {
+            const parent = fo.parentNode;
+            if (!parent) return;
+
+            const htmlEl = fo.firstElementChild;
+            const textContent = (htmlEl?.innerText || htmlEl?.textContent || '').trim();
+            const textEl = document.createElementNS(ns, 'text');
+            textEl.textContent = textContent;
+
+            const x = parseFloat(fo.getAttribute('x') || '0');
+            const y = parseFloat(fo.getAttribute('y') || '0');
+            const width = parseFloat(fo.getAttribute('width') || '0');
+            const fontFamily = htmlEl?.style?.fontFamily || 'sans-serif';
+            const fontSizeStr = htmlEl?.style?.fontSize || '16px';
+            const fontSize = parseFloat(fontSizeStr) || 16;
+            const fontWeight = htmlEl?.style?.fontWeight || 'normal';
+            const fill = htmlEl?.style?.color || 'black';
+            const textAlign = htmlEl?.style?.textAlign || 'start';
+
+            textEl.setAttribute('font-family', fontFamily);
+            textEl.setAttribute('font-size', `${fontSize}px`);
+            textEl.setAttribute('font-weight', fontWeight);
+            textEl.setAttribute('fill', fill);
+            textEl.setAttribute('dominant-baseline', 'hanging');
+
+            // Approximate alignment using the known foreignObject width
+            let textX = x;
+            if (!isNaN(width) && width > 0) {
+                if (textAlign === 'center') {
+                    textX = x + width / 2;
+                    textEl.setAttribute('text-anchor', 'middle');
+                } else if (textAlign === 'end' || textAlign === 'right') {
+                    textX = x + width;
+                    textEl.setAttribute('text-anchor', 'end');
+                }
+            }
+            textEl.setAttribute('x', textX);
+            // Bump y by font size so the text sits inside the original box
+            textEl.setAttribute('y', y + fontSize);
+
+            parent.replaceChild(textEl, fo);
+        });
+    }
+
+    return clone;
+}
 /**
  * Main OMD Canvas class
  * Provides the primary interface for creating and managing a drawing canvas
@@ -62,6 +117,8 @@ export class omdCanvas {
         this.svg.setAttribute('viewBox', `0 0 ${this.config.width} ${this.config.height}`);
         this.svg.style.cssText = `
             display: block;
+            width: 100%;
+            height: 100%;
             background: ${this.config.backgroundColor};
             cursor: none;
             touch-action: none;
@@ -120,10 +177,6 @@ export class omdCanvas {
         if (this.config.enabledTools.includes('eraser')) {
             this.toolManager.registerTool('eraser', new EraserTool(this));
         }
-        if (this.config.enabledTools.includes('select')) {
-            this.toolManager.registerTool('select', new SelectTool(this));
-        }
-        
         // Set default tool
         if (this.config.defaultTool && this.config.enabledTools.includes(this.config.defaultTool)) {
             this.toolManager.setActiveTool(this.config.defaultTool);
@@ -147,6 +200,18 @@ export class omdCanvas {
         // Focus frame manager
         if (this.config.enableFocusFrames) {
             this.focusFrameManager = new FocusFrameManager(this);
+        }
+
+        // Keep the custom cursor above toolbar/buttons and all other SVG UI.
+        if (this.cursor && this.svg) {
+            this.cursor.attachTo(this.svg);
+        }
+
+        // Apply any selection styles defined in config to the ResizeHandleManager
+        // (PointerTool registers the manager on canvas.resizeHandleManager during its constructor)
+        if (this.resizeHandleManager && this.config.selection) {
+            this.resizeHandleManager.setSelectionStyle(this.config.selection.border);
+            this.resizeHandleManager.setHandleStyle(this.config.selection.handle);
         }
     }
     
@@ -301,10 +366,12 @@ export class omdCanvas {
     
     /**
      * Export canvas as SVG string
+     * @param {Object} options - Export options
+     * @param {boolean} options.stripForeignObjects - Replace <foreignObject> with <text> for canvas-safe exports (default true)
      * @returns {string} SVG content
      */
-    exportSVG() {
-        const svgClone = this.svg.cloneNode(true);
+    exportSVG(options = {}) {
+        const svgClone = cloneSVGForExport(this.svg, options);
         
         // Remove UI elements from export
         const uiLayer = svgClone.querySelector('.ui-layer');
@@ -320,16 +387,29 @@ export class omdCanvas {
      * Export canvas as image
      * @param {string} format - Image format (png, jpeg, webp)
      * @param {number} quality - Image quality (0-1)
+     * @param {Object} options - Export options passed to exportSVG (e.g., { stripForeignObjects: true })
      * @returns {Promise<Blob>} Image blob
      */
-    async exportImage(format = 'png', quality = 1) {
-        const svgData = this.exportSVG();
+    async exportImage(format = 'png', quality = 1, options = {}) {
+        // Allow passing options as the second argument for backward compatibility
+        if (typeof quality === 'object' && quality !== null) {
+            options = quality;
+            quality = 1;
+        }
+        if (typeof format === 'object' && format !== null) {
+            options = format;
+            format = 'png';
+            quality = 1;
+        }
+
+        const svgData = this.exportSVG(options);
         const canvas = document.createElement('canvas');
         canvas.width = this.config.width;
         canvas.height = this.config.height;
         
         const ctx = canvas.getContext('2d');
         const img = new Image();
+        img.crossOrigin = 'anonymous';
         
         const svgBlob = new Blob([svgData], { type: 'image/svg+xml' });
         const url = URL.createObjectURL(svgBlob);
@@ -368,11 +448,16 @@ export class omdCanvas {
     }
     
     /**
-     * Handle window resize
+     * Handle window resize — resize the canvas to match the container.
      * @private
      */
     _handleResize() {
-        // Optional: implement responsive behavior
+        if (!this.container) return;
+        const w = Math.max(400, this.container.clientWidth  || this.container.getBoundingClientRect().width  || 0);
+        const h = Math.max(400, this.container.clientHeight || this.container.getBoundingClientRect().height || 0);
+        if (!w || !h) return;
+        if (Math.abs(w - this.config.width) < 1 && Math.abs(h - this.config.height) < 1) return;
+        this.resize(w, h);
     }
     
     /**
@@ -480,5 +565,43 @@ export class omdCanvas {
         
         this.isDestroyed = true;
         this.emit('destroyed');
+    }
+    /**
+     * Style the selection border shown when an OMD visual is selected.
+     * Can be called at any time; changes take effect immediately.
+     * @param {Object} style
+     * @param {string}  [style.color]        - Border stroke colour (e.g. '#007bff')
+     * @param {number}  [style.width]        - Border stroke width in px
+     * @param {string}  [style.dasharray]    - SVG stroke-dasharray (e.g. '4,2' or 'none')
+     * @param {number}  [style.cornerRadius] - Border corner radius
+     */
+    setSelectionStyle(style = {}) {
+        if (this.resizeHandleManager) {
+            this.resizeHandleManager.setSelectionStyle(style);
+        }
+        // Persist into config so clones / serialisation reflect the change
+        if (this.config.selection?.border) {
+            Object.assign(this.config.selection.border, style);
+        }
+    }
+
+    /**
+     * Style the resize handles shown when an OMD visual is selected.
+     * Can be called at any time; changes take effect immediately.
+     * @param {Object} style
+     * @param {number}  [style.size]         - Handle size in px
+     * @param {string}  [style.color]        - Handle fill colour
+     * @param {string}  [style.strokeColor]  - Handle border colour
+     * @param {number}  [style.strokeWidth]  - Handle border width in px
+     * @param {number}  [style.cornerRadius] - Handle corner radius (0 = square, size/2 = circle)
+     */
+    setHandleStyle(style = {}) {
+        if (this.resizeHandleManager) {
+            this.resizeHandleManager.setHandleStyle(style);
+        }
+        // Persist into config
+        if (this.config.selection?.handle) {
+            Object.assign(this.config.selection.handle, style);
+        }
     }
 } 

@@ -216,7 +216,12 @@ This document provides schemas and examples for the `loadFromJSON` method used i
   "backgroundCornerRadius": "number",
   "backgroundOpacity": "number",
   "showBackground": "boolean",
-  "alternatingRowColors": ["array"]
+  "alternatingRowColors": ["array - e.g. ['#EEEEEE', '#FFFFFF']; index 0 used for header row"],
+  "headerBackgroundColor": "string (used when alternatingRowColors is not set)",
+  "cellBackgroundColor": "string (used when alternatingRowColors is not set)",
+  "evenRowColor": "string (legacy)",
+  "oddRowColor": "string (legacy)",
+  "alternatingRowOpacity": "number (legacy)"
 }
 ```
 
@@ -243,7 +248,7 @@ This document provides schemas and examples for the `loadFromJSON` method used i
   "backgroundCornerRadius": 15,
   "backgroundOpacity": 1.0,
   "showBackground": true,
-  "alternatingRowColors": ["#F0F0F0", "#FFFFFF"]
+  "alternatingRowColors": ["#EEEEEE", "#FFFFFF"]
 }
 ```
 
@@ -295,23 +300,149 @@ This document provides schemas and examples for the `loadFromJSON` method used i
 
 ## 8. `omdShapes`
 
-`omdShapes` represents geometric shapes such as circles, rectangles, and polygons.
+`omdShapes` is a module containing several individual geometric shape classes. Each is used by `omdCoordinatePlane`'s `shapeSet` array (via the `omdType` field) and can also be instantiated independently.
 
-### Schema
+---
+
+### 8a. `omdRightTriangle`
+
+#### Schema
 ```json
 {
-  "type": "string",
-  "dimensions": "object",
-  "color": "string"
+  "horizontalLeg": "number (default: 5)",
+  "verticalLeg": "number (default: 10)",
+  "angleA": "number (optional) - angle in degrees; used with hypotenuse to compute legs",
+  "hypotenuse": "number (optional)",
+  "unitScale": "number (default: 10) - pixels per unit",
+  "showLabels": "boolean (default: false)"
 }
 ```
 
-### Example
+#### Example
 ```json
 {
-  "type": "circle",
-  "dimensions": { "radius": 10 },
-  "color": "#FF0000"
+  "omdType": "rightTriangle",
+  "horizontalLeg": 3,
+  "verticalLeg": 4,
+  "unitScale": 20,
+  "showLabels": true
+}
+```
+
+---
+
+### 8b. `omdIsoscelesTriangle`
+
+#### Schema
+```json
+{
+  "base": "number (default: 5)",
+  "height": "number (default: 10)",
+  "unitScale": "number (default: 10)",
+  "showLabels": "boolean (default: false)"
+}
+```
+
+#### Example
+```json
+{
+  "omdType": "isoscelesTriangle",
+  "base": 6,
+  "height": 8,
+  "unitScale": 15
+}
+```
+
+---
+
+### 8c. `omdRectangle`
+
+#### Schema
+```json
+{
+  "width": "number (default: 10)",
+  "height": "number (default: 10)",
+  "unitScale": "number (default: 10)",
+  "showLabels": "boolean (default: false)"
+}
+```
+
+#### Example
+```json
+{
+  "omdType": "rectangle",
+  "width": 5,
+  "height": 3,
+  "unitScale": 20,
+  "showLabels": true
+}
+```
+
+---
+
+### 8d. `omdEllipse`
+
+#### Schema
+```json
+{
+  "width": "number (default: 10)",
+  "height": "number (default: 5)",
+  "unitScale": "number (default: 10)"
+}
+```
+
+#### Example
+```json
+{
+  "omdType": "ellipse",
+  "width": 8,
+  "height": 4,
+  "unitScale": 12
+}
+```
+
+---
+
+### 8e. `omdCircle`
+
+#### Schema
+```json
+{
+  "radius": "number (default: 5)",
+  "unitScale": "number (default: 10)"
+}
+```
+
+#### Example
+```json
+{
+  "omdType": "circle",
+  "radius": 4,
+  "unitScale": 15
+}
+```
+
+---
+
+### 8f. `omdRegularPolygon`
+
+#### Schema
+```json
+{
+  "radius": "number (default: 5)",
+  "numberOfSides": "number (default: 5)",
+  "unitScale": "number (default: 10)",
+  "showLabels": "boolean (default: false)"
+}
+```
+
+#### Example
+```json
+{
+  "omdType": "regularPolygon",
+  "radius": 5,
+  "numberOfSides": 6,
+  "unitScale": 18
 }
 ```
 
@@ -346,20 +477,32 @@ This document provides schemas and examples for the `loadFromJSON` method used i
 ### Schema
 ```json
 {
-  "valueA": "number",
-  "valueB": "number",
-  "renderType": "string",
-  "size": "string"
+  "valueA": "number - filled/first portion (alias: numerator)",
+  "valueB": "number - unfilled/second portion",
+  "numerator": "number (optional alias for valueA)",
+  "denominator": "number (optional) - when provided with numerator, sets valueA=numerator and valueB=denominator-numerator",
+  "renderType": "string - 'pie' | 'dots' | 'dot' | 'tile' | 'bar' (default: 'pie')",
+  "size": "string - 'small' | 'medium' | 'large' (default: 'large')"
 }
 ```
 
-### Example
+### Example (basic)
 ```json
 {
   "valueA": 3,
   "valueB": 2,
   "renderType": "pie",
   "size": "large"
+}
+```
+
+### Example (fraction form)
+```json
+{
+  "numerator": 2,
+  "denominator": 5,
+  "renderType": "dots",
+  "size": "medium"
 }
 ```
 
@@ -465,6 +608,7 @@ This document provides schemas and examples for the `loadFromJSON` method used i
 ```json
 {
   "title": "string (optional)",
+  "label": "string (optional) - secondary label text",
   "min": "number (required)",
   "max": "number (required)",
   "increment": "number (optional, default: 1)",
@@ -618,10 +762,14 @@ This document provides schemas and examples for the `loadFromJSON` method used i
 ### Schema
 ```json
 {
-  "graphEquations": ["array"],
-  "lineSegments": ["array"],
-  "dotValues": ["array"],
-  "shapeSet": ["array"],
+  "graphEquations": [
+    "array of objects: { equation, color, strokeWidth, domain: { min, max }, label, labelAtX, labelPosition: 'above'|'below'|'left'|'right' }"
+  ],
+  "lineSegments": [
+    "array of objects: { point1: [x, y], point2: [x, y], color, strokeWidth }"
+  ],
+  "dotValues": ["array of [x, y] or [x, y, color] tuples"],
+  "shapeSet": ["array of shape objects with omdType (see omdShapes)"],
   "xMin": "number",
   "xMax": "number",
   "yMin": "number",
@@ -629,7 +777,7 @@ This document provides schemas and examples for the `loadFromJSON` method used i
   "xLabel": "string",
   "yLabel": "string",
   "axisLabelOffsetPx": "number",
-  "size": "string",
+  "size": "string - 'small' | 'medium' | 'large'",
   "tickInterval": "number",
   "forceAllTickLabels": "boolean",
   "tickLabelOffsetPx": "number",
@@ -637,22 +785,39 @@ This document provides schemas and examples for the `loadFromJSON` method used i
   "backgroundColor": "string",
   "backgroundCornerRadius": "number",
   "backgroundOpacity": "number",
-  "showBackground": "boolean"
+  "showBackground": "boolean",
+  "interactive": "boolean (optional) - when true, render sliders below the graph",
+  "variables": [
+    "array of strings or objects: { name, label, value, min, max, step, color, graphIndex }"
+  ]
 }
 ```
 
 ### Example
 ```json
 {
+  "interactive": true,
+  "variables": [
+    { "name": "a", "label": "a", "value": 2, "min": -5, "max": 5, "step": 0.1 },
+    { "name": "b", "label": "b", "value": 1, "min": -5, "max": 5, "step": 0.1 }
+  ],
   "graphEquations": [
-    { "equation": "y = x^2", "color": "blue", "strokeWidth": 2, "domain": { "min": -5, "max": 5 } }
+    {
+      "equation": "y = a*x + b",
+      "color": "#0f766e",
+      "strokeWidth": 2,
+      "domain": { "min": -5, "max": 5 },
+      "label": "y = a*x + b",
+      "labelAtX": 2,
+      "labelPosition": "above"
+    }
   ],
   "lineSegments": [
     { "point1": [0, 0], "point2": [1, 1], "color": "red", "strokeWidth": 2 }
   ],
   "dotValues": [[0, 0, "green"], [1, 1, "blue"]],
   "shapeSet": [
-    { "omdType": "circle", "radius": 5, "color": "yellow" }
+    { "omdType": "circle", "radius": 1, "unitScale": 15 }
   ],
   "xMin": -5,
   "xMax": 5,
@@ -682,7 +847,8 @@ This document provides schemas and examples for the `loadFromJSON` method used i
 ### Preferred schema (string form)
 ```json
 {
-  "equation": "sin(x) + 2 = 3"
+  "equation": "sin(x) + 2 = 3",
+  "fontSize": "number (optional) - font size for the rendered equation"
 }
 ```
 
@@ -700,5 +866,48 @@ This document provides schemas and examples for the `loadFromJSON` method used i
 { "equation": "sin(x) + 2 = 3" }
 ```
 ```json
-{ "equation": "(x^2 + 3x - 4)/(2x) = 5" }
+{ "equation": "(x^2 + 3x - 4)/(2x) = 5", "fontSize": 20 }
+```
+
+---
+
+## 21. `omdBalanceHanger`
+
+`omdBalanceHanger` is a visual balance/scale with values stacked on each arm. Variable values (strings) render as ellipse pills; numeric values render as rounded rectangles. The `tilt` property visually tips the beam left or right.
+
+### Schema
+```json
+{
+  "leftValues": ["array - strings or numbers to stack on the left arm (default: [])"],
+  "rightValues": ["array - strings or numbers to stack on the right arm (default: [])"],
+  "tilt": "string - 'none' | 'left' | 'right' (default: 'none')",
+  "fontFamily": "string (default: 'Albert Sans')",
+  "fontSize": "number (default: 18)",
+  "backgroundColor": "string (default: lightGray)",
+  "backgroundCornerRadius": "number (default: 5)",
+  "backgroundOpacity": "number (default: 1.0)",
+  "showBackground": "boolean (default: true)"
+}
+```
+
+### Example
+```json
+{
+  "leftValues": ["x", "x", "3"],
+  "rightValues": ["9"],
+  "tilt": "none",
+  "fontFamily": "Albert Sans",
+  "fontSize": 18
+}
+```
+
+### Example (tilted)
+```json
+{
+  "leftValues": [5, 3],
+  "rightValues": [4],
+  "tilt": "left",
+  "backgroundColor": "#E0F0FF",
+  "backgroundCornerRadius": 8
+}
 ```

@@ -12,6 +12,18 @@ import {
 export class omdCoordinatePlane extends jsvgGroup {
     constructor() {
         super();
+
+        // Replace the default <g> element with an <svg> element so that
+        // overflow:hidden is respected and getBBox() returns the correct
+        // clipped dimensions (fixing the oversized selection box bug).
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svgEl = document.createElementNS(svgNS, "svg");
+        if (this.svgObject && this.svgObject.parentNode) {
+            this.svgObject.parentNode.replaceChild(svgEl, this.svgObject);
+        }
+        this.svgObject = svgEl;
+        this.svgObject.setAttribute("overflow", "hidden");
+
         this.graphEquations = [];
         this.lineSegments = [];
         this.dotValues = [];
@@ -38,6 +50,13 @@ export class omdCoordinatePlane extends jsvgGroup {
         this.backgroundCornerRadius = 15;
         this.backgroundOpacity = 1.0;
         this.showBackground = true;
+
+        this.interactive = false;
+        this.variables = [];
+        this.basePaddingBottom = 30;
+        this.interactivePaddingBottom = 0;
+        this.renderedFunctionEntries = [];
+        this.sliderControlRows = [];
 
         this.calculatePadding();
         this.updateLayout();
@@ -73,6 +92,10 @@ export class omdCoordinatePlane extends jsvgGroup {
         this.backgroundCornerRadius = (data.backgroundCornerRadius !== undefined) ? data.backgroundCornerRadius : this.backgroundCornerRadius;
         this.backgroundOpacity = (data.backgroundOpacity !== undefined) ? data.backgroundOpacity : this.backgroundOpacity;
         this.showBackground = (data.showBackground !== undefined) ? data.showBackground : this.showBackground;
+        this.interactive = data.interactive === true || data.interactive === "true";
+        this.variables = this.normalizeInteractiveVariables(
+            data.variables || data.interactiveVariables || []
+        );
 
         this.calculatePadding();
         this.updateLayout();
@@ -141,6 +164,11 @@ export class omdCoordinatePlane extends jsvgGroup {
         const shapesHolder = new jsvgGroup();
         graphClipMask.addChild(shapesHolder);
         this.addShapes(shapesHolder);
+
+        this.sliderControlRows = [];
+        if (this.shouldShowInteractiveControls()) {
+            this.createInteractiveControls(this.svgObject);
+        }
     }
 
     createAxisGrid(gridHolder, isXAxis) {
@@ -268,7 +296,11 @@ export class omdCoordinatePlane extends jsvgGroup {
 
     calculatePadding() {
         this.paddingLeft = this.yLabel ? 50 : 30;
-        this.paddingBottom = this.xLabel ? 50 : 30;
+        this.basePaddingBottom = this.xLabel ? 50 : 30;
+        this.interactivePaddingBottom = this.shouldShowInteractiveControls()
+            ? this.getInteractiveControlHeight()
+            : 0;
+        this.paddingBottom = this.basePaddingBottom + this.interactivePaddingBottom;
         this.paddingTop = 25;
         this.paddingRight = 25;
     }
@@ -362,41 +394,65 @@ export class omdCoordinatePlane extends jsvgGroup {
     }
 
     graphMultipleFunctions(holder) {
-        for (const functionConfig of this.graphEquations) {
-            const path = new jsvgPath();
-            path.setStrokeColor(this.getAllowedColor(functionConfig.color));
-            path.setStrokeWidth(functionConfig.strokeWidth);
-            this.graphFunctionWithDomain(path, functionConfig.equation, functionConfig.domain);
-            holder.addChild(path);
+        this.renderedFunctionEntries = [];
 
-            if (functionConfig.label) {
-                this.addFunctionLabel(holder, functionConfig);
+        for (const functionConfig of this.graphEquations) {
+            try {
+                const compiledExpression = this.compileFunctionExpression(functionConfig.equation);
+                const path = new jsvgPath();
+                path.setStrokeColor(this.getAllowedColor(functionConfig.color));
+                path.setStrokeWidth(functionConfig.strokeWidth);
+                this.graphFunctionWithDomain(path, functionConfig.domain, compiledExpression);
+                holder.addChild(path);
+
+                const entry = {
+                    functionConfig,
+                    compiledExpression,
+                    path,
+                    label: null
+                };
+
+                if (functionConfig.label) {
+                    entry.label = this.addFunctionLabel(holder, functionConfig, compiledExpression);
+                }
+
+                this.renderedFunctionEntries.push(entry);
+            } catch (e) {
+                console.warn(`Failed to graph equation: ${functionConfig.equation}`, e);
             }
         }
     }
 
-    graphFunctionWithDomain(pathObject, functionString, domain) {
+    _extractExpression(equationString) {
+        let expression = String(equationString).trim();
+        // Remove "y=" from start or "=y" from end, case insensitive, handling spaces
+        // This converts "y = 3x+2" or "3x+2 = y" into "3x+2"
+        expression = expression.replace(/^\s*y\s*=\s*/i, '').replace(/\s*=\s*y\s*$/i, '');
+        return expression;
+    }
+
+    compileFunctionExpression(functionString) {
+        return math.compile(this._extractExpression(functionString));
+    }
+
+    graphFunctionWithDomain(pathObject, domain, compiledExpression) {
         pathObject.clearPoints();
-
-        let expression = functionString;
-        if (expression.toLowerCase().startsWith("y=")) {
-            expression = expression.substring(2).trim();
-        }
-
-        const compiledExpression = math.compile(expression);
 
     const leftLimit = (domain && typeof domain.min === 'number') ? domain.min : this.xMin;
     const rightLimit = (domain && typeof domain.max === 'number') ? domain.max : this.xMax;
 
-        const step = Math.abs(rightLimit - leftLimit) / 1000;
-        for (let x = leftLimit; x <= rightLimit; x += step) {
-            const y = compiledExpression.evaluate({ x });
+        const pointCount = this.shouldShowInteractiveControls() ? 400 : 1000;
+        const span = rightLimit - leftLimit;
+        for (let i = 0; i <= pointCount; i++) {
+            const x = leftLimit + (span * i) / pointCount;
+            const y = compiledExpression.evaluate(this.getEvaluationScope({ x }));
+            if (!Number.isFinite(y)) continue;
             pathObject.addPoint(this.toGraphPixelX(x), this.toGraphPixelY(y));
         }
         pathObject.updatePath();
     }
 
-    addFunctionLabel(holder, functionConfig) {
+    addFunctionLabel(holder, functionConfig, compiledExpression) {
         const labelText = String(functionConfig.label);
         const fontSize = 12;
         const padding = 6;
@@ -412,17 +468,18 @@ export class omdCoordinatePlane extends jsvgGroup {
         label.setVerticalCentering();
         label.setFontWeight(500);
 
+        this.updateFunctionLabelPosition(label, functionConfig, compiledExpression);
+        holder.addChild(label);
+        return label;
+    }
+
+    updateFunctionLabelPosition(label, functionConfig, compiledExpression) {
         const anchorX = (typeof functionConfig.labelAtX === 'number')
             ? functionConfig.labelAtX
             : this.xMin + (this.xMax - this.xMin) * 0.1;
 
         let anchorY = this.yMin + (this.yMax - this.yMin) * 0.1;
-        let equationBody = functionConfig.equation;
-        if (equationBody.toLowerCase().startsWith("y=")) {
-            equationBody = equationBody.substring(2).trim();
-        }
-        const compiled = math.compile(equationBody);
-        const yVal = compiled.evaluate({ x: anchorX });
+        const yVal = compiledExpression.evaluate(this.getEvaluationScope({ x: anchorX }));
         anchorY = yVal;
 
         const xPx = this.toGraphPixelX(anchorX);
@@ -450,7 +507,6 @@ export class omdCoordinatePlane extends jsvgGroup {
         }
 
         label.setPosition(finalX, finalY);
-        holder.addChild(label);
     }
 
     drawLineSegments(holder) {
@@ -509,6 +565,339 @@ export class omdCoordinatePlane extends jsvgGroup {
             }
             holder.addChild(shape);
         }
+    }
+
+    shouldShowInteractiveControls() {
+        return this.interactive === true && this.variables.length > 0;
+    }
+
+    getInteractiveControlHeight() {
+        return 18 + this.variables.length * 38;
+    }
+
+    normalizeInteractiveVariables(variables) {
+        if (!Array.isArray(variables)) return [];
+
+        return variables
+            .map((variable, index) => this.normalizeInteractiveVariable(variable, index))
+            .filter(Boolean);
+    }
+
+    normalizeInteractiveVariable(variable, index) {
+        const source = (typeof variable === "string")
+            ? { name: variable }
+            : (variable && typeof variable === "object" ? variable : null);
+
+        if (!source) return null;
+
+        const name = String(
+            source.name ??
+            source.variable ??
+            source.id ??
+            ""
+        ).trim();
+
+        if (!name) return null;
+
+        let min = Number.isFinite(source.min) ? source.min : -10;
+        let max = Number.isFinite(source.max) ? source.max : 10;
+        if (max < min) {
+            const tmp = min;
+            min = max;
+            max = tmp;
+        }
+        if (max === min) {
+            max = min + 1;
+        }
+
+        const step = (Number.isFinite(source.step) && source.step > 0) ? source.step : 0.1;
+        const fallbackValue = (min <= 0 && max >= 0) ? 0 : min;
+        const initialValue = this.clampInteractiveValue(
+            Number.isFinite(source.value) ? source.value : fallbackValue,
+            min,
+            max
+        );
+
+        return {
+            name,
+            label: String(source.label ?? name),
+            min,
+            max,
+            step,
+            value: initialValue,
+            color: source.color ?? null,
+            graphIndex: Number.isInteger(source.graphIndex)
+                ? source.graphIndex
+                : (Number.isInteger(source.equationIndex) ? source.equationIndex : null),
+            order: index
+        };
+    }
+
+    clampInteractiveValue(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    snapInteractiveValue(value, variable) {
+        const step = variable.step || 0.1;
+        const snapped = variable.min + Math.round((value - variable.min) / step) * step;
+        const decimals = this.getStepPrecision(step);
+        const rounded = Number(snapped.toFixed(decimals));
+        return this.clampInteractiveValue(rounded, variable.min, variable.max);
+    }
+
+    getStepPrecision(step) {
+        const stepText = String(step);
+        if (!stepText.includes(".")) return 0;
+        return stepText.split(".")[1].length;
+    }
+
+    getInteractiveVariableValue(variable) {
+        if (!variable) return 0;
+        if (Number.isFinite(variable.currentValue)) return variable.currentValue;
+        if (Number.isFinite(variable.value)) return variable.value;
+        return 0;
+    }
+
+    getEvaluationScope(extraScope = {}) {
+        const scope = { ...extraScope };
+        for (const variable of this.variables) {
+            scope[variable.name] = this.getInteractiveVariableValue(variable);
+        }
+        return scope;
+    }
+
+    createInteractiveControls(parentSvg) {
+        const controlsGroup = this.createSvgElement("g", {
+            "data-omd-interactive-controls": "true"
+        });
+
+        const graphBottom = this.paddingTop + this.graphHeight;
+        const startY = graphBottom + this.basePaddingBottom + 8;
+        const labelX = this.paddingLeft;
+        const valueX = this.width - this.paddingRight;
+        const trackStart = this.paddingLeft + 36;
+        const trackEnd = this.width - this.paddingRight - 56;
+        const trackWidth = Math.max(40, trackEnd - trackStart);
+
+        this.sliderControlRows = this.variables.map((variable, index) => {
+            const color = this.resolveInteractiveVariableColor(variable);
+            const rowY = startY + index * 38;
+            const rowGroup = this.createSvgElement("g", {
+                transform: `translate(0, ${rowY})`,
+                "data-omd-variable": variable.name
+            });
+
+            const label = this.createSvgElement("text", {
+                x: labelX,
+                y: 4,
+                fill: color,
+                "font-size": 13,
+                "font-weight": 700,
+                "dominant-baseline": "middle"
+            });
+            label.textContent = variable.label;
+
+            const track = this.createSvgElement("line", {
+                x1: trackStart,
+                y1: 0,
+                x2: trackStart + trackWidth,
+                y2: 0,
+                stroke: "#d1d5db",
+                "stroke-width": 6,
+                "stroke-linecap": "round"
+            });
+
+            const activeTrack = this.createSvgElement("line", {
+                x1: trackStart,
+                y1: 0,
+                x2: trackStart,
+                y2: 0,
+                stroke: color,
+                "stroke-width": 6,
+                "stroke-linecap": "round"
+            });
+
+            const thumb = this.createSvgElement("circle", {
+                cx: trackStart,
+                cy: 0,
+                r: 8,
+                fill: color,
+                stroke: "#ffffff",
+                "stroke-width": 2
+            });
+
+            const valueText = this.createSvgElement("text", {
+                x: valueX,
+                y: 4,
+                fill: color,
+                "font-size": 12,
+                "font-weight": 600,
+                "dominant-baseline": "middle",
+                "text-anchor": "end"
+            });
+
+            const hitArea = this.createSvgElement("rect", {
+                x: trackStart - 10,
+                y: -14,
+                width: trackWidth + 20,
+                height: 28,
+                fill: "transparent",
+                "pointer-events": "all",
+                rx: 14
+            });
+            hitArea.style.cursor = "pointer";
+
+            rowGroup.appendChild(label);
+            rowGroup.appendChild(track);
+            rowGroup.appendChild(activeTrack);
+            rowGroup.appendChild(thumb);
+            rowGroup.appendChild(valueText);
+            rowGroup.appendChild(hitArea);
+            controlsGroup.appendChild(rowGroup);
+
+            const row = {
+                variable,
+                color,
+                label,
+                track,
+                activeTrack,
+                thumb,
+                valueText,
+                hitArea,
+                trackStart,
+                trackEnd: trackStart + trackWidth
+            };
+
+            this.attachSliderInteraction(row);
+            this.updateSliderRow(row);
+            return row;
+        });
+
+        parentSvg.appendChild(controlsGroup);
+    }
+
+    attachSliderInteraction(row) {
+        const updateFromPointer = (event) => {
+            const localX = this.clientToLocalSvgX(event.clientX);
+            const ratio = (localX - row.trackStart) / (row.trackEnd - row.trackStart);
+            const unclampedValue = row.variable.min + ratio * (row.variable.max - row.variable.min);
+            const nextValue = this.snapInteractiveValue(unclampedValue, row.variable);
+            row.variable.currentValue = nextValue;
+            row.variable.value = nextValue;
+            this.refreshInteractiveElements();
+        };
+
+        row.hitArea.addEventListener("pointerdown", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            updateFromPointer(event);
+            row.hitArea.setPointerCapture?.(event.pointerId);
+
+            const handleMove = (moveEvent) => {
+                moveEvent.preventDefault();
+                moveEvent.stopPropagation();
+                updateFromPointer(moveEvent);
+            };
+
+            const stop = (endEvent) => {
+                endEvent?.preventDefault?.();
+                endEvent?.stopPropagation?.();
+                row.hitArea.removeEventListener("pointermove", handleMove);
+                row.hitArea.removeEventListener("pointerup", stop);
+                row.hitArea.removeEventListener("pointercancel", stop);
+                try {
+                    row.hitArea.releasePointerCapture?.(event.pointerId);
+                } catch {}
+            };
+
+            row.hitArea.addEventListener("pointermove", handleMove);
+            row.hitArea.addEventListener("pointerup", stop);
+            row.hitArea.addEventListener("pointercancel", stop);
+        });
+    }
+
+    refreshInteractiveElements() {
+        for (const entry of this.renderedFunctionEntries) {
+            try {
+                this.graphFunctionWithDomain(entry.path, entry.functionConfig.domain, entry.compiledExpression);
+                if (entry.label) {
+                    this.updateFunctionLabelPosition(entry.label, entry.functionConfig, entry.compiledExpression);
+                }
+            } catch (error) {
+                console.warn(`Failed to refresh equation: ${entry.functionConfig?.equation}`, error);
+            }
+        }
+
+        for (const row of this.sliderControlRows) {
+            this.updateSliderRow(row);
+        }
+    }
+
+    updateSliderRow(row) {
+        const currentValue = this.getInteractiveVariableValue(row.variable);
+        const ratio = (currentValue - row.variable.min) / (row.variable.max - row.variable.min);
+        const clampedRatio = Math.max(0, Math.min(1, ratio));
+        const thumbX = row.trackStart + (row.trackEnd - row.trackStart) * clampedRatio;
+
+        row.activeTrack.setAttribute("x2", String(thumbX));
+        row.thumb.setAttribute("cx", String(thumbX));
+        row.valueText.textContent = this.formatInteractiveValue(currentValue, row.variable.step);
+    }
+
+    formatInteractiveValue(value, step) {
+        const decimals = Math.min(4, Math.max(0, this.getStepPrecision(step)));
+        const rounded = Number(value.toFixed(decimals));
+        return `${rounded}`;
+    }
+
+    resolveInteractiveVariableColor(variable) {
+        if (variable.color) {
+            return this.getAllowedColor(variable.color);
+        }
+
+        const graphIndex = variable.graphIndex;
+        if (Number.isInteger(graphIndex) && this.graphEquations[graphIndex]?.color) {
+            return this.getAllowedColor(this.graphEquations[graphIndex].color);
+        }
+
+        const matchedEquation = this.graphEquations.find((graphConfig) =>
+            this.equationContainsVariable(graphConfig?.equation, variable.name)
+        );
+
+        if (matchedEquation?.color) {
+            return this.getAllowedColor(matchedEquation.color);
+        }
+
+        return this.getAllowedColor("#2563eb");
+    }
+
+    equationContainsVariable(equation, variableName) {
+        if (!equation || !variableName) return false;
+        const escapedName = variableName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const variableRegex = new RegExp(`(^|[^A-Za-z0-9_])${escapedName}([^A-Za-z0-9_]|$)`);
+        return variableRegex.test(String(equation));
+    }
+
+    createSvgElement(tagName, attributes = {}) {
+        const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
+        for (const [key, value] of Object.entries(attributes)) {
+            if (value !== undefined && value !== null) {
+                element.setAttribute(key, String(value));
+            }
+        }
+        return element;
+    }
+
+    clientToLocalSvgX(clientX) {
+        const rect = this.svgObject.getBoundingClientRect();
+        const viewBox = (this.svgObject.getAttribute("viewBox") || "0 0 0 0")
+            .split(/\s+/)
+            .map(Number);
+        const [viewBoxX = 0, , viewBoxWidth = 0] = viewBox;
+        if (!rect.width || !viewBoxWidth) return 0;
+
+        return viewBoxX + ((clientX - rect.left) / rect.width) * viewBoxWidth;
     }
 
     // Background customization methods
