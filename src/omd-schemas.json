@@ -671,7 +671,7 @@
       {
         "name": "fontWeight",
         "type": "number",
-        "default": 500,
+        "default": 400,
         "optional": true,
         "description": "Base font weight"
       },
