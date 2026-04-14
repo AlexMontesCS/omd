@@ -161,10 +161,14 @@ export class omdTapeLabel extends jsvgGroup
         labelText.setPosition( startX, labelOffsetY );
         this.addChild( labelText );
 
-        // Calculate dimensions for this label
+        // Calculate dimensions for this label using geometric bounds.
+        // This avoids clipping when labels are stacked above the tape.
         var labelWidth = Math.max(W, endX);
-        const minY = this.showBelow ? -5 : labelOffsetY - 5;
-        const maxY = this.showBelow ? labelOffsetY + labelHeight : 5;
+        const verticalPadding = 6;
+        const contentTop = Math.min(-3, labelOffsetY);
+        const contentBottom = Math.max(3, labelOffsetY + labelHeight);
+        const minY = contentTop - verticalPadding;
+        const maxY = contentBottom + verticalPadding;
         const viewHeight = maxY - minY;
         
         // Set proper bounds and viewBox for the label
@@ -368,8 +372,8 @@ export class omdTapeDiagram extends jsvgGroup
         // Calculate dimensions
         var contentWidth = pX - leftPadding;
         var contentHeight = this.segmentHeight;
-        var topLabelSpace = 0;
-        var bottomLabelSpace = 0;
+        let minGlobalY = 0;
+        let maxGlobalY = contentHeight;
         const braceLayerStep = Math.max(35, this.braceLabelFontSize + 18);
 
         // Sort labels by span length (number of segments they cover)
@@ -383,6 +387,20 @@ export class omdTapeDiagram extends jsvgGroup
         // Track occupied label layers to prevent overlap
         const topLayers = [];
         const bottomLayers = [];
+
+        const getLocalVerticalBounds = (labelObj) => {
+            const viewBox = labelObj?.svgObject?.getAttribute("viewBox");
+            if (viewBox) {
+                const [ , minYRaw, , heightRaw ] = viewBox.split(" ").map(Number);
+                if (Number.isFinite(minYRaw) && Number.isFinite(heightRaw)) {
+                    return { minY: minYRaw, maxY: minYRaw + heightRaw };
+                }
+            }
+            return {
+                minY: 0,
+                maxY: Number.isFinite(labelObj?.height) ? labelObj.height : 0
+            };
+        };
 
         // Make label text
         for ( const item of sortedLabels )
@@ -417,7 +435,6 @@ export class omdTapeDiagram extends jsvgGroup
                 
                 const yPos = this.segmentHeight + 10 + (layer * braceLayerStep);
                 T.setPosition(0, yPos);
-                bottomLabelSpace = Math.max(bottomLabelSpace, yPos + T.height);
             } else {
                 // Find the highest available layer for this label
                 let layer = 0;
@@ -439,19 +456,36 @@ export class omdTapeDiagram extends jsvgGroup
                 
                 const yPos = -10 - (layer * braceLayerStep);
                 T.setPosition(0, yPos);
-                topLabelSpace = Math.max(topLabelSpace, Math.abs(yPos) + T.height);
             }
+
+            const localBounds = getLocalVerticalBounds(T);
+            minGlobalY = Math.min(minGlobalY, T.ypos + localBounds.minY);
+            maxGlobalY = Math.max(maxGlobalY, T.ypos + localBounds.maxY);
             
             this.addChild( T );
         }
-        // Set proper dimensions including space for labels above and below
+
+        // Normalize to non-negative local coordinates.
+        // Some downstream crop/measurement code assumes y >= 0 and can clip negative extents.
+        if (minGlobalY < 0) {
+            const yShift = -minGlobalY;
+            for (const child of this.childList) {
+                const currentX = Number.isFinite(child?.xpos) ? child.xpos : 0;
+                const currentY = Number.isFinite(child?.ypos) ? child.ypos : 0;
+                if (typeof child?.setPosition === 'function') {
+                    child.setPosition(currentX, currentY + yShift);
+                }
+            }
+            maxGlobalY += yShift;
+            minGlobalY = 0;
+        }
+
+        // Set proper dimensions including stacked labels above and below.
         this.width = leftPadding + contentWidth + rightPadding;
-        this.height = topLabelSpace + contentHeight + bottomLabelSpace;
-        // Adjust viewBox to show everything including title and labels
-        const viewBoxY = -topLabelSpace;
-        const viewBoxHeight = this.height;
-        this.svgObject.setAttribute("viewBox", `0 ${viewBoxY} ${this.width} ${viewBoxHeight}`);
-        this.svgObject.setAttribute("viewBox", `0 ${-topLabelSpace} ${this.width} ${this.height}`);
+        this.height = Math.max(1, maxGlobalY - minGlobalY);
+
+        // Keep viewBox origin at zero after normalization.
+        this.svgObject.setAttribute("viewBox", `0 0 ${this.width} ${this.height}`);
     }
 
     _estimateTitleWidth( title, fontSize )

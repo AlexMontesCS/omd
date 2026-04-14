@@ -239,6 +239,8 @@ function normalizeRowEntry(entry) {
         right,
         center,
         text,
+        fontSize: toFiniteNumber(entry.fontSize, NaN),
+        affectsDividerWidth: toBoolean(entry.affectsDividerWidth, true),
         leftAlign: normalizeAlignment(entry.leftAlign, 'left'),
         rightAlign: normalizeAlignment(entry.rightAlign, 'right'),
         leftOffset: toFiniteNumber(entry.leftOffset, 0),
@@ -300,7 +302,7 @@ export class omdEquationWork extends jsvgGroup {
 
         this.fontFamily = 'Albert Sans';
         this.fontSize = 40;
-        this.fontWeight = 500;
+        this.fontWeight = 400;
 
         this.rowHeightMultiplier = 1.22;
         this.rowGap = 22;
@@ -467,6 +469,35 @@ export class omdEquationWork extends jsvgGroup {
         });
     }
 
+    _applyMathFontWeight(rootNode, fontWeight) {
+        if (fontWeight === undefined || fontWeight === null || fontWeight === '') return;
+
+        this._walkMathNodes(rootNode, (node) => {
+            const applyWeight = (target) => {
+                if (!target) return;
+
+                if (typeof target.setFontWeight === 'function') {
+                    target.setFontWeight(fontWeight);
+                    return;
+                }
+
+                if (target.svgObject?.style) {
+                    target.svgObject.style.fontWeight = String(fontWeight);
+                }
+            };
+
+            applyWeight(node.textElement);
+
+            for (const value of Object.values(node)) {
+                if (Array.isArray(value)) {
+                    value.forEach((entry) => applyWeight(entry));
+                } else {
+                    applyWeight(value);
+                }
+            }
+        });
+    }
+
     _initializeMathNode(node, fontSize) {
         if (!node) return;
 
@@ -487,7 +518,7 @@ export class omdEquationWork extends jsvgGroup {
         }
     }
 
-    _createMathVisual(value, fontSize, color) {
+    _createMathVisual(value, fontSize, fontWeight, color) {
         const expression = normalizeMathText(value);
         if (!expression) return null;
 
@@ -500,6 +531,9 @@ export class omdEquationWork extends jsvgGroup {
             const NodeType = getNodeForAST(ast);
             const node = new NodeType(ast);
             this._initializeMathNode(node, fontSize);
+            this._applyMathFontWeight(node, fontWeight);
+            if (typeof node.computeDimensions === 'function') node.computeDimensions();
+            if (typeof node.updateLayout === 'function') node.updateLayout();
             this._hideMathBackgrounds(node);
             this._applyMathColor(node, color);
 
@@ -511,7 +545,8 @@ export class omdEquationWork extends jsvgGroup {
                 text: expression,
                 normalizedText: normalizeTermLookupText(expression),
                 color,
-                fontSize
+                fontSize,
+                fontWeight
             };
         } catch {
             // Fall back to text or composite rendering.
@@ -529,7 +564,7 @@ export class omdEquationWork extends jsvgGroup {
             return null;
         }
 
-        const denominatorVisual = this._createMathVisual(denominator, fontSize, color)
+        const denominatorVisual = this._createMathVisual(denominator, fontSize, fontWeight, color)
             || this._createTextVisual(denominator, fontSize, fontWeight, color);
 
         if (!denominatorVisual) return null;
@@ -586,7 +621,7 @@ export class omdEquationWork extends jsvgGroup {
         );
         if (leadingDivisionVisual) return leadingDivisionVisual;
 
-        const mathVisual = this._createMathVisual(normalized, fontSize, color);
+        const mathVisual = this._createMathVisual(normalized, fontSize, fontWeight, color);
         if (mathVisual) return mathVisual;
 
         return this._createTextVisual(normalized, fontSize, fontWeight, color);
@@ -856,21 +891,26 @@ export class omdEquationWork extends jsvgGroup {
             }
 
             if (row.kind === 'text') {
+                const textFontSize = Number.isFinite(row.fontSize)
+                    ? Math.max(8, row.fontSize)
+                    : globalFontSize;
                 const textVisual = this._createTextVisual(
                     row.text,
-                    globalFontSize,
+                    textFontSize,
                     globalFontWeight,
                     row.color || this.textColor
                 );
                 const textWidth = textVisual ? textVisual.width : 0;
-                standaloneTextWidth = Math.max(standaloneTextWidth, textWidth);
+                if (row.affectsDividerWidth !== false) {
+                    standaloneTextWidth = Math.max(standaloneTextWidth, textWidth);
+                }
 
                 rowLayouts.push({
                     index,
                     row,
                     kind: 'text',
                     textVisual,
-                    rowHeight: Math.max(18, globalFontSize * this.rowHeightMultiplier, textVisual?.height || 0)
+                    rowHeight: Math.max(18, textFontSize * this.rowHeightMultiplier, textVisual?.height || 0)
                 });
                 return;
             }
@@ -902,9 +942,11 @@ export class omdEquationWork extends jsvgGroup {
             const rightWidth = rightVisual?.width || 0;
             const centerWidth = centerVisual?.width || 0;
 
-            leftColumnWidth = Math.max(leftColumnWidth, leftWidth);
-            rightColumnWidth = Math.max(rightColumnWidth, rightWidth);
-            centerColumnWidth = Math.max(centerColumnWidth, centerWidth);
+            if (row.affectsDividerWidth !== false) {
+                leftColumnWidth = Math.max(leftColumnWidth, leftWidth);
+                rightColumnWidth = Math.max(rightColumnWidth, rightWidth);
+                centerColumnWidth = Math.max(centerColumnWidth, centerWidth);
+            }
 
             const rowHeight = Math.max(
                 18,

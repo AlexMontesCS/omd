@@ -147,6 +147,13 @@
                   "description": "Horizontal nudge for center text in px"
                 },
                 {
+                  "name": "affectsDividerWidth",
+                  "type": "boolean",
+                  "default": true,
+                  "optional": true,
+                  "description": "If false, this row's width will not expand divider length"
+                },
+                {
                   "name": "drawLineBefore",
                   "type": "boolean",
                   "default": false,
@@ -294,6 +301,13 @@
                   "default": 0,
                   "optional": true,
                   "description": "Horizontal nudge for center text in px"
+                },
+                {
+                  "name": "affectsDividerWidth",
+                  "type": "boolean",
+                  "default": true,
+                  "optional": true,
+                  "description": "If false, this row's width will not expand divider length"
                 },
                 {
                   "name": "leftAnchorRow",
@@ -470,6 +484,19 @@
                   "default": "",
                   "optional": true,
                   "description": "Standalone centered text"
+                },
+                {
+                  "name": "fontSize",
+                  "type": "number",
+                  "optional": true,
+                  "description": "Text row font size in px (overrides global fontSize for this row only)"
+                },
+                {
+                  "name": "affectsDividerWidth",
+                  "type": "boolean",
+                  "default": true,
+                  "optional": true,
+                  "description": "If false, this row's width will not expand divider length"
                 },
                 {
                   "name": "drawLineBefore",
@@ -671,7 +698,7 @@
       {
         "name": "fontWeight",
         "type": "number",
-        "default": 400,
+        "default": 500,
         "optional": true,
         "description": "Base font weight"
       },
@@ -856,7 +883,7 @@
       {
         "name": "backgroundColor",
         "type": "string",
-        "default": "#EEEEEE",
+        "default": "lightGray",
         "optional": true,
         "description": "Pan fill color"
       },
@@ -1848,7 +1875,7 @@
       {
         "name": "backgroundColor",
         "type": "string",
-        "default": "#EEEEEE",
+        "default": "lightGray",
         "optional": true,
         "description": "Background color"
       },
@@ -1991,7 +2018,7 @@
                 {
                   "name": "color",
                   "type": "string",
-                  "default": "#EEEEEE",
+                  "default": "lightGray",
                   "optional": true,
                   "description": "Segment fill color"
                 },
@@ -2238,7 +2265,7 @@
                       {
                         "name": "color",
                         "type": "string",
-                        "default": "#EEEEEE",
+                        "default": "lightGray",
                         "optional": true,
                         "description": "Segment fill color"
                       },
@@ -2484,7 +2511,7 @@
                       {
                         "name": "color",
                         "type": "string",
-                        "default": "#EEEEEE",
+                        "default": "lightGray",
                         "optional": true,
                         "description": "Segment fill color"
                       },
@@ -2777,7 +2804,7 @@
       {
         "name": "xPillColor",
         "type": "string",
-        "default": "#EEEEEE",
+        "default": "lightGray",
         "optional": true,
         "description": "Variable pill color"
       },
@@ -2792,7 +2819,7 @@
             {
               "name": "color",
               "type": "string",
-              "default": "#EEEEEE",
+              "default": "lightGray",
               "optional": true
             }
           ]
@@ -2809,7 +2836,7 @@
             {
               "name": "backgroundColor",
               "type": "string",
-              "default": "#EEEEEE",
+              "default": "lightGray",
               "optional": true
             },
             {
@@ -2972,7 +2999,7 @@
       {
         "name": "backgroundColor",
         "type": "string",
-        "default": "#EEEEEE",
+        "default": "lightGray",
         "optional": true,
         "description": "Table background color"
       },
