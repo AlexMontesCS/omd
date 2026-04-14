@@ -997,7 +997,7 @@ export class omdEquationSequenceNode extends omdNode {
             // If visibility is explicitly false, skip
             if (step.visible === false) continue;
             // Prefer equation nodes when present
-            if (step.constructor?.name === 'omdEquationNode') {
+            if (step instanceof omdEquationNode || step.type === 'omdEquationNode') {
                 chosenIndex = i;
                 break;
             }

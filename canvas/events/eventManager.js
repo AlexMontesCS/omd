@@ -95,7 +95,7 @@ export class EventManager {
             activeTool.onPointerDown(normalizedEvent);
             // If tool hasn't explicitly set isDrawing, set it for backwards compatibility
             // (tools like PencilTool and EraserTool expect isDrawing to be true)
-            if (this.isDrawing === false && activeTool.constructor.name !== 'PointerTool') {
+            if (this.isDrawing === false && activeTool?.name !== 'pointer') {
                 this.isDrawing = true;
             }
         }

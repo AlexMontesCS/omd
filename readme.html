@@ -169,6 +169,25 @@ const display = new omdDisplay(container);
 // Render an equation
 display.render(&#39;2x + 3 = 11&#39;);
 </code></pre>
+<h3 id="no-build-browser-usage">No-Build Browser Usage</h3>
+<pre><code class="language-html">&lt;script src=&quot;https://unpkg.com/@teachinglab/omd&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+  const { createFromJSON, omdDisplay } = window.OMD;
+
+  const display = new omdDisplay(document.getElementById(&#39;math-container&#39;));
+  const graph = createFromJSON({
+    omdType: &#39;coordinatePlane&#39;,
+    xMin: -5,
+    xMax: 5,
+    yMin: -5,
+    yMax: 5,
+    graphEquations: [{ equation: &#39;y=x+1&#39;, color: &#39;#0f766e&#39; }]
+  });
+
+  display.render(graph);
+&lt;/script&gt;
+</code></pre>
+<p>The browser bundle auto-registers <code>window.math</code>, so you do not need a separate math setup script.</p>
 <h2 id="documentation">Documentation</h2>
 <h3 id="getting-started">Getting Started</h3>
 <ul>

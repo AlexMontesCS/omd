@@ -59,8 +59,9 @@ export class omdDoubleTapeDiagram extends jsvgGroup
         this.bottomTapeDiagram.updateLayout();
 
         // Calculate the maximum left padding needed to align the start of the tapes
-        const topLeftPadding = this.topTapeDiagram.title ? 80 : 20;
-        const bottomLeftPadding = this.bottomTapeDiagram.title ? 80 : 20;
+        const rightPadding = 20;
+        const topLeftPadding = this.topTapeDiagram.width - this.topTapeDiagram.totalWidth - rightPadding;
+        const bottomLeftPadding = this.bottomTapeDiagram.width - this.bottomTapeDiagram.totalWidth - rightPadding;
         const maxLeftPadding = Math.max(topLeftPadding, bottomLeftPadding);
 
         // Position top tape diagram
@@ -91,12 +92,24 @@ export class omdDoubleTapeDiagram extends jsvgGroup
         
         for (const valueData of tapeDiagram.values) {
             let value = "";
+            let weight = null;
             
             // Handle both old format (simple values) and new format (objects)
             if (typeof valueData === "object" && valueData !== null) {
-                value = valueData.value || "";
+                value = valueData.value === undefined || valueData.value === null ? "" : String(valueData.value);
+                if (valueData.weight !== undefined) {
+                    const explicitWeight = Number(valueData.weight);
+                    if (Number.isFinite(explicitWeight) && explicitWeight > 0) {
+                        weight = explicitWeight;
+                    }
+                }
             } else {
-                value = valueData.toString();
+                value = String(valueData ?? "");
+            }
+
+            if (weight !== null) {
+                total += weight;
+                continue;
             }
 
             // Parse numeric value from string (e.g., "3", "2x", "5y")

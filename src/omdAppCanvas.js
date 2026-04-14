@@ -8,6 +8,7 @@ import { omdExpression } from "./omdExpression.js";
 import { omdPowerExpression } from "./omdPowerExpression.js";
 import { omdRationalExpression } from "./omdRationalExpression.js";
 import { omdEquation } from "./omdEquation.js";
+import { omdEquationWork } from "./omdEquationWork.js";
 import { omdFunction } from "./omdFunction.js";
 import { omdNumberLine } from "./omdNumberLine.js";
 import { omdTapeDiagram } from "./omdTapeDiagram.js";
@@ -124,6 +125,8 @@ export class omdAppCanvas extends jsvgGroup
         if ( jsonData.omdType == "function" ) { var N = new omdFunction(); }
 
         if ( jsonData.omdType == "equation" ) { var N = new omdEquation(); }
+
+        if ( jsonData.omdType == "equationWork" ) { var N = new omdEquationWork(); }
 
         if ( jsonData.omdType == "numberLine" ) { var N = new omdNumberLine(); } 
 

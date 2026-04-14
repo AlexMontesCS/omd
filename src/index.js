@@ -14,6 +14,7 @@ export { omdNumberTile } from './omdNumberTile.js';
 
 // OMD Mathematical Components
 export { omdEquation } from './omdEquation.js';
+export { omdEquationWork } from './omdEquationWork.js';
 export { omdExpression } from './omdExpression.js';
 export { omdTerm } from './omdTerm.js';
 export { omdNumber } from './omdNumber.js';
@@ -60,6 +61,7 @@ export default {
         omdCoordinatePlane: () => import('./omdCoordinatePlane.js').then(m => m.omdCoordinatePlane),
         omdTapeDiagram: () => import('./omdTapeDiagram.js').then(m => m.omdTapeDiagram),
         omdTileEquation: () => import('./omdTileEquation.js').then(m => m.omdTileEquation),
+        omdEquationWork: () => import('./omdEquationWork.js').then(m => m.omdEquationWork),
         omdRatioChart: () => import('./omdRatioChart.js').then(m => m.omdRatioChart),
         omdNumberLine: () => import('./omdNumberLine.js').then(m => m.omdNumberLine),
         omdDoubleNumberLine: () => import('./omdDoubleNumberLine.js').then(m => m.omdDoubleNumberLine)

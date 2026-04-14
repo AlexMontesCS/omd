@@ -44,8 +44,9 @@ export class omdDoubleNumberLine extends jsvgGroup
         this.removeAllChildren();
 
         // Calculate the maximum left padding needed to align the start of the lines
-        const topLeftPadding = this.topNumberLine.title ? 80 : 20;
-        const bottomLeftPadding = this.bottomNumberLine.title ? 80 : 20;
+        const rightPadding = 20;
+        const topLeftPadding = this.topNumberLine.width - this.topNumberLine.totalWidth - rightPadding;
+        const bottomLeftPadding = this.bottomNumberLine.width - this.bottomNumberLine.totalWidth - rightPadding;
         const maxLeftPadding = Math.max(topLeftPadding, bottomLeftPadding);
 
         // Position top number line

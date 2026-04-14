@@ -1,22 +1,27 @@
 {
   "name": "@teachinglab/omd",
-  "version": "0.7.33",
+  "version": "0.8.84",
   "description": "omd",
   "main": "./index.js",
   "module": "./index.js",
+  "unpkg": "./dist/omd.global.js",
+  "jsdelivr": "./dist/omd.global.js",
   "type": "module",
   "exports": {
     ".": "./index.js",
+    "./browser": "./dist/omd.browser.js",
+    "./global": "./dist/omd.global.js",
     "./register-math": "./omd/utils/registerMathGlobal.js",
     "./package.json": "./package.json"
   },
   "files": [
     "index.js",
+    "dist/",
     "src/",
     "omd/",
     "docs/",
     "canvas/",
-    "jsvg/",
+    "jsvg/"  ,
     "npm-docs/",
     "README.md"
   ],
@@ -32,13 +37,14 @@
   "author": "jaredschiffman",
   "license": "MIT",
   "dependencies": {
-    "@teachinglab/jsvg": "^0.1.1",
-    "mathjs": "^14.5.2",
-    "openai": "6.6.0"
+    "@teachinglab/jsvg": "^0.1.7",
+    "mathjs": "^15.2.0",
+    "openai": "6.6.0" 
   },
   "scripts": {
     "dev": "npm run build:docs && vite",
-    "build": "vite build && node copy-static.js && node build-docs.js && node build-npm-docs.js",
+    "build": "vite build && vite build --config vite.browser.config.js && node copy-static.js && node build-docs.js && node build-npm-docs.js",
+    "build:browser": "vite build --config vite.browser.config.js",
     "build:docs": "node build-docs.js",
     "build:npm-docs": "node build-npm-docs.js",
     "build:static": "node copy-static.js",

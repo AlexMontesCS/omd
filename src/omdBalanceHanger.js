@@ -66,9 +66,7 @@ export class omdBalanceHanger extends jsvgGroup
     {
         this.removeAllChildren();
 
-        // Calculate actual content dimensions
-        var maxValues = Math.max(this.leftValues.length, this.rightValues.length);
-        var bX = 50; // Half beam width  
+        var bX = 50; // Half beam width
         var bY = 0;
 
         if ( this.tilt == "left" )
@@ -77,51 +75,96 @@ export class omdBalanceHanger extends jsvgGroup
             bY = 10;
 
         var slackOnTop = 20;
-        var valueStackHeight = maxValues > 0 ? (maxValues - 1) * 40 + 30 : 0; // Height of value stacks
-        
-        // Calculate the actual content bounds
-        var contentWidth = bX * 2; // Total beam width
-        var contentHeight = Math.abs(bY) + slackOnTop + valueStackHeight;
+        var outerPadding = 20;
 
-        // make line (centered at origin)
+        const getValueWidth = ( value ) => {
+            if ( typeof value == "string" )
+                return 20 + value.length*10;
+            return 30;
+        };
+
+        const leftHalfWidth = this.leftValues.length > 0
+            ? Math.max(...this.leftValues.map(getValueWidth)) / 2
+            : 15;
+        const rightHalfWidth = this.rightValues.length > 0
+            ? Math.max(...this.rightValues.map(getValueWidth)) / 2
+            : 15;
+
+        const centerX = outerPadding + bX + Math.max(leftHalfWidth, rightHalfWidth);
+        const centerY = outerPadding + Math.max(Math.abs(bY), 5);
+        const leftTopY = centerY + bY + slackOnTop;
+        const rightTopY = centerY - bY + slackOnTop;
+
+        const leftHangDepth = this.leftValues.length > 0
+            ? slackOnTop + 40*(this.leftValues.length-1)
+            : 0;
+        const rightHangDepth = this.rightValues.length > 0
+            ? slackOnTop + 40*(this.rightValues.length-1)
+            : 0;
+
+        // make beam
         this.line = new jsvgLine();
         this.line.setStrokeColor( "black" );
         this.line.setStrokeWidth( 1 );
-        this.line.setEndpoints( -bX, bY, bX, -bY );
+        this.line.setEndpoints( centerX-bX, centerY+bY, centerX+bX, centerY-bY );
         this.addChild( this.line );
 
         // left line
         var leftLine = new jsvgLine();
         leftLine.setStrokeColor( "black" );
         leftLine.setStrokeWidth( 1 );
-        leftLine.setEndpoints( -bX, bY, -bX, bY + slackOnTop + 40*(this.leftValues.length-1) );
+        leftLine.setEndpoints( centerX-bX, centerY+bY, centerX-bX, centerY+bY + leftHangDepth );
         this.addChild( leftLine );
 
         // right line
         var right = new jsvgLine();
         right.setStrokeColor( "black" );
         right.setStrokeWidth( 1 );
-        right.setEndpoints( bX, -bY, bX, -bY + slackOnTop + 40*(this.rightValues.length-1) );
+        right.setEndpoints( centerX+bX, centerY-bY, centerX+bX, centerY-bY + rightHangDepth );
         this.addChild( right );
 
-        // center dot (centered at origin)
+        // center dot
         var dot = new jsvgEllipse();
         dot.setWidthAndHeight( 10, 10 );
         dot.setFillColor( "black" );
-        dot.setPosition( 0, 0 ); // Ellipse is centered at its transform; origin aligns with beam midpoint
+        dot.setPosition( centerX, centerY );
         this.addChild( dot );
 
-        this.makeValueStack( this.leftValues, -bX, bY + slackOnTop );
-        this.makeValueStack( this.rightValues, bX, -bY + slackOnTop );
+        this.makeValueStack( this.leftValues, centerX-bX, leftTopY );
+        this.makeValueStack( this.rightValues, centerX+bX, rightTopY );
 
-        // Choose a comfortable display size and center the view on origin
-        const padding = 40;
-        const displayWidth = Math.max(300, contentWidth + padding);
-        const displayHeight = Math.max(200, contentHeight + padding);
+        const leftStackMinX = this.leftValues.length > 0
+            ? (centerX-bX) - leftHalfWidth
+            : centerX-bX;
+        const rightStackMaxX = this.rightValues.length > 0
+            ? (centerX+bX) + rightHalfWidth
+            : centerX+bX;
+        const leftStackBottomY = this.leftValues.length > 0
+            ? leftTopY + 40*(this.leftValues.length-1) + 30
+            : centerY+bY;
+        const rightStackBottomY = this.rightValues.length > 0
+            ? rightTopY + 40*(this.rightValues.length-1) + 30
+            : centerY-bY;
+
+        const displayWidth = Math.max(
+            220,
+            Math.ceil(Math.max(centerX+bX, centerX+5, rightStackMaxX) + outerPadding)
+        );
+        const displayHeight = Math.max(
+            180,
+            Math.ceil(
+                Math.max(
+                    centerY+5,
+                    centerY+bY + leftHangDepth,
+                    centerY-bY + rightHangDepth,
+                    leftStackBottomY,
+                    rightStackBottomY
+                ) + outerPadding
+            )
+        );
+
         this.setWidthAndHeight(displayWidth, displayHeight);
-        this.svgObject.setAttribute("viewBox", `${-displayWidth/2} ${-displayHeight/2} ${displayWidth} ${displayHeight}`);
-        // Don't set position since the viewBox already handles centering
-        // this.setPosition(-displayWidth / 2, -displayHeight / 2);
+        this.svgObject.setAttribute("viewBox", `0 0 ${displayWidth} ${displayHeight}`);
     }
 
     makeValueStack( values, xOffset, yOffset )

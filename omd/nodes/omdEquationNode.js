@@ -985,7 +985,7 @@ _propagateBackgroundStyle(style, visited = new Set()) {
      * @param {number} options.yMin - Range min for y (graph only, default: -10)
      * @param {number} options.yMax - Range max for y (graph only, default: 10)
      * @param {number} options.stepSize - Step size for table (default: 1)
-     * @returns {Object} JSON per schemas in src/json-schemas.md
+     * @returns {Object} JSON per schemas in src/omd-schemas.json
      */
     renderTo(visualizationType, options = {}) {
         // Set default options

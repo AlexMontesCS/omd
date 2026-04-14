@@ -299,7 +299,7 @@ export class omdTable extends jsvgGroup
         let currentY = 0;
         // Add title if provided
         if (this.title && this.title.length > 0) {
-            var titleText = new jsvgTextBox();
+            var titleText = new jsvgTextBox({ translateMirror: true });
             // Use an expanded text box width (only for title) to avoid clipping
             titleText.setWidthAndHeight(titleBoxWidth, 25);
             titleText.setText(this.title);
@@ -434,7 +434,7 @@ export class omdTable extends jsvgGroup
     }
 
     createBodyTextBox(width, height, text) {
-        const tb = new jsvgTextBox();
+        const tb = new jsvgTextBox({ translateMirror: true });
         tb.setWidthAndHeight(width, height);
         tb.setText(text);
         tb.setFontFamily(this.fontFamily);

@@ -22,6 +22,7 @@ import { omdCoordinatePlane } from "./omdCoordinatePlane.js";
 import { omdSpinner } from "./omdSpinner.js";
 import { omdTable } from "./omdTable.js";
 import { omdTileEquation } from "./omdTileEquation.js";
+import { omdEquationWork } from "./omdEquationWork.js";
 import { omdRightTriangle } from "./omdShapes.js";
 import { omdIsoscelesTriangle } from "./omdShapes.js";
 import { omdRectangle } from "./omdShapes.js";
@@ -95,6 +96,11 @@ export class omd extends jsvgContainer
                 if (jsonData.equation && typeof jsonData.equation === 'string' && jsonData.equation.includes('=')) {
                     try {
                         N = omdEquationNode.fromString(jsonData.equation);
+
+                        // Respect per-object typography when using the fast equation path.
+                        if (typeof jsonData.fontSize === 'number' && typeof N.setFontSize === 'function') {
+                            N.setFontSize(jsonData.fontSize);
+                        }
                         
                         // Properly initialize the equation node
                         if (typeof N.computeDimensions === 'function') {
@@ -121,6 +127,9 @@ export class omd extends jsvgContainer
                     console.warn('⚠️ Equation data missing both equation string and expression structure');
                     return;
                 }
+                break;
+            case "equationWork":
+                N = new omdEquationWork();
                 break;
             case "numberLine":
                 N = new omdNumberLine();
@@ -177,7 +186,7 @@ export class omd extends jsvgContainer
                 N = new omdLabel();
                 break;
             default:
-                console.error(`Unsupported OMD type: ${omdType}. Available types: number, variable, operator, term, expression, powerExpression, rationalExpression, function, equation, numberLine, balanceHanger, tapeDiagram, numberTile, ratioChart, coordinatePlane, spinner, table, tileEquation, rightTriangle, isoscelesTriangle, rectangle, ellipse, circle, regularPolygon`);
+                console.error(`Unsupported OMD type: ${omdType}. Available types: number, variable, operator, term, expression, powerExpression, rationalExpression, function, equation, equationWork, numberLine, doubleNumberLine, balanceHanger, tapeDiagram, doubleTapeDiagram, numberTile, ratioChart, coordinatePlane, spinner, table, tileEquation, rightTriangle, isoscelesTriangle, rectangle, ellipse, circle, regularPolygon, label`);
                 return;
         }
 

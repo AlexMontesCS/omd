@@ -27,6 +27,7 @@ import { omdRatioChart } from './omdRatioChart.js';
 import { omdTileEquation } from './omdTileEquation.js';
 import { omdSpinner } from './omdSpinner.js';
 import { omdEquation } from './omdEquation.js';
+import { omdEquationWork } from './omdEquationWork.js';
 import { omdExpression } from './omdExpression.js';
 import { omdTerm } from './omdTerm.js';
 import { omdNumber } from './omdNumber.js';
@@ -43,6 +44,8 @@ import {
     omdRegularPolygon
 } from './omdShapes.js';
 import { omdLabel } from './omdLabel.js';
+import { omdEquationStack } from '../omd/core/omdEquationStack.js';
+import { omdEquationNode } from '../omd/nodes/omdEquationNode.js';
 
 /**
  * Map of omdType strings to their corresponding class constructors
@@ -60,6 +63,8 @@ const OMD_TYPE_MAP = {
     'tileEquation': omdTileEquation,
     'spinner': omdSpinner,
     'equation': omdEquation,
+    'equationWork': omdEquationWork,
+    'equationStack': omdEquationStack,
     'expression': omdExpression,
     'term': omdTerm,
     'number': omdNumber,
@@ -122,6 +127,10 @@ export function createFromJSON(jsonData) {
     if (!omdType) {
         throw new Error('JSON data must include an "omdType" field');
     }
+
+    if (omdType === 'equationStack') {
+        return createEquationStackFromJSON(jsonData);
+    }
     
     const Constructor = OMD_TYPE_MAP[omdType];
     
@@ -134,6 +143,29 @@ export function createFromJSON(jsonData) {
     omdObject.loadFromJSON(jsonData);
     
     return omdObject;
+}
+
+function createEquationStackFromJSON(jsonData) {
+    const equations = Array.isArray(jsonData.equations) ? jsonData.equations : [];
+    const steps = equations
+        .map(equation => (typeof equation === 'string' ? equation.trim() : ''))
+        .filter(Boolean)
+        .map(equation => omdEquationNode.fromString(equation));
+
+    const stack = new omdEquationStack(steps, {
+        toolbar: false,
+        stepVisualizer: false
+    });
+
+    if (typeof jsonData.fontSize === 'number' && Number.isFinite(jsonData.fontSize)) {
+        stack.setFontSize(jsonData.fontSize);
+    }
+
+    if (typeof stack.initialize === 'function') {
+        stack.initialize();
+    }
+
+    return stack;
 }
 
 /**

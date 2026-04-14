@@ -11,7 +11,7 @@ export class omdProblem extends jsvgGroup
         this.type = "omdProblem";
         this.theText = "";
 
-        this.problemText = new jsvgTextBox();
+        this.problemText = new jsvgTextBox({ translateMirror: true });
         this.problemText.setWidthAndHeight( 250,30 );
         this.problemText.setText ( "this it the problem text" );
         this.problemText.setFontFamily( "Albert Sans" );

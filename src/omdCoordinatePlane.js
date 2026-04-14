@@ -55,6 +55,10 @@ export class omdCoordinatePlane extends jsvgGroup {
         this.variables = [];
         this.basePaddingBottom = 30;
         this.interactivePaddingBottom = 0;
+        this.customPaddingTop = null;
+        this.customPaddingRight = null;
+        this.customPaddingBottom = null;
+        this.customPaddingLeft = null;
         this.renderedFunctionEntries = [];
         this.sliderControlRows = [];
 
@@ -86,6 +90,23 @@ export class omdCoordinatePlane extends jsvgGroup {
         this.tickLabelOffsetPx = (data.tickLabelOffsetPx !== undefined) ? data.tickLabelOffsetPx : this.tickLabelOffsetPx;
         this.forceAllTickLabels = (data.forceAllTickLabels !== undefined) ? data.forceAllTickLabels : this.forceAllTickLabels;
         this.showTickLabels = (data.showTickLabels !== undefined) ? data.showTickLabels : this.showTickLabels;
+
+        if (typeof data.graphPadding === "number") {
+            this.customPaddingTop = data.graphPadding;
+            this.customPaddingRight = data.graphPadding;
+            this.customPaddingBottom = data.graphPadding;
+            this.customPaddingLeft = data.graphPadding;
+        } else if (data.graphPadding && typeof data.graphPadding === "object") {
+            if (typeof data.graphPadding.top === "number") this.customPaddingTop = data.graphPadding.top;
+            if (typeof data.graphPadding.right === "number") this.customPaddingRight = data.graphPadding.right;
+            if (typeof data.graphPadding.bottom === "number") this.customPaddingBottom = data.graphPadding.bottom;
+            if (typeof data.graphPadding.left === "number") this.customPaddingLeft = data.graphPadding.left;
+        }
+
+        if (typeof data.paddingTop === "number") this.customPaddingTop = data.paddingTop;
+        if (typeof data.paddingRight === "number") this.customPaddingRight = data.paddingRight;
+        if (typeof data.paddingBottom === "number") this.customPaddingBottom = data.paddingBottom;
+        if (typeof data.paddingLeft === "number") this.customPaddingLeft = data.paddingLeft;
 
         // Load background customization properties
         this.backgroundColor = data.backgroundColor || this.backgroundColor;
@@ -248,7 +269,7 @@ export class omdCoordinatePlane extends jsvgGroup {
         if (this.xLabel) {
             const w = Math.max(60, this.xLabel.length * 10);
             const h = 20;
-            const xAxisLabel = new jsvgTextBox();
+            const xAxisLabel = new jsvgTextBox({ translateMirror: true });
 
             xAxisLabel.setWidthAndHeight(w, h);
             xAxisLabel.setText(this.xLabel);
@@ -269,7 +290,7 @@ export class omdCoordinatePlane extends jsvgGroup {
             const finalX = Math.max(15, this.paddingLeft - (this.axisLabelOffsetPx + 10));
             const finalY = this.paddingTop + this.graphHeight / 2;
             const labelGroup = new jsvgGroup();
-            const yAxisLabel = new jsvgTextLine();
+            const yAxisLabel = new jsvgTextLine({ translateMirror: true });
 
             yAxisLabel.setText(this.yLabel);
             yAxisLabel.setFontSize(fontSize);
@@ -295,14 +316,19 @@ export class omdCoordinatePlane extends jsvgGroup {
     // ===== Helper functions =====
 
     calculatePadding() {
-        this.paddingLeft = this.yLabel ? 50 : 30;
-        this.basePaddingBottom = this.xLabel ? 50 : 30;
+        const defaultPaddingLeft = this.yLabel ? 50 : 30;
+        const defaultPaddingBottom = this.xLabel ? 50 : 30;
+        const defaultPaddingTop = 25;
+        const defaultPaddingRight = 25;
+
+        this.paddingLeft = typeof this.customPaddingLeft === "number" ? this.customPaddingLeft : defaultPaddingLeft;
+        this.basePaddingBottom = typeof this.customPaddingBottom === "number" ? this.customPaddingBottom : defaultPaddingBottom;
         this.interactivePaddingBottom = this.shouldShowInteractiveControls()
             ? this.getInteractiveControlHeight()
             : 0;
         this.paddingBottom = this.basePaddingBottom + this.interactivePaddingBottom;
-        this.paddingTop = 25;
-        this.paddingRight = 25;
+        this.paddingTop = typeof this.customPaddingTop === "number" ? this.customPaddingTop : defaultPaddingTop;
+        this.paddingRight = typeof this.customPaddingRight === "number" ? this.customPaddingRight : defaultPaddingRight;
     }
 
     computeAxisPos(isXAxis, value) {
@@ -322,11 +348,14 @@ export class omdCoordinatePlane extends jsvgGroup {
     addTickLabel(gridHolder, isXAxis, pos, value) {
         const label = this.createNumericLabel(value);
         if (isXAxis) {
-            const lx = Math.max(10, Math.min(pos - 10, this.width - 30));
+            const labelWidth = label.width || 20;
+            const lx = Math.max(10, Math.min(pos - labelWidth / 2, this.width - labelWidth - 10));
             label.setPosition(lx, this.height - this.paddingBottom + this.tickLabelOffsetPx);
         } else {
-            const lx = Math.max(5, this.paddingLeft - (this.tickLabelOffsetPx + 20));
-            const ly = Math.max(7.5, Math.min(pos - 7.5, this.height - 15));
+            const labelWidth = label.width || 20;
+            const labelHeight = label.height || 15;
+            const lx = Math.max(5, this.paddingLeft - (this.tickLabelOffsetPx + labelWidth));
+            const ly = Math.max(labelHeight / 2, Math.min(pos - labelHeight / 2, this.height - labelHeight));
             label.setPosition(lx, ly);
         }
         gridHolder.addChild(label);
@@ -340,10 +369,17 @@ export class omdCoordinatePlane extends jsvgGroup {
     }
 
     createNumericLabel(text) {
+        const textString = String(text);
+        const fontSize = 9;
+        const horizontalPadding = 6;
+        const verticalPadding = 4;
+        const estimatedCharWidth = fontSize * 0.58;
+        const labelWidth = Math.max(20, Math.ceil(textString.length * estimatedCharWidth) + horizontalPadding * 2);
+        const labelHeight = fontSize + verticalPadding * 2;
         const label = new jsvgTextBox();
-        label.setWidthAndHeight(20, 15);
-        label.setText(String(text));
-        label.setFontSize(9);
+        label.setWidthAndHeight(labelWidth, labelHeight);
+        label.setText(textString);
+        label.setFontSize(fontSize);
         label.setFontColor(this.getAllowedColor("black"));
         label.setAlignment("center");
         label.setVerticalCentering();
@@ -459,7 +495,7 @@ export class omdCoordinatePlane extends jsvgGroup {
         const estimatedWidth = Math.max(40, labelText.length * (fontSize * 0.6));
         const estimatedHeight = fontSize + padding;
 
-        const label = new jsvgTextBox();
+        const label = new jsvgTextBox({ translateMirror: true });
         label.setWidthAndHeight(estimatedWidth, estimatedHeight);
         label.setText(labelText);
         label.setFontSize(fontSize);

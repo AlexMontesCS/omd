@@ -491,8 +491,7 @@ export class omdEquationStack extends jsvgGroup {
         let eqIndex = -1;
         for (let i = seq.steps.length - 1; i >= 0; i--) {
             const st = seq.steps[i];
-            const name = st?.constructor?.name;
-            if (st instanceof omdEquationNode || name === 'omdEquationNode') { eqIndex = i; break; }
+            if (st instanceof omdEquationNode || st?.type === 'omdEquationNode') { eqIndex = i; break; }
         }
         if (eqIndex === -1) return false;
 
@@ -500,8 +499,7 @@ export class omdEquationStack extends jsvgGroup {
         let startIndex = eqIndex;
         for (let i = eqIndex; i >= 0; i--) {
             const st = seq.steps[i];
-            const name = st?.constructor?.name;
-            if (st instanceof omdOperationDisplayNode || name === 'omdOperationDisplayNode') { startIndex = i; break; }
+            if (st instanceof omdOperationDisplayNode || st?.type === 'omdOperationDisplayNode') { startIndex = i; break; }
         }
         // Remove DOM children and steps from startIndex to end
         for (let i = seq.steps.length - 1; i >= startIndex; i--) {
@@ -546,7 +544,7 @@ export class omdEquationStack extends jsvgGroup {
 
         // Safety: ensure dot/line counts match equations and prune orphan dots
         try {
-            const isEquation = (s) => (s instanceof omdEquationNode) || (s?.constructor?.name === 'omdEquationNode');
+            const isEquation = (s) => (s instanceof omdEquationNode) || (s?.type === 'omdEquationNode');
             const equationsCount = Array.isArray(seq.steps) ? seq.steps.filter(isEquation).length : 0;
 
             // Remove dots whose equationRef is no longer present in steps

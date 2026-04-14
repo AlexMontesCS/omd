@@ -388,7 +388,7 @@ export class omdStepVisualizerLayout {
         // Debug all steps and their properties
         
         sv.steps.forEach((step, i) => {
-            if (step && (step instanceof omdEquationNode || step.constructor.name === 'omdEquationNode')) {
+            if (step && (step instanceof omdEquationNode || step.type === 'omdEquationNode')) {
                 
             } else {
                 
@@ -410,7 +410,7 @@ export class omdStepVisualizerLayout {
         // Check for hidden intermediate steps between consecutive visible major steps (stepMark = 0)
         const visibleMajorSteps = [];
         sv.steps.forEach((step, stepIndex) => {
-            if (step && (step instanceof omdEquationNode || step.constructor.name === 'omdEquationNode')) {
+            if (step && (step instanceof omdEquationNode || step.type === 'omdEquationNode')) {
                 if (step.stepMark === 0 && step.visible === true) {
                     visibleMajorSteps.push(stepIndex);
                     
@@ -431,7 +431,7 @@ export class omdStepVisualizerLayout {
             let hiddenIntermediateCount = 0;
             for (let j = previousMajorStepIndex + 1; j < currentMajorStepIndex; j++) {
                 const step = sv.steps[j];
-                if (step && (step instanceof omdEquationNode || step.constructor.name === 'omdEquationNode')) {
+                if (step && (step instanceof omdEquationNode || step.type === 'omdEquationNode')) {
                     if (step.stepMark > 0 && step.visible === false) {
                         hiddenIntermediateCount++;
                         
@@ -498,7 +498,7 @@ export class omdStepVisualizerLayout {
         // Count intermediate steps between these two major steps
         for (let i = fromStepIndex + 1; i < toStepIndex; i++) {
             const step = sv.steps[i];
-            if (step && (step instanceof omdEquationNode || step.constructor.name === 'omdEquationNode')) {
+            if (step && (step instanceof omdEquationNode || step.type === 'omdEquationNode')) {
                 // Count intermediate steps (stepMark > 0) that are currently hidden
                 if (step.stepMark !== undefined && step.stepMark > 0 && step.visible === false) {
                     
@@ -680,7 +680,7 @@ export class omdStepVisualizerLayout {
                 let majorStepAfterIndex = -1;
                 for (let i = lastIntermediateStepIndex + 1; i < sv.steps.length; i++) {
                     const step = sv.steps[i];
-                    if (step && (step instanceof omdEquationNode || step.constructor.name === 'omdEquationNode')) {
+                    if (step && (step instanceof omdEquationNode || step.type === 'omdEquationNode')) {
                         if (step.stepMark === 0 && step.visible === true) {
                             majorStepAfterIndex = i;
                             
@@ -774,7 +774,7 @@ export class omdStepVisualizerLayout {
             // Show all intermediate steps between the previous and current major steps
             for (let i = previousStepIndex + 1; i < majorStepIndex; i++) {
                 const step = sv.steps[i];
-                if (step && (step instanceof omdEquationNode || step.constructor.name === 'omdEquationNode')) {
+                if (step && (step instanceof omdEquationNode || step.type === 'omdEquationNode')) {
                     if (step.stepMark > 0) {
                         
                         this._showStep(step);

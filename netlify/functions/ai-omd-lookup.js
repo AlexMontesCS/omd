@@ -174,7 +174,7 @@ try {
 // Load schemas to guide the model to strict formats
 let jsonSchemas = '';
 try {
-  const sp = path.resolve(process.cwd(), 'src/json-schemas.md');
+  const sp = path.resolve(process.cwd(), 'src/omd-schemas.json');
   jsonSchemas = fs.readFileSync(sp, 'utf8');
 } catch (e) {
   jsonSchemas = '';

@@ -17,7 +17,7 @@ export class omdLabel extends omdMetaExpression
         this.text = "";
         this.size = "medium"; // small | medium | large
 
-        this.textBox = new jsvgTextBox();
+        this.textBox = new jsvgTextBox({ translateMirror: true });
         this.textBox.setFontFamily("Albert Sans");
         this.textBox.setFontColor("black");
         this.textBox.setVerticalCentering();

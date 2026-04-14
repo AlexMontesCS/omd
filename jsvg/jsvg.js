@@ -695,13 +695,82 @@ export class jsvgImage extends jsvgObject
 
 // ================ jsvgTextLine ================================= //
 
+const JSVG_TRANSLATE_MIRROR_ROOT_ID = "__jsvg_translate_mirror_root";
+
+function getJsvgTranslateMirrorRoot()
+{
+    if ( typeof document === "undefined" ) return null;
+
+    let root = document.getElementById( JSVG_TRANSLATE_MIRROR_ROOT_ID );
+    if ( root ) return root;
+
+    const parent = document.body || document.documentElement;
+    if ( !parent ) return null;
+
+    root = document.createElement("div");
+    root.id = JSVG_TRANSLATE_MIRROR_ROOT_ID;
+    root.setAttribute("aria-hidden", "true");
+    root.setAttribute("translate", "yes");
+    root.style.position = "fixed";
+    root.style.left = "-12000px";
+    root.style.top = "0";
+    root.style.width = "4000px";
+    root.style.maxWidth = "4000px";
+    root.style.minHeight = "1px";
+    root.style.opacity = "0.01";
+    root.style.pointerEvents = "none";
+    root.style.overflow = "hidden";
+    root.style.whiteSpace = "pre-wrap";
+    root.style.userSelect = "none";
+    root.style.zIndex = "-1";
+
+    parent.appendChild( root );
+    return root;
+}
+
+function getPlainTranslateMirrorText( value )
+{
+    const source = value === undefined || value === null ? "" : String(value);
+
+    if ( typeof document === "undefined" ) {
+        return source
+            .replace(/<\s*br\s*\/?>/gi, "\n")
+            .replace(/<[^>]+>/g, "");
+    }
+
+    if ( !/[<&]/.test(source) ) return source;
+
+    const container = document.createElement("div");
+    container.innerHTML = source;
+
+    const walk = ( node ) => {
+        if ( node.nodeType === 3 ) return node.nodeValue || "";
+        if ( node.nodeType !== 1 ) return "";
+
+        const tag = node.tagName.toLowerCase();
+        if ( tag === "br" ) return "\n";
+
+        let output = "";
+        for ( let i=0; i<node.childNodes.length; i++ )
+            output += walk( node.childNodes[i] );
+        return output;
+    };
+
+    return walk( container );
+}
+
 export class jsvgTextLine extends jsvgObject
 {
-    constructor()
+    constructor( options = {} )
     {
         super();
 
         this.text = "";
+        this._translateMirrorEnabled = options.translateMirror === true;
+        this._translateMirrorElement = null;
+        this._translateMirrorObserver = null;
+        this._translateMirrorSourceText = "";
+        this._translatedText = null;
 
         const svgNS = "http://www.w3.org/2000/svg";
         this.svgObject = document.createElementNS(svgNS, "text");
@@ -710,9 +779,69 @@ export class jsvgTextLine extends jsvgObject
         this.svgObject.setAttribute("y", "0");       // y-coordinate of the rectangle
         this.svgObject.setAttribute("fill", "black");  // fill color of the rectangle
         this.svgObject.style.fontFamily = "Arial, Helvetica, sans-serif;";
+
+        this._setupTranslateMirror();
     }
 
-    setText( text ) { this.text = text; this.svgObject.textContent = text;  }
+    _setupTranslateMirror()
+    {
+        if ( !this._translateMirrorEnabled || typeof MutationObserver === "undefined" ) return;
+
+        const root = getJsvgTranslateMirrorRoot();
+        if ( !root ) return;
+
+        this._translateMirrorElement = document.createElement("span");
+        this._translateMirrorElement.setAttribute("translate", "yes");
+        this._translateMirrorElement.style.display = "inline-block";
+        this._translateMirrorElement.style.whiteSpace = "pre-wrap";
+        root.appendChild( this._translateMirrorElement );
+
+        this._translateMirrorObserver = new MutationObserver(() => this._handleTranslateMirrorMutation());
+        this._translateMirrorObserver.observe( this._translateMirrorElement, {
+            characterData: true,
+            childList: true,
+            subtree: true
+        });
+    }
+
+    _syncTranslateMirror()
+    {
+        if ( this._translateMirrorEnabled && !this._translateMirrorElement )
+            this._setupTranslateMirror();
+
+        if ( !this._translateMirrorElement ) return;
+
+        this._translateMirrorSourceText = getPlainTranslateMirrorText( this.text );
+        this._translateMirrorElement.textContent = this._translateMirrorSourceText;
+    }
+
+    _handleTranslateMirrorMutation()
+    {
+        if ( !this._translateMirrorElement ) return;
+
+        const translated = this._translateMirrorElement.textContent || "";
+        if ( translated === this._translateMirrorSourceText )
+        {
+            if ( this._translatedText !== null )
+            {
+                this._translatedText = null;
+                this.svgObject.textContent = this.text;
+            }
+            return;
+        }
+
+        if ( translated === this._translatedText ) return;
+        this._translatedText = translated;
+        this.svgObject.textContent = translated;
+    }
+
+    setText( text )
+    {
+        this.text = text ?? "";
+        this._translatedText = null;
+        this.svgObject.textContent = this.text;
+        this._syncTranslateMirror();
+    }
     getText() { return this.text; }
 
     setFontSize( S ) { this.svgObject.style.fontSize = S.toString() + 'px'; }
@@ -754,6 +883,11 @@ export class jsvgTextBox extends jsvgGroup
 
         this.text = "";
         this._useForeignObject = options.useForeignObject === true;
+        this._translateMirrorEnabled = options.translateMirror === true;
+        this._translateMirrorElement = null;
+        this._translateMirrorObserver = null;
+        this._translateMirrorSourceText = "";
+        this._translatedText = null;
         this._textAlign = "left";
         this._verticalCenter = false;
         this._lineHeight = null;
@@ -786,6 +920,81 @@ export class jsvgTextBox extends jsvgGroup
         }
 
         this.setWidthAndHeight( 200,100 );
+        this._setupTranslateMirror();
+    }
+
+    _setupTranslateMirror()
+    {
+        if ( !this._translateMirrorEnabled || typeof MutationObserver === "undefined" ) return;
+
+        const root = getJsvgTranslateMirrorRoot();
+        if ( !root ) return;
+
+        this._translateMirrorElement = document.createElement("div");
+        this._translateMirrorElement.setAttribute("translate", "yes");
+        this._translateMirrorElement.style.display = "block";
+        this._translateMirrorElement.style.whiteSpace = "pre-wrap";
+        root.appendChild( this._translateMirrorElement );
+
+        this._translateMirrorObserver = new MutationObserver(() => this._handleTranslateMirrorMutation());
+        this._translateMirrorObserver.observe( this._translateMirrorElement, {
+            characterData: true,
+            childList: true,
+            subtree: true
+        });
+    }
+
+    _syncTranslateMirror()
+    {
+        if ( this._translateMirrorEnabled && !this._translateMirrorElement )
+            this._setupTranslateMirror();
+
+        if ( !this._translateMirrorElement ) return;
+
+        this._translateMirrorSourceText = getPlainTranslateMirrorText( this.text );
+        this._translateMirrorElement.textContent = this._translateMirrorSourceText;
+    }
+
+    _getVisibleText()
+    {
+        return this._translatedText !== null ? this._translatedText : this.text;
+    }
+
+    _applyVisibleText()
+    {
+        const visibleText = this._getVisibleText();
+
+        if ( this._useForeignObject )
+        {
+            if ( this._translatedText !== null )
+                this.div.textContent = visibleText;
+            else
+                this.div.innerHTML = visibleText;
+        }
+        else
+        {
+            this._renderSvgText( visibleText );
+        }
+    }
+
+    _handleTranslateMirrorMutation()
+    {
+        if ( !this._translateMirrorElement ) return;
+
+        const translated = this._translateMirrorElement.textContent || "";
+        if ( translated === this._translateMirrorSourceText )
+        {
+            if ( this._translatedText !== null )
+            {
+                this._translatedText = null;
+                this._applyVisibleText();
+            }
+            return;
+        }
+
+        if ( translated === this._translatedText ) return;
+        this._translatedText = translated;
+        this._applyVisibleText();
     }
 
     _getLineHeight()
@@ -827,8 +1036,14 @@ export class jsvgTextBox extends jsvgGroup
             if ( node.nodeType === 3 )
             {
                 const value = node.nodeValue || "";
-                if ( value.length > 0 )
-                    lines[ lines.length - 1 ].push({ text: value, mode: mode });
+                const parts = value.split(/\r?\n/);
+                for ( let i=0; i<parts.length; i++ )
+                {
+                    if ( parts[i].length > 0 )
+                        lines[ lines.length - 1 ].push({ text: parts[i], mode: mode });
+                    if ( i < parts.length - 1 )
+                        lines.push([]);
+                }
                 return;
             }
             if ( node.nodeType !== 1 ) return;
@@ -911,16 +1126,15 @@ export class jsvgTextBox extends jsvgGroup
     _updateSvgLayout()
     {
         if ( this.textElement )
-            this._renderSvgText( this.text );
+            this._renderSvgText( this._getVisibleText() );
     }
 
     setText( T )
     {
-        this.text = T || "";
-        if ( this._useForeignObject )
-            this.div.innerHTML = this.text;
-        else
-            this._renderSvgText( this.text );
+        this.text = T ?? "";
+        this._translatedText = null;
+        this._applyVisibleText();
+        this._syncTranslateMirror();
     }
 
     getText() { return this.text; }
@@ -1150,4 +1364,149 @@ export class jsvgTextArea extends jsvgTextBox
 
     setInputCallback( callback ) { this.callback = callback; }   // the callback is a function which receives text
 
+}
+
+// ================ Export Utilities =========================== //
+
+// Rasterize foreignObject nodes into <image> elements for safe export
+export async function exportSvgToPng( svgElement, options = {} )
+{
+    const { background = 'white', inlineStyles = true } = options;
+
+    const clone = svgElement.cloneNode(true);
+    if ( !clone.getAttribute('xmlns') )
+        clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    if ( !clone.getAttribute('xmlns:xlink') )
+        clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+
+    const foreignObjects = Array.from( clone.querySelectorAll('foreignObject') );
+
+    const inlineComputedStyles = (root) =>
+    {
+        if ( !inlineStyles ) return;
+        const styleProps = [
+            'font-family','font-size','font-weight','font-style','color','line-height',
+            'text-align','white-space','padding','margin','border','box-sizing',
+            'background-color','display','align-items','justify-content'
+        ];
+        const walk = (el) =>
+        {
+            if ( el.nodeType !== 1 ) return;
+            const computed = window.getComputedStyle(el);
+            let style = '';
+            for ( const prop of styleProps )
+                style += `${prop}:${computed.getPropertyValue(prop)};`;
+            el.setAttribute('style', style + (el.getAttribute('style') || '') );
+            for ( const child of el.children ) walk(child);
+        };
+        for ( const child of root.children ) walk(child);
+    };
+
+    const rasterizeForeignObject = (fo) => new Promise((resolve) =>
+    {
+        const ns = 'http://www.w3.org/2000/svg';
+        const x = parseFloat(fo.getAttribute('x') || '0');
+        const y = parseFloat(fo.getAttribute('y') || '0');
+        const width = parseFloat(fo.getAttribute('width') || fo.clientWidth || 0);
+        const height = parseFloat(fo.getAttribute('height') || fo.clientHeight || 0);
+
+        if ( !width || !height ) {
+            resolve(null);
+            return;
+        }
+
+        // Clone the foreignObject for rendering
+        const foClone = fo.cloneNode(true);
+        inlineComputedStyles(foClone);
+
+        const tempSvg = document.createElementNS(ns, 'svg');
+        tempSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        tempSvg.setAttribute('width', width);
+        tempSvg.setAttribute('height', height);
+        tempSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        foClone.setAttribute('x', '0');
+        foClone.setAttribute('y', '0');
+        foClone.setAttribute('width', width);
+        foClone.setAttribute('height', height);
+        tempSvg.appendChild(foClone);
+
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(tempSvg);
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+
+        img.onload = () =>
+        {
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if ( background ) {
+                ctx.fillStyle = background;
+                ctx.fillRect(0, 0, width, height);
+            }
+            ctx.drawImage(img, 0, 0, width, height);
+            URL.revokeObjectURL(url);
+            resolve({ dataUrl: canvas.toDataURL('image/png'), x, y, width, height });
+        };
+
+        img.onerror = () =>
+        {
+            URL.revokeObjectURL(url);
+            resolve(null);
+        };
+
+        img.src = url;
+    });
+
+    const replacements = [];
+    for ( const fo of foreignObjects )
+    {
+        const result = await rasterizeForeignObject(fo);
+        if ( result ) replacements.push({ fo, ...result });
+    }
+
+    for ( const r of replacements )
+    {
+        const imgEl = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        imgEl.setAttribute('href', r.dataUrl);
+        imgEl.setAttribute('x', r.x);
+        imgEl.setAttribute('y', r.y);
+        imgEl.setAttribute('width', r.width);
+        imgEl.setAttribute('height', r.height);
+        r.fo.parentNode.replaceChild(imgEl, r.fo);
+    }
+
+    const svgString = new XMLSerializer().serializeToString(clone);
+    const finalImg = new Image();
+    finalImg.crossOrigin = 'anonymous';
+    const finalBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const finalUrl = URL.createObjectURL(finalBlob);
+
+    return new Promise((resolve, reject) =>
+    {
+        finalImg.onload = () =>
+        {
+            const rect = svgElement.getBoundingClientRect();
+            const canvas = document.createElement('canvas');
+            canvas.width = rect.width || svgElement.clientWidth || 800;
+            canvas.height = rect.height || svgElement.clientHeight || 600;
+            const ctx = canvas.getContext('2d');
+            if ( background ) {
+                ctx.fillStyle = background;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            ctx.drawImage(finalImg, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(finalUrl);
+            resolve(canvas.toDataURL('image/png'));
+        };
+        finalImg.onerror = () =>
+        {
+            URL.revokeObjectURL(finalUrl);
+            reject(new Error('Failed to export SVG to PNG'));
+        };
+        finalImg.src = finalUrl;
+    });
 }

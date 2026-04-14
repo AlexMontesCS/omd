@@ -84,7 +84,11 @@ export class omdNumberLine extends jsvgGroup
     {
         this.removeAllChildren();
 
-        const leftPadding = this.title ? 80 : 20;
+        const titleFontSize = 12;
+        const titleOuterPadding = 8;
+        const titleGap = 8;
+        const titleWidth = this.title ? this._estimateTitleWidth(this.title, titleFontSize) : 0;
+        const leftPadding = this.title ? titleOuterPadding + titleWidth + titleGap : 20;
         const rightPadding = 20;
         const arrowSize = 10;
         const tickOverhang = 8; // How much the line extends past the end ticks
@@ -99,14 +103,15 @@ export class omdNumberLine extends jsvgGroup
 
         // Add title if present
         if (this.title) {
-            const titleText = new jsvgTextBox();
-            titleText.setWidthAndHeight(70, 30);
+            const titleText = new jsvgTextBox({ translateMirror: true });
+            titleText.setWidthAndHeight(titleWidth, 24);
             titleText.setFontFamily("Albert Sans");
             titleText.setFontColor("black");
-            titleText.setFontSize(12);
-            titleText.setAlignment("left");
+            titleText.setFontSize(titleFontSize);
+            titleText.setAlignment("right");
+            titleText.setVerticalCentering();
             titleText.setText(this.title);
-            titleText.setPosition(5, 20);
+            titleText.setPosition(titleOuterPadding, 13);
             this.addChild(titleText);
         }
 
@@ -203,7 +208,7 @@ export class omdNumberLine extends jsvgGroup
             this.addChild(tick);
 
             // Draw label
-            const tickText = new jsvgTextBox();
+            const tickText = new jsvgTextBox({ translateMirror: true });
             tickText.setWidthAndHeight(40, 30);
             tickText.setFontFamily("Albert Sans");
             tickText.setFontColor("black");
@@ -231,4 +236,17 @@ export class omdNumberLine extends jsvgGroup
         }
     }
 
+    _estimateTitleWidth( title, fontSize )
+    {
+        const text = typeof title === "string" ? title : String(title ?? "");
+        let width = 0;
+        for ( const ch of text )
+        {
+            if ( ch === " " ) width += fontSize * 0.35;
+            else if ( /[A-Z0-9]/.test(ch) ) width += fontSize * 0.68;
+            else width += fontSize * 0.58;
+        }
+
+        return Math.max(12, Math.ceil(width));
+    }
 }

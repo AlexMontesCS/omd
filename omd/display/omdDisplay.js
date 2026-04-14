@@ -1,8 +1,9 @@
 import { omdEquationNode } from '../nodes/omdEquationNode.js';
 import { omdEquationStack } from '../core/omdEquationStack.js';
-import { omdStepVisualizer } from '../step-visualizer/omdStepVisualizer.js';
 import { getNodeForAST } from '../core/omdUtilities.js';
 import { jsvgContainer } from '@teachinglab/jsvg';
+
+const ACTIVE_DISPLAYS = new Set();
 
 /**
  * OMD Renderer - Handles rendering of mathematical expressions
@@ -12,6 +13,14 @@ import { jsvgContainer } from '@teachinglab/jsvg';
 export class omdDisplay {
     constructor(container, options = {}) {
         this.container = container;
+        this._initialContainerStyle = {
+            width: container?.style?.width || '',
+            height: container?.style?.height || '',
+            overflow: container?.style?.overflow || '',
+            overflowX: container?.style?.overflowX || '',
+            overflowY: container?.style?.overflowY || ''
+        };
+
         const {
             stepVisualizer = false,
             stackOptions = null,
@@ -24,30 +33,32 @@ export class omdDisplay {
             centerContent: true,
             topMargin: 40,
             bottomMargin: 16,
-            fitToContent: true,   // Fit to content size by default
-            autoScale: false,     // Don't auto-scale by default
-            maxScale: 1,          // Do not upscale beyond 1 by default
-            edgePadding: 16,      // Horizontal padding from edges when scaling
-            autoCloseStepVisualizer: true, // Close active step visualizer text boxes before autoscale to avoid shrink
+            observeResize: true,
+            expandViewboxToFitContent: true,
+            fitToContent: false,
+            autoScale: true,
+            maxScale: 1,
+            edgePadding: 16,
+            autoCloseStepVisualizer: true,
             stepVisualizer,
             stackOptions,
             math: mathInstance,
             ...otherOptions
         };
 
-        // Create SVG container
         this.svg = new jsvgContainer();
         this.node = null;
+        this._contentGroup = null;
+        this._baseNodeScale = 1;
+        this._isFitToContentSized = false;
+        this._lastViewbox = null;
+        this._lastContainerWidth = null;
+        this._lastContainerHeight = null;
+        this._deferredLayoutFrame = null;
+        this._deferredLayoutAttempts = 0;
 
-        // Internal guards to prevent recursive resize induced growth
-        this._suppressResizeObserver = false; // When true, _handleResize is a no-op
-        this._lastViewbox = null;             // Cache last applied viewBox string
-        this._lastContentExtents = null;      // Cache last measured content extents to detect real growth
-        this._viewboxLocked = false;          // When true, suppress micro growth adjustments
-        this._viewboxLockThreshold = 8;       // Require at least 8px growth once locked
-
-        // Set up the SVG
         this._setupSVG();
+        this._registerGlobalRefreshHook();
     }
 
     _setupSVG() {
@@ -55,28 +66,26 @@ export class omdDisplay {
         const height = this.container.offsetHeight || 600;
 
         this.svg.setViewbox(width, height);
-        this.svg.svgObject.style.width = '100%';
-        this.svg.svgObject.style.height = '100%';
-        this.svg.svgObject.style.verticalAlign = "middle";
-        // Enable internal scrolling via native SVG scrolling if content overflows
+        this.svg.svgObject.style.display = 'block';
+        this.svg.svgObject.style.verticalAlign = 'middle';
+        this.svg.svgObject.style.maxWidth = 'none';
+        this.svg.svgObject.style.maxHeight = 'none';
         this.svg.svgObject.style.overflow = 'hidden';
         this.container.appendChild(this.svg.svgObject);
 
-        // Create a dedicated content group we can translate to compensate for
-        // viewBox origin changes (so expanding the origin doesn't visually move content).
         try {
             const ns = 'http://www.w3.org/2000/svg';
             this._contentGroup = document.createElementNS(ns, 'g');
             this._contentGroup.setAttribute('id', 'omd-content-root');
             this.svg.svgObject.appendChild(this._contentGroup);
-            this._contentOffsetX = 0;
-            this._contentOffsetY = 0;
-        } catch (e) {
+        } catch (_) {
             this._contentGroup = null;
         }
 
-        // Handle resize
-        if (window.ResizeObserver) {
+        this._setCanvasSize(width, height);
+        this._restoreContainerOverflow();
+
+        if (this.options.observeResize && typeof window !== 'undefined' && window.ResizeObserver) {
             this.resizeObserver = new ResizeObserver(() => {
                 this._handleResize();
             });
@@ -84,124 +93,639 @@ export class omdDisplay {
         }
     }
 
-    _handleResize() {
-        if (this._suppressResizeObserver) return; // Prevent re-entrant resize loops
-        const width = this.container.offsetWidth;
-        const height = this.container.offsetHeight;
-        // Skip if size unchanged; avoids loops where internal changes trigger observer without real container delta
-        if (this._lastContainerWidth === width && this._lastContainerHeight === height) return;
-        this._lastContainerWidth = width;
-        this._lastContainerHeight = height;
-        this.svg.setViewbox(width, height);
+    _registerGlobalRefreshHook() {
+        ACTIVE_DISPLAYS.add(this);
+        if (typeof window === 'undefined') return;
 
-        if (this.options.centerContent && this.node) {
-            this.centerNode();
-        }
-
-        // Reposition overlay toolbar (if any) on resize
-        this._repositionOverlayToolbar();
-        if (this.options.debugExtents) this._drawDebugOverlays();
+        window.refreshDisplayAndFilters = () => {
+            for (const display of Array.from(ACTIVE_DISPLAYS)) {
+                try {
+                    display._refreshDisplayAndFilters();
+                } catch (_) {
+                    // Ignore per-display refresh failures so one bad node
+                    // does not break every active display on the page.
+                }
+            }
+        };
     }
 
-    /**
-     * Ensure the internal SVG viewBox is at least as large as the provided content dimensions.
-     * This prevents clipping when content is larger than the current viewBox.
-     * @param {number} contentWidth
-     * @param {number} contentHeight
-     */
-    _ensureViewboxFits(contentWidth, contentHeight) {
-        // If caller provided just width/height, but we prefer extents, bail early
+    _unregisterGlobalRefreshHook() {
+        ACTIVE_DISPLAYS.delete(this);
+        if (typeof window === 'undefined') return;
+
+        window.refreshDisplayAndFilters = () => {
+            for (const display of Array.from(ACTIVE_DISPLAYS)) {
+                try {
+                    display._refreshDisplayAndFilters();
+                } catch (_) {
+                    // no-op
+                }
+            }
+        };
+    }
+
+    _refreshDisplayAndFilters() {
         if (!this.node) return;
-        const pad = 10;
 
-        // Prefer DOM measured extents (accounts for strokes, transforms, children SVG geometry)
-        let ext = null;
-        try {
-            const collected = this._collectNodeExtents(this.node);
-            if (collected) {
-                ext = { minX: collected.minX, minY: collected.minY, maxX: collected.maxX, maxY: collected.maxY };
+        const sequence = this.node.getSequence ? this.node.getSequence() : null;
+        if (sequence) {
+            if (typeof sequence.simplifyAll === 'function') {
+                sequence.simplifyAll();
             }
-        } catch (e) {
-            ext = null;
-        }
-        if (!ext) {
-            ext = this._computeNodeExtents(this.node);
-        }
-        if (!ext) return;
-
-        const minX = Math.floor(ext.minX - pad);
-        const minY = Math.floor(ext.minY - pad);
-        const maxX = Math.ceil(ext.maxX + pad);
-        const maxY = Math.ceil(ext.maxY + pad);
-
-        const curView = this.svg.svgObject.getAttribute('viewBox') || '';
-        let curX = 0, curY = 0, curW = 0, curH = 0;
-        if (curView) {
-            const parts = curView.split(/\s+/).map(Number).filter(n => !isNaN(n));
-            if (parts.length === 4) {
-                curX = parts[0];
-                curY = parts[1];
-                curW = parts[2];
-                curH = parts[3];
+            if (typeof sequence.updateStepsVisibility === 'function') {
+                const filterLevel = typeof sequence.getFilterLevel === 'function'
+                    ? sequence.getFilterLevel()
+                    : 0;
+                sequence.updateStepsVisibility(step => (step.stepMark ?? 0) === filterLevel);
             }
         }
 
-        // To avoid shifting visible content, keep the current viewBox origin (curX,curY)
-        // and only expand width/height as needed. Changing the origin would change
-        // the mapping from SVG coordinates to screen coordinates and appear to move
-        // existing content.
-        const desiredX = curX;
-        const desiredY = curY;
-        const desiredRight = Math.max(curX + curW, maxX);
-        const desiredBottom = Math.max(curY + curH, maxY);
-        const desiredW = Math.max(curW, desiredRight - desiredX);
-        const desiredH = Math.max(curH, desiredBottom - desiredY);
+        this._prepareNodeForLayout(this.node);
+        this._applyLayoutOptions();
+        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
+    }
 
-        // Guard: If the desired size change is negligible (< 0.5px), skip.
-        const widthDelta = Math.abs(desiredW - curW);
-        const heightDelta = Math.abs(desiredH - curH);
+    _handleResize() {
+        const width = this.container.offsetWidth || 0;
+        const height = this.container.offsetHeight || 0;
 
-        // Safety cap to avoid runaway expansion due to logic errors.
-        const MAX_DIM = 10000; // arbitrary large but finite limit
-        if (desiredW > MAX_DIM || desiredH > MAX_DIM) {
-            console.warn('omdDisplay: viewBox growth capped to prevent runaway expansion', desiredW, desiredH);
+        if (!width || !height) {
+            if (this.node) this._scheduleDeferredLayout();
+            return;
+        }
+        if (this._lastContainerWidth === width && this._lastContainerHeight === height) return;
+
+        this._lastContainerWidth = width;
+        this._lastContainerHeight = height;
+
+        if (!this.node) {
+            this._syncViewboxToContainer(width, height);
+            this._restoreContainerOverflow();
             return;
         }
 
-        if (widthDelta < 0.5 && heightDelta < 0.5) return;
-
-        // Detect repeated growth with identical content extents (suggests feedback loop)
-        const curExtSignature = `${minX},${minY},${maxX},${maxY}`;
-        if (this._lastContentExtents === curExtSignature && heightDelta > 0 && desiredH > curH) {
-            return; // content unchanged, skip
+        if (this.options.fitToContent) {
+            // fitToContent owns the host size. Ignore external host resizes.
+            return;
         }
 
-        // If locked, only allow substantial growth
-        if (this._viewboxLocked) {
-            const growW = desiredW - curW;
-            const growH = desiredH - curH;
-            if (growW < this._viewboxLockThreshold && growH < this._viewboxLockThreshold) {
-                return; // ignore micro growth attempts
+        this._applyLayoutOptions();
+    }
+
+    _setCanvasSize(width, height, { resizeContainer = false } = {}) {
+        const safeWidth = Math.max(1, Math.ceil(width || 1));
+        const safeHeight = Math.max(1, Math.ceil(height || 1));
+
+        this.svg.setViewbox(safeWidth, safeHeight);
+        this.svg.setWidthAndHeight(safeWidth, safeHeight);
+        this.svg.svgObject.style.width = `${safeWidth}px`;
+        this.svg.svgObject.style.height = `${safeHeight}px`;
+        this._lastViewbox = `0 0 ${safeWidth} ${safeHeight}`;
+
+        if (resizeContainer) {
+            this.container.style.width = `${safeWidth}px`;
+            this.container.style.height = `${safeHeight}px`;
+            this._isFitToContentSized = true;
+        }
+    }
+
+    _syncViewboxToContainer(width = this.container.offsetWidth || 0, height = this.container.offsetHeight || 0) {
+        if (!width || !height) return;
+        this._setCanvasSize(width, height);
+    }
+
+    _restoreContainerSize() {
+        if (!this._isFitToContentSized) return;
+
+        this.container.style.width = this._initialContainerStyle.width;
+        this.container.style.height = this._initialContainerStyle.height;
+        this._isFitToContentSized = false;
+    }
+
+    _restoreContainerOverflow() {
+        this.container.style.overflow = this._initialContainerStyle.overflow;
+        this.container.style.overflowX = this._initialContainerStyle.overflowX;
+        this.container.style.overflowY = this._initialContainerStyle.overflowY;
+    }
+
+    _applyContainerOverflow(canvasWidth, canvasHeight) {
+        if (this.options.fitToContent || this._isFitToContentSized) {
+            this.container.style.overflow = 'hidden';
+            this.container.style.overflowX = 'hidden';
+            this.container.style.overflowY = 'hidden';
+            return;
+        }
+
+        const hostWidth = this.container.offsetWidth || 0;
+        const hostHeight = this.container.offsetHeight || 0;
+        const needsX = canvasWidth > hostWidth + 0.5;
+        const needsY = canvasHeight > hostHeight + 0.5;
+
+        if (!needsX && !needsY) {
+            this._restoreContainerOverflow();
+            return;
+        }
+
+        this.container.style.overflow = 'hidden';
+        this.container.style.overflowX = needsX ? 'auto' : 'hidden';
+        this.container.style.overflowY = needsY ? 'auto' : 'hidden';
+    }
+
+    _needsDeferredLayout() {
+        if (!this.node || typeof window === 'undefined') return false;
+        if (!this.container?.isConnected || !this.svg?.svgObject?.isConnected) return true;
+        if (this.options.fitToContent) return false;
+        return !(this.container.offsetWidth && this.container.offsetHeight);
+    }
+
+    _scheduleDeferredLayout() {
+        if (!this.node) return;
+        if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') return;
+        if (this._deferredLayoutFrame !== null) return;
+
+        this._deferredLayoutFrame = window.requestAnimationFrame(() => {
+            this._deferredLayoutFrame = null;
+
+            if (!this.node) {
+                this._deferredLayoutAttempts = 0;
+                return;
+            }
+
+            if (this._needsDeferredLayout()) {
+                if (this._deferredLayoutAttempts >= 8) return;
+                this._deferredLayoutAttempts += 1;
+                this._scheduleDeferredLayout();
+                return;
+            }
+
+            this._deferredLayoutAttempts = 0;
+            this._prepareNodeForLayout(this.node);
+            this._applyLayoutOptions();
+        });
+    }
+
+    _cancelDeferredLayout() {
+        if (this._deferredLayoutFrame === null) return;
+        if (typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+            window.cancelAnimationFrame(this._deferredLayoutFrame);
+        }
+        this._deferredLayoutFrame = null;
+        this._deferredLayoutAttempts = 0;
+    }
+
+    _appendNode(node) {
+        if (!node) return;
+
+        if (this._contentGroup && node.svgObject) {
+            try {
+                this._contentGroup.appendChild(node.svgObject);
+                return;
+            } catch (_) {
+                // Fall back to jsvg container addChild below.
             }
         }
 
-        const newViewBox = `${desiredX} ${desiredY} ${desiredW} ${desiredH}`;
-        if (this._lastViewbox === newViewBox) return;
+        this.svg.addChild(node);
+    }
 
-        this._suppressResizeObserver = true;
+    _removeNodeFromDom(node) {
+        if (!node || !node.svgObject) return;
+
         try {
-            this.svg.svgObject.setAttribute('viewBox', newViewBox);
-        } finally {
-            // Allow ResizeObserver events after microtask; use timeout to defer
-            setTimeout(() => { this._suppressResizeObserver = false; }, 0);
+            if (this._contentGroup && this._contentGroup.contains(node.svgObject)) {
+                this._contentGroup.removeChild(node.svgObject);
+            } else if (this.svg.svgObject && this.svg.svgObject.contains(node.svgObject)) {
+                this.svg.svgObject.removeChild(node.svgObject);
+            } else if (typeof this.svg.removeChild === 'function') {
+                this.svg.removeChild(node);
+            }
+        } catch (_) {
+            // no-op
         }
-        this._lastViewbox = newViewBox;
-        this._lastContentExtents = curExtSignature;
+    }
 
-        // Lock if the growth applied was small; prevents future tiny increments
-        if (heightDelta < 2 && widthDelta < 2 && !this._viewboxLocked) {
-            this._viewboxLocked = true;
+    _removeAllContentChildren() {
+        if (this._contentGroup) {
+            while (this._contentGroup.lastChild) {
+                this._contentGroup.removeChild(this._contentGroup.lastChild);
+            }
+            return;
         }
+
+        if (typeof this.svg?.removeAllChildren === 'function') {
+            this.svg.removeAllChildren();
+        }
+    }
+
+    _captureBaseNodeScale(node = this.node) {
+        if (!node) {
+            this._baseNodeScale = 1;
+            return;
+        }
+
+        const scale = typeof node.scale === 'number' && isFinite(node.scale) && node.scale > 0
+            ? node.scale
+            : 1;
+        this._baseNodeScale = scale;
+    }
+
+    _getBaseNodeScale() {
+        return typeof this._baseNodeScale === 'number' && isFinite(this._baseNodeScale) && this._baseNodeScale > 0
+            ? this._baseNodeScale
+            : 1;
+    }
+
+    _applyConfiguredFontProperties(node = this.node) {
+        if (!node) return;
+
+        if (typeof this.options.fontSize === 'number') {
+            if (typeof node.setFontSize === 'function') {
+                node.setFontSize(this.options.fontSize);
+            } else if ('fontSize' in node) {
+                node.fontSize = this.options.fontSize;
+            }
+        }
+
+        if (this.options.fontFamily) {
+            if ('fontFamily' in node) {
+                node.fontFamily = this.options.fontFamily;
+            }
+            if ('headerFontFamily' in node && !node.headerFontFamily) {
+                node.headerFontFamily = this.options.fontFamily;
+            }
+        }
+    }
+
+    _prepareNodeForLayout(node = this.node) {
+        if (!node) return;
+
+        this._applyConfiguredFontProperties(node);
+
+        if (typeof node.initialize === 'function') {
+            node.initialize();
+        } else if (typeof node.updateLayout === 'function') {
+            node.updateLayout();
+        }
+
+        this._applyFontStylesToSvg();
+    }
+
+    _applyFontStylesToSvg() {
+        if (!this.svg?.svgObject) return;
+        if (!this.options.fontFamily && !this.options.fontWeight) return;
+
+        const applyFont = (element) => {
+            if (element?.style) {
+                if (this.options.fontFamily) {
+                    element.style.fontFamily = this.options.fontFamily;
+                }
+                if (this.options.fontWeight) {
+                    element.style.fontWeight = this.options.fontWeight;
+                }
+            }
+
+            Array.from(element?.children || []).forEach(applyFont);
+        };
+
+        applyFont(this.svg.svgObject);
+    }
+
+    _getLayoutTarget() {
+        if (!this.node) return null;
+        if (this.node.layoutGroup?.svgObject) {
+            return this.node.layoutGroup;
+        }
+        return this.node;
+    }
+
+    _getAlignmentNode() {
+        if (!this.node) return null;
+
+        if (this.node.type === 'omdEquationSequenceNode' || this.node.type === 'omdStepVisualizer') {
+            return this.node;
+        }
+
+        if (typeof this.node.getSequence === 'function') {
+            const sequence = this.node.getSequence();
+            if (sequence?.svgObject) {
+                return sequence;
+            }
+        }
+
+        return null;
+    }
+
+    _identityMatrix() {
+        return { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+    }
+
+    _transformPoint(matrix, x, y) {
+        return {
+            x: matrix.a * x + matrix.c * y + matrix.e,
+            y: matrix.b * x + matrix.d * y + matrix.f
+        };
+    }
+
+    _normalizeBounds(minX, minY, maxX, maxY) {
+        if (![minX, minY, maxX, maxY].every(Number.isFinite)) {
+            return { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0 };
+        }
+
+        return {
+            minX,
+            minY,
+            maxX,
+            maxY,
+            width: Math.max(0, maxX - minX),
+            height: Math.max(0, maxY - minY)
+        };
+    }
+
+    _getMatrixRelativeToNode(target) {
+        const element = target?.svgObject || target;
+        const nodeElement = this.node?.svgObject;
+
+        if (!element || !nodeElement) return null;
+        if (element === nodeElement) return this._identityMatrix();
+
+        try {
+            const elementCTM = element.getCTM?.();
+            const nodeCTM = nodeElement.getCTM?.();
+            if (!elementCTM || !nodeCTM || typeof nodeCTM.inverse !== 'function') return null;
+            return nodeCTM.inverse().multiply(elementCTM);
+        } catch (_) {
+            return null;
+        }
+    }
+
+    _measureBoundsRelativeToNode(target = this._getLayoutTarget()) {
+        if (!this.node || !target) {
+            return this._normalizeBounds(0, 0, 0, 0);
+        }
+
+        try {
+            const bbox = target.svgObject?.getBBox?.();
+            if (bbox) {
+                const matrix = this._getMatrixRelativeToNode(target);
+                if (!matrix) {
+                    return this._normalizeBounds(bbox.x, bbox.y, bbox.x + bbox.width, bbox.y + bbox.height);
+                }
+
+                const corners = [
+                    this._transformPoint(matrix, bbox.x, bbox.y),
+                    this._transformPoint(matrix, bbox.x + bbox.width, bbox.y),
+                    this._transformPoint(matrix, bbox.x, bbox.y + bbox.height),
+                    this._transformPoint(matrix, bbox.x + bbox.width, bbox.y + bbox.height)
+                ];
+
+                return this._normalizeBounds(
+                    Math.min(...corners.map(point => point.x)),
+                    Math.min(...corners.map(point => point.y)),
+                    Math.max(...corners.map(point => point.x)),
+                    Math.max(...corners.map(point => point.y))
+                );
+            }
+        } catch (_) {
+            // Fall through to structural fallback below.
+        }
+
+        return this._fallbackBoundsRelativeToNode(target);
+    }
+
+    _measureBoundsInRoot(target = this._getLayoutTarget()) {
+        if (!target?.svgObject) {
+            return this._normalizeBounds(0, 0, 0, 0);
+        }
+
+        try {
+            const bbox = target.svgObject.getBBox?.();
+            const ctm = target.svgObject.getCTM?.();
+            if (!bbox || !ctm) {
+                return this._normalizeBounds(bbox?.x || 0, bbox?.y || 0, (bbox?.x || 0) + (bbox?.width || 0), (bbox?.y || 0) + (bbox?.height || 0));
+            }
+
+            const corners = [
+                this._transformPoint(ctm, bbox.x, bbox.y),
+                this._transformPoint(ctm, bbox.x + bbox.width, bbox.y),
+                this._transformPoint(ctm, bbox.x, bbox.y + bbox.height),
+                this._transformPoint(ctm, bbox.x + bbox.width, bbox.y + bbox.height)
+            ];
+
+            return this._normalizeBounds(
+                Math.min(...corners.map(point => point.x)),
+                Math.min(...corners.map(point => point.y)),
+                Math.max(...corners.map(point => point.x)),
+                Math.max(...corners.map(point => point.y))
+            );
+        } catch (_) {
+            return this._normalizeBounds(0, 0, 0, 0);
+        }
+    }
+
+    _fallbackBoundsRelativeToNode(target) {
+        if (!target) return this._normalizeBounds(0, 0, 0, 0);
+
+        if (target === this.node) {
+            return this._normalizeBounds(0, 0, target.width || 0, target.height || 0);
+        }
+
+        const x = target.xpos || 0;
+        const y = target.ypos || 0;
+        const width = target.width || 0;
+        const height = target.height || 0;
+        return this._normalizeBounds(x, y, x + width, y + height);
+    }
+
+    _getOverlayMetrics() {
+        const node = this.node;
+        if (!node || typeof node.isToolbarOverlay !== 'function' || !node.isToolbarOverlay()) {
+            return { width: 0, height: 0, padding: 0, totalHeight: 0 };
+        }
+
+        const width = node.toolbar?.elements?.background?.width || 0;
+        const height = typeof node.getToolbarVisualHeight === 'function'
+            ? node.getToolbarVisualHeight()
+            : 0;
+        const padding = typeof node.getOverlayPadding === 'function'
+            ? node.getOverlayPadding()
+            : 16;
+
+        return {
+            width,
+            height,
+            padding,
+            totalHeight: height + padding
+        };
+    }
+
+    _closeTransientUi() {
+        if (!this.options.autoCloseStepVisualizer || !this.node) return;
+
+        try {
+            if (typeof this.node.forceCloseAll === 'function') {
+                this.node.forceCloseAll();
+            } else if (typeof this.node.closeAllTextBoxes === 'function') {
+                this.node.closeAllTextBoxes();
+            } else if (typeof this.node.closeActiveDot === 'function') {
+                this.node.closeActiveDot();
+            }
+        } catch (_) {
+            // no-op
+        }
+    }
+
+    _getAlignmentAnchorX() {
+        const alignmentNode = this._getAlignmentNode();
+        if (!alignmentNode || alignmentNode.alignPointX === undefined) return null;
+
+        const matrix = this._getMatrixRelativeToNode(alignmentNode);
+        if (!matrix) return alignmentNode.alignPointX;
+
+        return this._transformPoint(matrix, alignmentNode.alignPointX, 0).x;
+    }
+
+    _computeAutoScale(bounds) {
+        const baseScale = this._getBaseNodeScale();
+        if (!this.options.autoScale || !bounds.width || !bounds.height) {
+            return baseScale;
+        }
+
+        const overlay = this._getOverlayMetrics();
+        const naturalWidth = Math.max(bounds.width * baseScale, overlay.width);
+        const naturalHeight = Math.max(1, bounds.height * baseScale + overlay.totalHeight);
+
+        const containerWidth = this.container.offsetWidth || naturalWidth;
+        const containerHeight = this.container.offsetHeight || naturalHeight;
+        const availWidth = Math.max(1, containerWidth - (this.options.edgePadding || 0) * 2);
+        const availHeight = Math.max(1, containerHeight - (this.options.topMargin || 0) - (this.options.bottomMargin || 0));
+        const maxScale = typeof this.options.maxScale === 'number' && this.options.maxScale > 0
+            ? this.options.maxScale
+            : Infinity;
+
+        const scaleFactor = Math.min(
+            availWidth / Math.max(1, naturalWidth),
+            availHeight / Math.max(1, naturalHeight),
+            maxScale / baseScale
+        );
+
+        if (!isFinite(scaleFactor) || scaleFactor <= 0) {
+            return baseScale;
+        }
+
+        return baseScale * scaleFactor;
+    }
+
+    _layoutToPosition({ centered }) {
+        if (!this.node) return;
+
+        this._closeTransientUi();
+
+        const bounds = this._measureBoundsRelativeToNode();
+        const overlay = this._getOverlayMetrics();
+        const scale = this._computeAutoScale(bounds);
+        const edgePadding = this.options.edgePadding || 0;
+        const topMargin = this.options.topMargin || 0;
+        const bottomMargin = this.options.bottomMargin || 0;
+        const containerWidth = this.container.offsetWidth || 0;
+        const containerHeight = this.container.offsetHeight || 0;
+        const allowOverflow = this.options.expandViewboxToFitContent !== false;
+
+        if (typeof this.node.setScale === 'function') {
+            this.node.setScale(scale);
+        }
+
+        const scaledWidth = bounds.width * scale;
+        const scaledHeight = bounds.height * scale;
+        const anchorX = centered ? this._getAlignmentAnchorX() : null;
+
+        let requiredWidth = edgePadding * 2 + scaledWidth;
+        if (anchorX !== null) {
+            const leftExtent = (anchorX - bounds.minX) * scale;
+            const rightExtent = (bounds.maxX - anchorX) * scale;
+            requiredWidth = edgePadding * 2 + Math.max(leftExtent, rightExtent) * 2;
+        }
+        requiredWidth = Math.max(requiredWidth, edgePadding * 2 + overlay.width);
+
+        const requiredHeight = topMargin + bottomMargin + overlay.totalHeight + scaledHeight;
+        const canvasWidth = allowOverflow ? Math.max(containerWidth, Math.ceil(requiredWidth)) : Math.max(1, containerWidth);
+        const canvasHeight = allowOverflow ? Math.max(containerHeight, Math.ceil(requiredHeight)) : Math.max(1, containerHeight);
+
+        this._setCanvasSize(canvasWidth, canvasHeight);
+        this._applyContainerOverflow(canvasWidth, canvasHeight);
+
+        let x;
+        if (anchorX !== null) {
+            x = canvasWidth / 2 - anchorX * scale;
+        } else {
+            const availableWidth = Math.max(0, canvasWidth - edgePadding * 2);
+            const desiredMinX = centered
+                ? edgePadding + Math.max(0, (availableWidth - scaledWidth) / 2)
+                : edgePadding;
+            x = desiredMinX - bounds.minX * scale;
+        }
+
+        const availableHeight = Math.max(0, canvasHeight - topMargin - bottomMargin - overlay.totalHeight);
+        const desiredMinY = centered
+            ? topMargin + Math.max(0, (availableHeight - scaledHeight) / 2)
+            : topMargin;
+        const y = desiredMinY - bounds.minY * scale;
+
+        if (typeof this.node.setPosition === 'function') {
+            this.node.setPosition(x, y);
+        }
+
+        this._repositionOverlayToolbar();
+        if (this.options.debugExtents) this._drawDebugOverlays();
+        else this._clearDebugOverlays();
+    }
+
+    _applyLayoutOptions() {
+        if (!this.node) return;
+
+        if (this.options.fitToContent) {
+            this.fitToContent();
+            return;
+        }
+
+        this._restoreContainerSize();
+
+        if (this.options.centerContent) {
+            this.centerNode();
+        } else {
+            this._layoutToPosition({ centered: false });
+        }
+    }
+
+    /**
+     * Ensure the internal SVG canvas is large enough to contain the current content.
+     * This preserves visual scale by expanding the canvas, not by changing centering math.
+     * @param {number} _contentWidth
+     * @param {number} _contentHeight
+     */
+    _ensureViewboxFits(_contentWidth, _contentHeight) {
+        if (!this.node) return;
+
+        const pad = 10;
+        let rootBounds = this._measureBoundsInRoot();
+        if (!rootBounds.width && !rootBounds.height) return;
+
+        let dx = 0;
+        let dy = 0;
+        if (rootBounds.minX < pad) dx = pad - rootBounds.minX;
+        if (rootBounds.minY < pad) dy = pad - rootBounds.minY;
+
+        if ((dx || dy) && typeof this.node.setPosition === 'function') {
+            this.node.setPosition((this.node.xpos || 0) + dx, (this.node.ypos || 0) + dy);
+            rootBounds = this._measureBoundsInRoot();
+        }
+
+        const containerWidth = this.container.offsetWidth || 0;
+        const containerHeight = this.container.offsetHeight || 0;
+        const canvasWidth = Math.max(containerWidth, Math.ceil(rootBounds.maxX + pad));
+        const canvasHeight = Math.max(containerHeight, Math.ceil(rootBounds.maxY + pad));
+
+        this._setCanvasSize(canvasWidth, canvasHeight);
+        this._applyContainerOverflow(canvasWidth, canvasHeight);
     }
 
     /**
@@ -214,7 +738,10 @@ export class omdDisplay {
         if (!root) return null;
         const visited = new Set();
         const stack = [{ node: root, absX: root.xpos || 0, absY: root.ypos || 0 }];
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
 
         while (stack.length) {
             const { node, absX, absY } = stack.pop();
@@ -225,33 +752,40 @@ export class omdDisplay {
             const h = node.height || 0;
             const nx = absX;
             const ny = absY;
+
             minX = Math.min(minX, nx);
             minY = Math.min(minY, ny);
             maxX = Math.max(maxX, nx + w);
             maxY = Math.max(maxY, ny + h);
 
-            // push children
             if (Array.isArray(node.childList)) {
-                for (const c of node.childList) {
-                    if (!c) continue;
-                    const cx = (c.xpos || 0) + nx;
-                    const cy = (c.ypos || 0) + ny;
-                    stack.push({ node: c, absX: cx, absY: cy });
+                for (const child of node.childList) {
+                    if (!child) continue;
+                    stack.push({
+                        node: child,
+                        absX: nx + (child.xpos || 0),
+                        absY: ny + (child.ypos || 0)
+                    });
                 }
             }
+
             if (node.argumentNodeList) {
-                for (const val of Object.values(node.argumentNodeList)) {
-                    if (Array.isArray(val)) {
-                        for (const v of val) {
-                            if (!v) continue;
-                            const vx = (v.xpos || 0) + nx;
-                            const vy = (v.ypos || 0) + ny;
-                            stack.push({ node: v, absX: vx, absY: vy });
-                        }
-                    } else if (val) {
-                        const vx = (val.xpos || 0) + nx;
-                        const vy = (val.ypos || 0) + ny;
-                        stack.push({ node: val, absX: vx, absY: vy });
+                for (const value of Object.values(node.argumentNodeList)) {
+                    if (Array.isArray(value)) {
+                        value.forEach(child => {
+                            if (!child) return;
+                            stack.push({
+                                node: child,
+                                absX: nx + (child.xpos || 0),
+                                absY: ny + (child.ypos || 0)
+                            });
+                        });
+                    } else if (value) {
+                        stack.push({
+                            node: value,
+                            absX: nx + (value.xpos || 0),
+                            absY: ny + (value.ypos || 0)
+                        });
                     }
                 }
             }
@@ -272,93 +806,81 @@ export class omdDisplay {
         const visited = new Set();
         const stack = [{ node: root, absX: root.xpos || 0, absY: root.ypos || 0, parent: null }];
         const nodes = [];
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
 
         while (stack.length) {
             const { node, absX, absY, parent } = stack.pop();
             if (!node || visited.has(node)) continue;
             visited.add(node);
 
-            // Prefer DOM measurement if available for accuracy
-            let nx = absX;
-            let ny = absY;
-            let nminX = nx;
-            let nminY = ny;
-            let nmaxX = nx;
-            let nmaxY = ny;
+            let nminX = absX;
+            let nminY = absY;
+            let nmaxX = absX;
+            let nmaxY = absY;
 
             try {
                 if (node.svgObject && typeof node.svgObject.getBBox === 'function' && typeof node.svgObject.getCTM === 'function') {
                     const bbox = node.svgObject.getBBox();
                     const ctm = node.svgObject.getCTM();
-                    // Transform all four bbox corners into root SVG coordinates
                     const corners = [
-                        { x: bbox.x, y: bbox.y },
-                        { x: bbox.x + bbox.width, y: bbox.y },
-                        { x: bbox.x, y: bbox.y + bbox.height },
-                        { x: bbox.x + bbox.width, y: bbox.y + bbox.height }
+                        this._transformPoint(ctm, bbox.x, bbox.y),
+                        this._transformPoint(ctm, bbox.x + bbox.width, bbox.y),
+                        this._transformPoint(ctm, bbox.x, bbox.y + bbox.height),
+                        this._transformPoint(ctm, bbox.x + bbox.width, bbox.y + bbox.height)
                     ];
-                    const tx = corners.map(p => ({
-                        x: ctm.a * p.x + ctm.c * p.y + ctm.e,
-                        y: ctm.b * p.x + ctm.d * p.y + ctm.f
-                    }));
-                    nminX = Math.min(...tx.map(t => t.x));
-                    nminY = Math.min(...tx.map(t => t.y));
-                    nmaxX = Math.max(...tx.map(t => t.x));
-                    nmaxY = Math.max(...tx.map(t => t.y));
-                    nx = nminX;
-                    ny = nminY;
+                    nminX = Math.min(...corners.map(point => point.x));
+                    nminY = Math.min(...corners.map(point => point.y));
+                    nmaxX = Math.max(...corners.map(point => point.x));
+                    nmaxY = Math.max(...corners.map(point => point.y));
                 } else {
-                    const w = node.width || 0;
-                    const h = node.height || 0;
-                    nx = absX;
-                    ny = absY;
-                    nminX = nx;
-                    nminY = ny;
-                    nmaxX = nx + w;
-                    nmaxY = ny + h;
+                    nmaxX = absX + (node.width || 0);
+                    nmaxY = absY + (node.height || 0);
                 }
-            } catch (e) {
-                const w = node.width || 0;
-                const h = node.height || 0;
-                nx = absX;
-                ny = absY;
-                nminX = nx;
-                nminY = ny;
-                nmaxX = nx + w;
-                nmaxY = ny + h;
+            } catch (_) {
+                nmaxX = absX + (node.width || 0);
+                nmaxY = absY + (node.height || 0);
             }
 
             nodes.push({ node, minX: nminX, minY: nminY, maxX: nmaxX, maxY: nmaxY, parent });
-
             minX = Math.min(minX, nminX);
             minY = Math.min(minY, nminY);
             maxX = Math.max(maxX, nmaxX);
             maxY = Math.max(maxY, nmaxY);
 
-            // push children
             if (Array.isArray(node.childList)) {
-                for (const c of node.childList) {
-                    if (!c) continue;
-                    const cx = (c.xpos || 0) + nx;
-                    const cy = (c.ypos || 0) + ny;
-                    stack.push({ node: c, absX: cx, absY: cy, parent: node });
+                for (const child of node.childList) {
+                    if (!child) continue;
+                    stack.push({
+                        node: child,
+                        absX: absX + (child.xpos || 0),
+                        absY: absY + (child.ypos || 0),
+                        parent: node
+                    });
                 }
             }
+
             if (node.argumentNodeList) {
-                for (const val of Object.values(node.argumentNodeList)) {
-                    if (Array.isArray(val)) {
-                        for (const v of val) {
-                            if (!v) continue;
-                            const vx = (v.xpos || 0) + nx;
-                            const vy = (v.ypos || 0) + ny;
-                            stack.push({ node: v, absX: vx, absY: vy, parent: node });
-                        }
-                    } else if (val) {
-                        const vx = (val.xpos || 0) + nx;
-                        const vy = (val.ypos || 0) + ny;
-                        stack.push({ node: val, absX: vx, absY: vy, parent: node });
+                for (const value of Object.values(node.argumentNodeList)) {
+                    if (Array.isArray(value)) {
+                        value.forEach(child => {
+                            if (!child) return;
+                            stack.push({
+                                node: child,
+                                absX: absX + (child.xpos || 0),
+                                absY: absY + (child.ypos || 0),
+                                parent: node
+                            });
+                        });
+                    } else if (value) {
+                        stack.push({
+                            node: value,
+                            absX: absX + (value.xpos || 0),
+                            absY: absY + (value.ypos || 0),
+                            parent: node
+                        });
                     }
                 }
             }
@@ -385,13 +907,11 @@ export class omdDisplay {
         group.setAttribute('id', 'omd-debug-overlays');
         group.setAttribute('pointer-events', 'none');
 
-        // overall node extents
         const collected = this._collectNodeExtents(this.node);
         if (!collected) return;
 
         const { nodes, minX, minY, maxX, maxY } = collected;
 
-        // Draw content extents (blue dashed)
         const contentRect = document.createElementNS(ns, 'rect');
         contentRect.setAttribute('x', String(minX));
         contentRect.setAttribute('y', String(minY));
@@ -403,10 +923,9 @@ export class omdDisplay {
         contentRect.setAttribute('stroke-width', '0.8');
         group.appendChild(contentRect);
 
-        // Draw viewBox rect (orange)
         const curView = this.svg.svgObject.getAttribute('viewBox') || '';
         if (curView) {
-            const parts = curView.split(/\s+/).map(Number).filter(n => !isNaN(n));
+            const parts = curView.split(/\s+/).map(Number).filter(n => !Number.isNaN(n));
             if (parts.length === 4) {
                 const [vx, vy, vw, vh] = parts;
                 const vbRect = document.createElementNS(ns, 'rect');
@@ -422,25 +941,21 @@ export class omdDisplay {
             }
         }
 
-        // Per-node boxes: green if inside parent, red if overflowing parent bounds
-    const overflowing = [];
-    for (const item of nodes) {
-            const r = document.createElementNS(ns, 'rect');
-            r.setAttribute('x', String(item.minX));
-            r.setAttribute('y', String(item.minY));
-            r.setAttribute('width', String(Math.max(0, item.maxX - item.minX)));
-            r.setAttribute('height', String(Math.max(0, item.maxY - item.minY)));
-            r.setAttribute('fill', 'none');
-            r.setAttribute('stroke-width', '0.6');
+        const overflowing = [];
+        for (const item of nodes) {
+            const rect = document.createElementNS(ns, 'rect');
+            rect.setAttribute('x', String(item.minX));
+            rect.setAttribute('y', String(item.minY));
+            rect.setAttribute('width', String(Math.max(0, item.maxX - item.minX)));
+            rect.setAttribute('height', String(Math.max(0, item.maxY - item.minY)));
+            rect.setAttribute('fill', 'none');
+            rect.setAttribute('stroke-width', '0.6');
 
             let stroke = 'green';
             if (item.parent) {
-                const pMinX = (item.parent.xpos || 0) + (item.parent._absX || 0);
-                const pMinY = (item.parent.ypos || 0) + (item.parent._absY || 0);
-                // fallback compute parent's absX/Y from nodes list if available
-                const parentEntry = nodes.find(n => n.node === item.parent);
-                const pminX = parentEntry ? parentEntry.minX : pMinX;
-                const pminY = parentEntry ? parentEntry.minY : pMinY;
+                const parentEntry = nodes.find(nodeEntry => nodeEntry.node === item.parent);
+                const pminX = parentEntry ? parentEntry.minX : (item.parent.xpos || 0);
+                const pminY = parentEntry ? parentEntry.minY : (item.parent.ypos || 0);
                 const pmaxX = parentEntry ? parentEntry.maxX : pminX + (item.parent.width || 0);
                 const pmaxY = parentEntry ? parentEntry.maxY : pminY + (item.parent.height || 0);
 
@@ -450,179 +965,23 @@ export class omdDisplay {
                 }
             }
 
-            r.setAttribute('stroke', stroke);
-            r.setAttribute('opacity', stroke === 'red' ? '0.9' : '0.6');
-            group.appendChild(r);
+            rect.setAttribute('stroke', stroke);
+            rect.setAttribute('opacity', stroke === 'red' ? '0.9' : '0.6');
+            group.appendChild(rect);
         }
 
         if (overflowing.length) {
-            console.warn('omdDisplay: debugExtents found overflowing nodes:', overflowing.map(o => ({ type: o.node?.type, bounds: o.bounds }))); 
+            console.warn(
+                'omdDisplay: debugExtents found overflowing nodes:',
+                overflowing.map(entry => ({ type: entry.node?.type, bounds: entry.bounds }))
+            );
         }
 
         this.svg.svgObject.appendChild(group);
     }
 
     centerNode() {
-        if (!this.node) return;
-        if (!this._centerCallCount) this._centerCallCount = 0;
-        this._centerCallCount++;
-        if (this._centerCallCount > 500) {
-            console.warn('omdDisplay: excessive centerNode calls detected; halting further centering to prevent loop');
-            return;
-        }
-        const containerWidth = this.container.offsetWidth || 0;
-        const containerHeight = this.container.offsetHeight || 0;
-
-        // Early auto-close of step visualizer UI before measuring dimensions to avoid transient height inflation
-        if (this.options.autoCloseStepVisualizer && this.node) {
-            try {
-                if (typeof this.node.forceCloseAll === 'function') {
-                    this.node.forceCloseAll();
-                } else if (typeof this.node.closeAllTextBoxes === 'function') {
-                    this.node.closeAllTextBoxes();
-                } else if (typeof this.node.closeActiveDot === 'function') {
-                    this.node.closeActiveDot();
-                }
-            } catch (e) { /* no-op */ }
-        }
-
-        // Determine actual content size (prefer sequence/current step when available)
-        let contentWidth = this.node.width || 0;
-        let contentHeight = this.node.height || 0;
-        if (this.node.getSequence) {
-            const seq = this.node.getSequence();
-            if (seq) {
-                if (seq.width && seq.height) {
-                    // For step visualizers, use sequenceWidth/Height instead of total dimensions to exclude visualizer elements from autoscale
-                    contentWidth = seq.sequenceWidth || seq.width;
-                    contentHeight = seq.sequenceHeight || seq.height;
-                }
-                if (seq.getCurrentStep) {
-                    const step = seq.getCurrentStep();
-                    if (step && step.width && step.height) {
-                        // For step visualizers, prioritize sequenceWidth/Height for dimension calculations
-                        const stepWidth = seq.sequenceWidth || step.width;
-                        const stepHeight = seq.sequenceHeight || step.height;
-                        contentWidth = Math.max(contentWidth, stepWidth);
-                        contentHeight = Math.max(contentHeight, stepHeight);
-                    }
-                }
-            }
-        }
-
-        // Compute scale to keep within bounds
-        let scale = 1;
-        if (this.options.autoScale && contentWidth > 0 && contentHeight > 0) {
-            // Optionally close any open step visualizer textbox to prevent transient height expansion
-            if (this.options.autoCloseStepVisualizer && this.node) {
-                try {
-                    if (typeof this.node.closeActiveDot === 'function') {
-                        this.node.closeActiveDot();
-                    } else if (typeof this.node.closeAllTextBoxes === 'function') {
-                        this.node.closeAllTextBoxes();
-                    }
-                } catch (e) { /* no-op */ }
-            }
-            // Detect step visualizer directly on node (getSequence returns underlying sequence only)
-            let hasStepVisualizer = false;
-            if (this.node) {
-                const ctorName = this.node.constructor?.name;
-                hasStepVisualizer = (ctorName === 'omdStepVisualizer') || this.node.type === 'omdStepVisualizer' || (typeof omdStepVisualizer !== 'undefined' && this.node instanceof omdStepVisualizer);
-            }
-
-            if (hasStepVisualizer) {
-                // Preserve existing scale if already set on node; otherwise lock to 1.
-                const existingScale = (this.node && typeof this.node.scale === 'number') ? this.node.scale : undefined;
-                scale = (existingScale && existingScale > 0) ? existingScale : 1;
-            } else {
-                const hPad = this.options.edgePadding || 0;
-                const vPadTop = this.options.topMargin || 0;
-                const vPadBottom = this.options.bottomMargin || 0;
-                // Reserve extra space for overlay toolbar if needed
-                let reserveBottom = vPadBottom;
-                if (this.node && typeof this.node.isToolbarOverlay === 'function' && this.node.isToolbarOverlay()) {
-                    const tH = (typeof this.node.getToolbarVisualHeight === 'function') ? this.node.getToolbarVisualHeight() : 0;
-                    reserveBottom += (tH + (this.node.getOverlayPadding ? this.node.getOverlayPadding() : 16));
-                }
-                const availW = Math.max(0, containerWidth - hPad * 2);
-                const availH = Math.max(0, containerHeight - (vPadTop + reserveBottom));
-                const sx = availW > 0 ? (availW / contentWidth) : 1;
-                const sy = availH > 0 ? (availH / contentHeight) : 1;
-                const maxScale = (typeof this.options.maxScale === 'number') ? this.options.maxScale : 1;
-                scale = Math.min(sx, sy, maxScale);
-                if (!isFinite(scale) || scale <= 0) scale = 1;
-            }
-        }
-
-        // Apply scale
-        if (typeof this.node.setScale === 'function') {
-            this.node.setScale(scale);
-        }
-
-        // Compute X so that equals anchor (if present) is centered after scaling
-        let x;
-        if (this.node.type === 'omdEquationSequenceNode' && this.node.alignPointX !== undefined) {
-            const screenCenterX = containerWidth / 2;
-            x = screenCenterX - (this.node.alignPointX * scale);
-        } else {
-            const scaledWidth = contentWidth * scale;
-            x = (containerWidth - scaledWidth) / 2;
-        }
-
-        // Decide whether positioning would move content outside container. If so,
-        // prefer expanding the SVG viewBox instead of moving nodes.
-        const scaledWidthFinal = contentWidth * scale;
-        const scaledHeightFinal = contentHeight * scale;
-        const totalNeededH = scaledHeightFinal + (this.options.topMargin || 0) + (this.options.bottomMargin || 0);
-
-        const willOverflowHoriz = scaledWidthFinal > containerWidth;
-        const willOverflowVert = totalNeededH > containerHeight;
-
-        // Avoid looping if content dimension signature hasn't changed
-        const contentSig = `${contentWidth}x${contentHeight}x${scale}`;
-        if (this._lastCenterSignature === contentSig && !willOverflowHoriz && !willOverflowVert) {
-            // Only update position; skip expensive ensureViewboxFits
-            if (this.node.setPosition) this.node.setPosition(x, this.options.topMargin);
-            return;
-        }
-
-        if (willOverflowHoriz || willOverflowVert) {
-            // Set scale but do NOT reposition node (preserve its absolute positions).
-            if (this.node.setScale) this.node.setScale(scale);
-            // Expand viewBox to contain entire unscaled content so nothing is clipped.
-            this._ensureViewboxFits(contentWidth, contentHeight);
-            // Reposition overlay toolbar in case viewBox/container changed
-            this._repositionOverlayToolbar();
-
-            // If content still exceeds available height in the host, allow vertical scrolling
-            if (willOverflowVert) {
-                this.container.style.overflowY = 'auto';
-                this.container.style.overflowX = 'hidden';
-            } else {
-                this.container.style.overflow = 'hidden';
-            }
-            if (this.options.debugExtents) this._drawDebugOverlays();
-        } else {
-            // Y is top margin; scaled content will grow downward
-            this.node.setPosition(x, this.options.topMargin);
-
-            // Reposition overlay toolbar (if any)
-            this._repositionOverlayToolbar();
-
-            // Ensure viewBox can contain the (unscaled) content to avoid clipping in some hosts
-            this._ensureViewboxFits(contentWidth, contentHeight);
-
-            if (totalNeededH > containerHeight) {
-                // Let the host scroll vertically; keep horizontal overflow hidden to avoid layout shift
-                this.container.style.overflowY = 'auto';
-                this.container.style.overflowX = 'hidden';
-            } else {
-                this.container.style.overflow = 'hidden';
-            }
-            if (this.options.debugExtents) this._drawDebugOverlays();
-        }
-
-        this._lastCenterSignature = contentSig;
+        this._layoutToPosition({ centered: true });
     }
 
     _getMathInstance() {
@@ -694,99 +1053,61 @@ export class omdDisplay {
     }
 
     fitToContent() {
-        if (!this.node) {
-            return;
+        if (!this.node) return;
+
+        this._closeTransientUi();
+        this._restoreContainerOverflow();
+
+        const bounds = this._measureBoundsRelativeToNode();
+        const overlay = this._getOverlayMetrics();
+        const scale = this._getBaseNodeScale();
+        const paddingX = Math.max(10, this.options.edgePadding || 0);
+        const paddingY = 10;
+
+        if (typeof this.node.setScale === 'function') {
+            this.node.setScale(scale);
         }
 
-        // Try to get actual rendered dimensions
-        let actualWidth = 0;
-        let actualHeight = 0;
+        const contentWidth = bounds.width * scale;
+        const contentHeight = bounds.height * scale;
+        const canvasWidth = Math.ceil(Math.max(contentWidth + paddingX * 2, overlay.width + paddingX * 2, 1));
+        const canvasHeight = Math.ceil(Math.max(contentHeight + overlay.totalHeight + paddingY * 2, 1));
+        const x = paddingX - bounds.minX * scale;
+        const y = paddingY - bounds.minY * scale;
 
-        // Get both sequence and current step dimensions
-        let sequenceWidth = 0, sequenceHeight = 0;
-        let stepWidth = 0, stepHeight = 0;
-
-        if (this.node.getSequence) {
-            const sequence = this.node.getSequence();
-            if (sequence && sequence.width && sequence.height) {
-                // For step visualizers, use sequenceWidth/Height instead of total dimensions to exclude visualizer elements from autoscale
-                sequenceWidth = sequence.sequenceWidth || sequence.width;
-                sequenceHeight = sequence.sequenceHeight || sequence.height;
-
-                // Check current step dimensions too
-                if (sequence.getCurrentStep) {
-                    const currentStep = sequence.getCurrentStep();
-                    if (currentStep && currentStep.width && currentStep.height) {
-                        // For step visualizers, prioritize sequenceWidth/Height for dimension calculations
-                        stepWidth = sequence.sequenceWidth || currentStep.width;
-                        stepHeight = sequence.sequenceHeight || currentStep.height;
-                    }
-                }
-
-                // Use the larger of sequence or step dimensions
-                actualWidth = Math.max(sequenceWidth, stepWidth);
-                actualHeight = Math.max(sequenceHeight, stepHeight);
-            }
+        if (typeof this.node.setPosition === 'function') {
+            this.node.setPosition(x, y);
         }
 
-        // Fallback to node dimensions only if sequence/step dimensions aren't available
-        if ((actualWidth === 0 || actualHeight === 0) && this.node.width && this.node.height) {
-            actualWidth = this.node.width;
-            actualHeight = this.node.height;
-        }
+        this._setCanvasSize(canvasWidth, canvasHeight, { resizeContainer: true });
+        this.container.style.overflow = 'hidden';
+        this.container.style.overflowX = 'hidden';
+        this.container.style.overflowY = 'hidden';
 
-        // Fallback dimensions
-        if (actualWidth === 0 || actualHeight === 0) {
-            actualWidth = 200;
-            actualHeight = 60;
-        }
-
-        const padding = 10; // More comfortable padding to match user expectation
-        const newWidth = actualWidth + (padding * 2);
-        const newHeight = actualHeight + (padding * 2);
-
-
-        // Position the content at the minimal padding offset FIRST
-        if (this.node && this.node.setPosition) {
-            this.node.setPosition(padding, padding);
-        }
-
-        // Update SVG dimensions with viewBox starting from 0,0 since we repositioned content
-        this.svg.setViewbox(newWidth, newHeight);
-        this.svg.setWidthAndHeight(newWidth, newHeight);
-
-        // Update container
-        this.container.style.width = `${newWidth}px`;
-        this.container.style.height = `${newHeight}px`;
+        this._repositionOverlayToolbar();
         if (this.options.debugExtents) this._drawDebugOverlays();
         else this._clearDebugOverlays();
     }
 
     /**
-     *  s a mathematical expression or equation
+     * Renders a mathematical expression or equation
      * @param {string|omdNode} expression - Expression string or node
      * @returns {omdNode} The rendered node
      */
     render(expression) {
-        // Clear previous node
         if (this.node) {
-            this.removeChild(this.node);
+            this._removeNodeFromDom(this.node);
         }
 
-        // Create node from expression
         if (typeof expression === 'string') {
             const steps = this._createNodesFromString(expression);
             this.node = this._createStackFromSteps(steps);
         } else if (Array.isArray(expression)) {
-            const steps = expression.flatMap(item => {
-                if (typeof item === 'string') {
-                    return this._createNodesFromString(item);
-                }
-                return item;
-            }).filter(Boolean);
+            const steps = expression
+                .flatMap(item => (typeof item === 'string' ? this._createNodesFromString(item) : item))
+                .filter(Boolean);
             this.node = this._createStackFromSteps(steps);
         } else {
-            // Assume it's already a node
             this.node = expression;
         }
 
@@ -794,67 +1115,12 @@ export class omdDisplay {
             throw new Error('omdDisplay.render() was unable to create a node from the provided expression.');
         }
 
-        // Initialize and render
-        const sequence = this.node.getSequence ? this.node.getSequence() : null;
-        if (sequence) {
-            sequence.setFontSize(this.options.fontSize);
-            // Apply filtering based on filterLevel
-            sequence.updateStepsVisibility(step => (step.stepMark ?? 0) === sequence.getFilterLevel());
-        }
-        // Prefer appending the node's svgObject into our content group so DOM measurements are consistent
-        if (this._contentGroup && this.node && this.node.svgObject) {
-            try { this._contentGroup.appendChild(this.node.svgObject); } catch (e) { this.svg.addChild(this.node); }
-        } else {
-            this.svg.addChild(this.node);
-        }
-
-        // Apply any stored font settings
-        if (this.options.fontFamily) {
-                this.setFont(this.options.fontFamily, this.options.fontWeight || '400');
-        }
-
-        // Only use fitToContent for tight sizing when explicitly requested
-        if (this.options.fitToContent) {
-            this.fitToContent();
-        } else if (this.options.centerContent) {
-            this.centerNode();
-        }
-        // Ensure overlay toolbar is positioned initially
-        this._repositionOverlayToolbar();
-
-    // Also ensure the viewBox is large enough to contain the node (avoid clipping)
-    const cw = (this.node && this.node.width) ? this.node.width : 0;
-    const ch = (this.node && this.node.height) ? this.node.height : 0;
-    this._ensureViewboxFits(cw, ch);
-
-        if (this.options.debugExtents) this._drawDebugOverlays();
-        else this._clearDebugOverlays();
-
-        // Provide a default global refresh function if not present
-        if (typeof window !== 'undefined' && !window.refreshDisplayAndFilters) {
-            window.refreshDisplayAndFilters = () => {
-                try {
-                    const node = this.getCurrentNode();
-                    const sequence = node?.getSequence ? node.getSequence() : null;
-                    if (sequence) {
-                        if (typeof sequence.simplifyAll === 'function') {
-                            sequence.simplifyAll();
-                        }
-                        if (typeof sequence.updateStepsVisibility === 'function') {
-                            sequence.updateStepsVisibility(step => (step.stepMark ?? 0) === 0);
-                        }
-                        if (typeof node.updateLayout === 'function') {
-                                node.updateLayout();
-                        }
-                    }
-                    if (this.options.centerContent) {
-                        this.centerNode();
-                    }
-                } catch (e) {
-                    // no-op
-                }
-            };
-        }
+        this._captureBaseNodeScale(this.node);
+        this._appendNode(this.node);
+        this._prepareNodeForLayout(this.node);
+        this._applyFontStylesToSvg();
+        this._applyLayoutOptions();
+        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
 
         return this.node;
     }
@@ -865,14 +1131,20 @@ export class omdDisplay {
      * @param {object} child - A jsvg node to add
      */
     addChild(child) {
-        if (this._contentGroup && child && child.svgObject) {
-            try { this._contentGroup.appendChild(child.svgObject); } catch (e) { this.svg.addChild(child); }
+        if (!child) return child;
+
+        if (this._contentGroup && child.svgObject) {
+            try {
+                this._contentGroup.appendChild(child.svgObject);
+            } catch (_) {
+                this.svg.addChild(child);
+            }
         } else {
             this.svg.addChild(child);
         }
 
-        if (this.options.centerContent) this.centerNode();
-
+        this._applyLayoutOptions();
+        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
         return child;
     }
 
@@ -881,24 +1153,20 @@ export class omdDisplay {
      * @param {object} child
      */
     removeChild(child) {
-        if (!this.svg) return;
-        try {
-            if (child && child.svgObject) {
-                if (this._contentGroup && this._contentGroup.contains(child.svgObject)) {
-                    this._contentGroup.removeChild(child.svgObject);
-                } else if (this.svg.svgObject && this.svg.svgObject.contains(child.svgObject)) {
-                    this.svg.svgObject.removeChild(child.svgObject);
-                } else if (typeof this.svg.removeChild === 'function') {
-                    this.svg.removeChild(child);
-                }
-            } else if (typeof this.svg.removeChild === 'function') {
-                this.svg.removeChild(child);
-            }
-        } catch (e) {
-            // no-op
+        if (!child) return;
+
+        this._removeNodeFromDom(child);
+        if (this.node === child) {
+            this.node = null;
+            this._cancelDeferredLayout();
+            this._restoreContainerSize();
+            this._restoreContainerOverflow();
+            this._syncViewboxToContainer();
+            this._clearDebugOverlays();
+        } else if (this.node) {
+            this._applyLayoutOptions();
+            if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
         }
-        // If the removed child was the main node, clear reference
-        if (this.node === child) this.node = null;
     }
 
     /**
@@ -906,86 +1174,72 @@ export class omdDisplay {
      * @param {omdNode} newNode - The new node to display
      */
     update(newNode) {
+        if (!newNode) {
+            this.clear();
+            return;
+        }
+
         if (this.node) {
-            if (this._contentGroup && this.node && this.node.svgObject && this._contentGroup.contains(this.node.svgObject)) {
-                this._contentGroup.removeChild(this.node.svgObject);
-            } else if (typeof this.svg.removeChild === 'function') {
-                this.svg.removeChild(this.node);
-            }
+            this._removeNodeFromDom(this.node);
         }
 
         this.node = newNode;
-        this.node.setFontSize(this.options.fontSize);
-        this.node.initialize();
-        if (this._contentGroup && this.node && this.node.svgObject) {
-            try { this._contentGroup.appendChild(this.node.svgObject); } catch (e) { this.svg.addChild(this.node); }
-        } else {
-            this.svg.addChild(this.node);
-        }
-
-        if (this.options.centerContent) {
-            this.centerNode();
-        }
-        // Ensure overlay toolbar is positioned on updates
-        this._repositionOverlayToolbar();
+        this._captureBaseNodeScale(this.node);
+        this._appendNode(this.node);
+        this._prepareNodeForLayout(this.node);
+        this._applyFontStylesToSvg();
+        this._applyLayoutOptions();
+        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
     }
 
-    
     /**
      * Sets the font size
      * @param {number} size - The font size
      */
     setFontSize(size) {
         this.options.fontSize = size;
-        if (this.node) {
-            // Apply font size - handle different node types
-            if (this.node.getSequence && typeof this.node.getSequence === 'function') {
-                // For omdEquationStack, set font size on the sequence
-                this.node.getSequence().setFontSize(size);
-            } else if (this.node.setFontSize && typeof this.node.setFontSize === 'function') {
-                // For regular nodes with setFontSize method
-                this.node.setFontSize(size);
-            }
-            this.node.initialize();
-            if (this.options.centerContent) {
-                this.centerNode();
-            }
-        }
+        if (!this.node) return;
+
+        this._prepareNodeForLayout(this.node);
+        this._applyLayoutOptions();
+        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
     }
 
     /**
      * Sets the font family for all elements in the display
-     * @param {string} fontFamily - CSS font-family string (e.g., '"Shantell Sans", cursive')
+     * @param {string} fontFamily - CSS font-family string
      * @param {string} fontWeight - CSS font-weight (default: '400')
      */
     setFont(fontFamily, fontWeight = '400') {
-        if (this.svg?.svgObject) {
-            const applyFont = (element) => {
-                if (element.style) {
-                    element.style.fontFamily = fontFamily;
-                    element.style.fontWeight = fontWeight;
-                }
-                // Recursively apply to all children
-                Array.from(element.children || []).forEach(applyFont);
-            };
+        this.options.fontFamily = fontFamily;
+        this.options.fontWeight = fontWeight;
 
-            // Apply font to the entire SVG
-            applyFont(this.svg.svgObject);
-
-            // Store font settings for future use
-            this.options.fontFamily = fontFamily;
-            this.options.fontWeight = fontWeight;
+        if (!this.node) {
+            this._applyFontStylesToSvg();
+            return;
         }
+
+        this._prepareNodeForLayout(this.node);
+        this._applyLayoutOptions();
+        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
     }
 
     /**
      * Clears the display
      */
     clear() {
+        this._cancelDeferredLayout();
+
         if (this.node) {
-            this.removeChild(this.node);
+            this._removeNodeFromDom(this.node);
             this.node = null;
         }
+
+        this._removeAllContentChildren();
+        this._restoreContainerSize();
+        this._restoreContainerOverflow();
+        this._syncViewboxToContainer();
+        this._clearDebugOverlays();
     }
 
     /**
@@ -993,6 +1247,9 @@ export class omdDisplay {
      */
     destroy() {
         this.clear();
+        this._unregisterGlobalRefreshHook();
+        this._cancelDeferredLayout();
+
         if (this.resizeObserver) {
             this.resizeObserver.disconnect();
         }
@@ -1006,31 +1263,27 @@ export class omdDisplay {
      * @private
      */
     _repositionOverlayToolbar() {
-        // Use same width calculation as centering to ensure consistency
-        const containerWidth = this.container.offsetWidth || 0;
-        const containerHeight = this.container.offsetHeight || 0;
         const node = this.node;
         if (!node) return;
-        const hasOverlayApi = typeof node.isToolbarOverlay === 'function' && typeof node.positionToolbarOverlay === 'function';
+
+        const hasOverlayApi = typeof node.isToolbarOverlay === 'function'
+            && typeof node.positionToolbarOverlay === 'function';
+
         if (hasOverlayApi && node.isToolbarOverlay()) {
-            const padding = (typeof node.getOverlayPadding === 'function') ? node.getOverlayPadding() : 16;
+            const containerWidth = this.container.offsetWidth || 0;
+            const containerHeight = this.container.offsetHeight || 0;
+            const padding = typeof node.getOverlayPadding === 'function'
+                ? node.getOverlayPadding()
+                : 16;
             node.positionToolbarOverlay(containerWidth, containerHeight, padding);
         }
     }
 
     /**
-     * Public API: returns the currently rendered root node (could be a step visualizer, sequence, or plain node)
+     * Public API: returns the currently rendered root node
      * @returns {object|null}
      */
     getCurrentNode() {
         return this.node;
-    }
-
-    /**
-     * Returns the SVG element for the entire display.
-     * @returns {SVGElement} The SVG element representing the display.
-     */
-    getSVG() {
-        return this.svg.svgObject;
     }
 }
