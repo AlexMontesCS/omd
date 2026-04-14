@@ -24,7 +24,7 @@ async function openAIrequest( topic )
   request += "Return exactly ONE valid JSON object with top-level 'omdType'.\n";
   request += "Output raw JSON only: no markdown, no comments, no backticks, no explanation.\n\n";
 
-  request += "Schema-first rules (highest priority):\n";
+  request += "### Schema-first rules (highest priority):\n";
   request += "1) Use ONLY keys and structures that appear in the provided Schemas.\n";
   request += "2) Include all required fields for the selected omdType.\n";
   request += "3) Do not invent aliases or legacy fields if they are not in schema.\n";
@@ -44,7 +44,7 @@ async function openAIrequest( topic )
   request += "- Avoid optional styling keys unless user asks for styling or they clarify intent.\n\n";
 
   request += "Request: " + topic + "\n";
-  request += "Schemas (STRICT - adhere to these fields only):\n" + jsonSchemas + "\n";
+  request += "### Schemas \n (STRICT - adhere to these fields only):\n" + jsonSchemas + "\n";
   request += "Reference samples (use EXACT property names and structure):\n" + jsonSample + "\n";
 
   console.log( "request: " , request );
