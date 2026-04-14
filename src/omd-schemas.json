@@ -856,7 +856,7 @@
       {
         "name": "backgroundColor",
         "type": "string",
-        "default": "lightGray",
+        "default": "#EEEEEE",
         "optional": true,
         "description": "Pan fill color"
       },
@@ -1848,7 +1848,7 @@
       {
         "name": "backgroundColor",
         "type": "string",
-        "default": "lightGray",
+        "default": "#EEEEEE",
         "optional": true,
         "description": "Background color"
       },
@@ -1991,7 +1991,7 @@
                 {
                   "name": "color",
                   "type": "string",
-                  "default": "lightGray",
+                  "default": "#EEEEEE",
                   "optional": true,
                   "description": "Segment fill color"
                 },
@@ -2238,7 +2238,7 @@
                       {
                         "name": "color",
                         "type": "string",
-                        "default": "lightGray",
+                        "default": "#EEEEEE",
                         "optional": true,
                         "description": "Segment fill color"
                       },
@@ -2484,7 +2484,7 @@
                       {
                         "name": "color",
                         "type": "string",
-                        "default": "lightGray",
+                        "default": "#EEEEEE",
                         "optional": true,
                         "description": "Segment fill color"
                       },
@@ -2777,7 +2777,7 @@
       {
         "name": "xPillColor",
         "type": "string",
-        "default": "lightGray",
+        "default": "#EEEEEE",
         "optional": true,
         "description": "Variable pill color"
       },
@@ -2792,7 +2792,7 @@
             {
               "name": "color",
               "type": "string",
-              "default": "lightGray",
+              "default": "#EEEEEE",
               "optional": true
             }
           ]
@@ -2809,7 +2809,7 @@
             {
               "name": "backgroundColor",
               "type": "string",
-              "default": "lightGray",
+              "default": "#EEEEEE",
               "optional": true
             },
             {
@@ -2972,7 +2972,7 @@
       {
         "name": "backgroundColor",
         "type": "string",
-        "default": "lightGray",
+        "default": "#EEEEEE",
         "optional": true,
         "description": "Table background color"
       },
