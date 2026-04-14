@@ -51,7 +51,7 @@ async function openAIrequest( topic )
 
   const completion = await client.chat.completions.create({
     messages: [{ role: "system", content: request  } ],
-    model: "gpt-4o",
+    model: "gpt-5.4-nano",
     temperature: 0.3
   });
 
