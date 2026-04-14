@@ -2,7 +2,14 @@
 
 //import OpenAI from "openai";
 const {OpenAI} = require('openai');
-const openai = new OpenAI();
+let openai = null;
+
+function getOpenAIClient() {
+  if (!openai) {
+    openai = new OpenAI();
+  }
+  return openai;
+}
 
 
 async function openAIrequest( topic )
@@ -10,84 +17,31 @@ async function openAIrequest( topic )
 
   console.log("==== openAIrequest ====");
 
+  const client = getOpenAIClient();
 
-  let request = "Return ONE valid JSON object with top-level 'omdType'. NO markdown or extra text just pure valid json. DO NOT WRAP IN BACKTICKS LIKE MARKDOWN\n";
-  request += "CRITICAL: Always include ALL required fields for each type. Missing fields cause rendering failures.\n";
-  request += "IMPORTANT: Choose the RIGHT visualization type based on keywords:\n";
-  request += "- 'number line' with 'dot' or 'point' = numberLine (1D)\n";
-  request += "- 'graph' or 'coordinate' or 'y=' = coordinatePlane (2D)\n";
-  request += "- 'balance' or 'hanger' = balanceHanger\n";
-  request += "- 'table' or 'data' = table\n";
-  request += "- 'equation stack' = equationStack\n\n";
-  request += "coordinatePlane: Use for 2D graphs with x-y axes and functions. MUST include xMin, xMax, yMin, yMax, tickInterval, and graphEquations array.\n";
-  request += "\tUse when: 'graph', 'coordinate plane', 'function graph', 'plot', '2D', 'x-y plane', equations like 'y='\n";
-  request += "\tdefaults: if no domain specified, xMin=-10,xMax=10,yMin=-10,yMax=10, tickInterval=1.\n";
-  request += "\tgraphEquations array MUST contain objects with: equation, color, strokeWidth\n";
-  request += "\tcolor should be 'black' if no color specified, strokeWidth should be 2 if not specified\n";
-  request += "\tExample: {\"omdType\":\"coordinatePlane\",\"xMin\":-10,\"xMax\":10,\"yMin\":-10,\"yMax\":10,\"tickInterval\":1,\"graphEquations\":[{\"equation\":\"2*x + 3\",\"color\":\"black\",\"strokeWidth\":2}]}\n\n";
-  request += "balanceHanger: MUST include leftValues and rightValues arrays.\n";
-  request += "\tExample: {\"omdType\":\"balanceHanger\",\"leftValues\":[3,\"x\",5],\"rightValues\":[2,\"y\",8]}\n\n";
-  request += "table: MUST include headers and data arrays OR equation for function tables.\n";
-  request += "\tExample: {\"omdType\":\"table\",\"headers\":[\"x\",\"y\"],\"equation\":\"y = 2x + 3\"}\n\n";
-  request += "tapeDiagram: MUST include values array and labelSet array.\n";
-  request += "\tExample: {\"omdType\":\"tapeDiagram\",\"values\":[2,3],\"labelSet\":[{\"omdType\":\"omdTapeLabel\",\"startIndex\":0,\"endIndex\":2,\"label\":\"5\",\"showBelow\":true}]}\n\n";
-  request += "numberLine: Use for 1D number lines with dots/points. MUST include min, max.\n";
-  request += "\tUse when: 'number line', '1D line', 'dots on a line', 'points on number line'\n";
-  request += "\tRequired: min (number), max (number)\n";
-  request += "\tOptional: title (string - displayed on left), increment (number - step between ticks, default 1), showLeftArrow (boolean), showRightArrow (boolean), units (string - appended to labels), hideDefaultNumbers (boolean - only show specialNumbers), specialNumbers (array of numbers to always show), totalWidth (number - pixels, default 320), dotValues (array - dots to display)\n";
-  request += "\tExample: {\"omdType\":\"numberLine\",\"min\":0,\"max\":10,\"dotValues\":[3,7],\"title\":\"Distance\",\"units\":\" cm\"}\n";
-  request += "\tExample with special numbers: {\"omdType\":\"numberLine\",\"min\":0,\"max\":100,\"increment\":10,\"specialNumbers\":[25,75],\"units\":\" m\",\"showRightArrow\":true}\n\n";
-  request += "doubleNumberLine: Use for two aligned number lines. MUST include topNumberLine and bottomNumberLine objects. THESE NUMBERLINES SHOULD HAVE ARROWS ON THE RIGHT AND NOT ON THE LEFT UNLESS OTHERWISE SPECIFIED\n";
-  request += "\tUse when: 'double number line', 'two number lines', 'ratio number line', 'aligned number lines'\n";
-  request += "\tRequired: topNumberLine (numberLine object), bottomNumberLine (numberLine object)\n";
-  request += "\tOptional: spacing (number - vertical spacing in pixels, default and prefer 30)\n";
-  request += "\tExample: {\"omdType\":\"doubleNumberLine\",\"topNumberLine\":{\"showRightArrow\": true, \"min\":0,\"max\":10,\"title\":\"Hours\"},\"bottomNumberLine\":{\"showRightArrow\": true, \"min\":0,\"max\":50,\"title\":\"Miles\",\"increment\":10},\"spacing\":30}\n\n";
-  request += "tapeDiagram: Use for part-whole or proportional relationships. MUST include values array.\n";
-  request += "\tUse when: 'tape diagram', 'bar model', 'strip diagram', 'part-whole model'\n";
-  request += "\tRequired: values (array - can be strings or objects with {value, showLabel, color})\n";
-  request += "\tOptional: title (string), totalWidth (number - default 300), labelSet (array of {startIndex, endIndex, label, showBelow})\n";
-  request += "\tIMPORTANT: Do NOT specify colors unless the user explicitly requests them. Use simple string values by default.\n";
-  request += "\tIMPORTANT: Do NOT include labelSet unless the user specifically asks for labels spanning multiple segments.\n";
-  request += "\tExample simple (preferred): {\"omdType\":\"tapeDiagram\",\"title\":\"Distance\",\"values\":[\"2x\",\"3\",\"x\"]}\n";
-  request += "\tExample with labels (only if requested): {\"omdType\":\"tapeDiagram\",\"values\":[\"2\",\"3\"],\"labelSet\":[{\"startIndex\":0,\"endIndex\":2,\"label\":\"Total: 5\",\"showBelow\":true}]}\n";
-  request += "\tExample with colors (only if requested): {\"omdType\":\"tapeDiagram\",\"values\":[{\"value\":\"5\",\"color\":\"#93c5fd\"},{\"value\":\"3\",\"color\":\"#fca5a5\"}],\"totalWidth\":320}\n\n";
-  request += "doubleTapeDiagram: Use for comparing two tape diagrams. MUST include topTapeDiagram and bottomTapeDiagram. \n";
-  request += "\tUse when: 'double tape diagram', 'comparing tape diagrams', 'two bar models'\n";
-  request += "\tRequired: topTapeDiagram (tapeDiagram object), bottomTapeDiagram (tapeDiagram object)\n";
-  request += "\tOptional: spacing (number - vertical gap in pixels, default and prefer 30)\n";
-  request += "\tExample: {\"omdType\":\"doubleTapeDiagram\",\"topTapeDiagram\":{\"title\":\"Pencils\",\"values\":[{\"value\":\"5\",\"color\":\"#93c5fd\"},{\"value\":\"5\",\"color\":\"#93c5fd\"}]},\"bottomTapeDiagram\":{\"title\":\"Cost\",\"values\":[{\"value\":\"$2\",\"color\":\"#fca5a5\"},{\"value\":\"$2\",\"color\":\"#fca5a5\"}]},\"spacing\":30}\n\n";
-  request += "numberTile: MUST include value.\n";
-  request += "\tExample: {\"omdType\":\"numberTile\",\"value\":8}\n\n";
-  request += "ratioChart: MUST include numerator and denominator.\n";
-  request += "\tExample: {\"omdType\":\"ratioChart\",\"numerator\":3,\"denominator\":5}\n\n";
-  request += "tileEquation: MUST include left and right arrays OR equation string.\n";
-  request += "\tExample: {\"omdType\":\"tileEquation\",\"equation\":\"2x + 3 = 11\"}\n\n";
-  request += "spinner: MUST include divisions and arrowPosition.\n";
-  request += "\tExample: {\"omdType\":\"spinner\",\"divisions\":8,\"arrowPosition\":3}\n\n";
-  request += "equationStack: MUST include equations array.\n";
-  request += "\tExample: {\"omdType\":\"equationStack\",\"equations\":[\"2x + 3 = 5\",\"x = 1\"]}\n\n";
-  request += "equation: ALWAYS prefer the string form so math.js can parse functions/rationals/roots.\n";
-  request += "\tExample: {\"omdType\":\"equation\",\"equation\":\"sin(x)+2=3\"}\n";
-  request += "\tExample: {\"omdType\":\"equation\",\"equation\":\"(x^2 + 3x - 4)/(2x) = 5\"}\n";
-  request += "\tDo NOT expand to leftExpression/rightExpression unless the user explicitly provides that shape.\n\n";
-  request += "expression: MUST include termsAndOpers array with alternating terms and operators.\n";
-  request += "\tExample: {\"omdType\":\"expression\",\"termsAndOpers\":[{\"omdType\":\"term\",\"coefficient\":2,\"variable\":\"x\"},{\"omdType\":\"operator\",\"symbol\":\"+\"},{\"omdType\":\"number\",\"value\":3}]}\n";
-  request += "\tComplex example: {\"omdType\":\"expression\",\"termsAndOpers\":[{\"omdType\":\"term\",\"coefficient\":3,\"variable\":\"x\"},{\"omdType\":\"operator\",\"symbol\":\"+\"},{\"omdType\":\"number\",\"value\":2},{\"omdType\":\"operator\",\"symbol\":\"*\"},{\"omdType\":\"term\",\"coefficient\":1,\"variable\":\"y\"}]}\n\n";
-  request += "term: MUST include coefficient, variable, exponent.\n";
-  request += "\tExample: {\"omdType\":\"term\",\"coefficient\":2,\"variable\":\"x\",\"exponent\":1}\n\n";
-  request += "number: MUST include value.\n";
-  request += "\tExample: {\"omdType\":\"number\",\"value\":5}\n\n";
-  request += "variable: MUST include name.\n";
-  request += "\tExample: {\"omdType\":\"variable\",\"name\":\"x\"}\n\n";
-  request += "rightTriangle: MUST include side1 and side2.\n";
-  request += "\tExample: {\"omdType\":\"rightTriangle\",\"side1\":3,\"side2\":4}\n\n";
-  request += "rectangle: MUST include width and height.\n";
-  request += "\tExample: {\"omdType\":\"rectangle\",\"width\":4,\"height\":6}\n\n";
-  request += "circle: MUST include radius.\n";
-  request += "\tExample: {\"omdType\":\"circle\",\"radius\":5}\n\n";
-  request += "scatter: output dotValues only (each dot [x,y] or [x,y,color]); no graphEquations/lineSegments\n";
-  request += "curves: choose an exact-fit function and verify by testing x-values; function must be continuous on its domain.\n";
-  request += "IMPORTANT: For equations, always send the string form; we will parse with math.js for proper formatting of functions, rationals, and roots.\n\n";
+
+  let request = "You are an OMD JSON generator.\n";
+  request += "Return exactly ONE valid JSON object with top-level 'omdType'.\n";
+  request += "Output raw JSON only: no markdown, no comments, no backticks, no explanation.\n\n";
+
+  request += "Schema-first rules (highest priority):\n";
+  request += "1) Use ONLY keys and structures that appear in the provided Schemas.\n";
+  request += "2) Include all required fields for the selected omdType.\n";
+  request += "3) Do not invent aliases or legacy fields if they are not in schema.\n";
+  request += "4) If the request is ambiguous, choose the simplest valid object that best matches intent.\n\n";
+
+  request += "Routing hints for ambiguous language:\n";
+  request += "- number line / dots on a line -> numberLine\n";
+  request += "- graph / coordinate / y= -> coordinatePlane\n";
+  request += "- equation stack -> equationStack\n";
+  request += "- equation work / worked steps / solve step by step -> equationWork\n";
+  request += "- balance / hanger -> balanceHanger\n";
+  request += "- table / data table -> table\n\n";
+
+  request += "Formatting preferences:\n";
+  request += "- For omdType='equation', prefer string equation form when schema supports it.\n";
+  request += "- For equationWork rows, use row kinds from schema; use operation rows for aligned operations.\n";
+  request += "- Avoid optional styling keys unless user asks for styling or they clarify intent.\n\n";
 
   request += "Request: " + topic + "\n";
   request += "Schemas (STRICT - adhere to these fields only):\n" + jsonSchemas + "\n";
@@ -95,7 +49,7 @@ async function openAIrequest( topic )
 
   console.log( "request: " , request );
 
-  const completion = await openai.chat.completions.create({
+  const completion = await client.chat.completions.create({
     messages: [{ role: "system", content: request  } ],
     model: "gpt-4o",
     temperature: 0.3
@@ -129,6 +83,33 @@ const handler = async (event) => {
 
   try {
     const topic = event.queryStringParameters.topic || 'make a number line';
+
+    // Deterministic handling for direct equationWork requests.
+    if (/\bomdequationwork\b|\bequation\s*work\b|\bworked\s*steps\b/i.test(topic)) {
+      const inlineEquationMatch = topic.match(/([^=\n]+)=([^\n]+)/);
+      const leftSide = inlineEquationMatch
+        ? inlineEquationMatch[1].replace(/^.*?:\s*/, '').trim()
+        : '';
+      const rightSide = inlineEquationMatch ? inlineEquationMatch[2].trim() : '';
+      const equationWorkResult = {
+        omdType: 'equationWork',
+        rows: inlineEquationMatch
+          ? [
+              {
+                kind: 'equation',
+                left: leftSide,
+                right: rightSide
+              }
+            ]
+          : []
+      };
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify(equationWorkResult)
+      };
+    }
 
     // If the request looks like an equation, return the string form directly (math.js parsing happens client-side)
     const equationMatch = topic.match(/(?:omdEquation|equation)\s+(?:of|for|=)?\s*([^.\\n]+)=([^.\\n]+)/i);
