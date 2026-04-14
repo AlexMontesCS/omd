@@ -42,7 +42,7 @@
     "openai": "6.6.0" 
   },
   "scripts": {
-    "dev": "npm run build:docs && vite",
+    "dev": "vite",
     "build": "vite build && vite build --config vite.browser.config.js && node copy-static.js && node build-docs.js && node build-npm-docs.js",
     "build:browser": "vite build --config vite.browser.config.js",
     "build:docs": "node build-docs.js",

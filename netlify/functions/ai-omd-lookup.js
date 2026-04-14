@@ -144,19 +144,51 @@ const fs = require('fs');
 const path = require('path');
 console.log(__dirname);
 
-let jsonSample = '';
-try {
-  const p = path.resolve(process.cwd(), 'src/omd-json-samples.js');
-  jsonSample = fs.readFileSync(p, 'utf8');
-} catch (e) {
-  jsonSample = '';
+function readFirstExistingFile(candidatePaths) {
+  for (const candidate of candidatePaths) {
+    try {
+      if (fs.existsSync(candidate)) {
+        const contents = fs.readFileSync(candidate, 'utf8');
+        if (contents && contents.trim()) {
+          return { path: candidate, contents };
+        }
+      }
+    } catch (_error) {
+      // Continue trying next path.
+    }
+  }
+
+  return { path: null, contents: '' };
 }
 
-// Load schemas to guide the model to strict formats
-let jsonSchemas = '';
-try {
-  const sp = path.resolve(process.cwd(), 'src/omd-schemas.json');
-  jsonSchemas = fs.readFileSync(sp, 'utf8');
-} catch (e) {
-  jsonSchemas = '';
+function loadPromptAssets() {
+  const schemaCandidates = [
+    path.resolve(process.cwd(), 'src/omd-schemas.json'),
+    path.resolve(__dirname, '../../src/omd-schemas.json'),
+    path.resolve(__dirname, '../src/omd-schemas.json')
+  ];
+
+  const sampleCandidates = [
+    path.resolve(process.cwd(), 'src/omd-json-samples.js'),
+    path.resolve(__dirname, '../../src/omd-json-samples.js'),
+    path.resolve(__dirname, '../src/omd-json-samples.js')
+  ];
+
+  const schemaResult = readFirstExistingFile(schemaCandidates);
+  const sampleResult = readFirstExistingFile(sampleCandidates);
+
+  console.log('ai-omd-lookup prompt assets', {
+    cwd: process.cwd(),
+    schemaPath: schemaResult.path,
+    schemaBytes: schemaResult.contents.length,
+    samplePath: sampleResult.path,
+    sampleBytes: sampleResult.contents.length
+  });
+
+  return {
+    jsonSchemas: schemaResult.contents,
+    jsonSample: sampleResult.contents
+  };
 }
+
+const { jsonSchemas, jsonSample } = loadPromptAssets();

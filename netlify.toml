@@ -5,6 +5,9 @@
 [functions]
   directory = "netlify/functions"
 
+[functions."ai-omd-lookup"]
+  included_files = ["src/omd-schemas.json", "src/omd-json-samples.js"]
+
 [dev]
   command = "npm run dev"
   targetPort = 5173      # The Vite dev server
