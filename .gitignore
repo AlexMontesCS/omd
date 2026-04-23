@@ -14,3 +14,8 @@ ai-tutor/
 ai-tutor-omd/
 mathly_prod/
 mathly_prod
+node_modules
+distribute-lesson/
+drawing-to-omd/
+src/omdTermAnnotationLayer.js
+z_demo_labels/

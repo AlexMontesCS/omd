@@ -1,6 +1,6 @@
 {
   "name": "@teachinglab/omd",
-  "version": "0.8.87",
+  "version": "0.8.89",
   "description": "omd",
   "main": "./index.js",
   "module": "./index.js",
@@ -37,7 +37,7 @@
   "author": "jaredschiffman",
   "license": "MIT",
   "dependencies": {
-    "@teachinglab/jsvg": "^0.1.7",
+    "@teachinglab/jsvg": "^0.1.8",
     "mathjs": "^15.2.0",
     "openai": "6.6.0" 
   },

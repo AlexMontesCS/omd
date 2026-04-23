@@ -344,6 +344,12 @@ export const omdSampleCatalog = {
             omdType: 'rectangle',
             width: 6,
             height: 4,
+            sideLabels: {
+                top: '6',
+                right: '4',
+                bottom: '',
+                left: ''
+            },
             showLabels: true,
             unitScale: 24
         },
@@ -351,7 +357,38 @@ export const omdSampleCatalog = {
             omdType: 'rectangle',
             width: 12,
             height: 3,
+            sideLabels: {
+                top: 'x',
+                right: '3',
+                bottom: 'x',
+                left: '3'
+            },
+            insideLabel: 'A = 36',
             unitScale: 18
+        }
+    ],
+
+    rectangularPrism: [
+        {
+            omdType: 'rectangularPrism',
+            length: 5,
+            width: 3,
+            height: 4,
+            showLabels: true,
+            unitScale: 20
+        },
+        {
+            omdType: 'rectangularPrism',
+            length: 5,
+            width: 3,
+            height: 4,
+            sideLabels: {
+                length: '5',
+                width: '3',
+                height: 'h'
+            },
+            insideLabel: 'V = 60',
+            unitScale: 20
         }
     ],
 

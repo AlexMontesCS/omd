@@ -114,14 +114,14 @@ export class omdConstantNode extends omdLeafNode {
     highlight(color) {
         super.highlight(color);
         if (this.textElement) {
-            this.textElement.setFillColor(omdColor.white);
+            this.setHighlightForeground(this.textElement, omdColor.white);
         }
     }
 
     clearProvenanceHighlights() {
         super.clearProvenanceHighlights();
         if (this.textElement) {
-            this.textElement.setFillColor(omdColor.text);
+            this.restoreHighlightForeground(this.textElement, omdColor.text);
         }
     }
     

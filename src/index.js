@@ -43,6 +43,7 @@ export {
     omdRightTriangle,
     omdIsoscelesTriangle, 
     omdRectangle,
+    omdRectangularPrism,
     omdEllipse,
     omdCircle,
     omdRegularPolygon,

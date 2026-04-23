@@ -5,6 +5,32 @@ import { jsvgGroup, jsvgPath, jsvgLine, jsvgTextLine, jsvgEllipse } from "@teach
 const DEFAULT_SHAPE_PADDING = 10;
 const LABEL_SHAPE_PADDING = 38;
 
+function normalizeLabelValue(value) {
+    if (value === null || typeof value === "undefined") return "";
+    return String(value);
+}
+
+function labelHasText(value) {
+    return normalizeLabelValue(value).trim().length > 0;
+}
+
+function createShapeTextLabel(text, x, y, options = {}) {
+    const label = new jsvgTextLine();
+    label.setAlignment(options.align || "center");
+    label.setFontFamily("Albert Sans");
+    label.setFontColor(options.color || "black");
+    label.setFontSize(typeof options.fontSize === "number" ? options.fontSize : 12);
+    label.setPosition(x, y);
+    label.svgObject.setAttribute("dominant-baseline", "middle");
+
+    if (typeof options.rotation === "number" && Number.isFinite(options.rotation)) {
+        label.setRotation(options.rotation);
+    }
+
+    label.setText(normalizeLabelValue(text));
+    return label;
+}
+
 function getShapePadding(showLabels) {
     return showLabels ? LABEL_SHAPE_PADDING : DEFAULT_SHAPE_PADDING;
 }
@@ -224,6 +250,14 @@ export class omdRectangle extends jsvgGroup
         this.unitScale = 10;
 
         this.showLabels = false;
+        this.labelMode = "edge";
+        this.sideLabels = null;
+        this.centerLabel = "";
+        this.outsideTopLabel = "";
+        this.outsideBottomLabel = "";
+        this.outsideLeftLabel = "";
+        this.outsideRightLabel = "";
+        this.labelFontSize = 12;
 
         this.shapePath = new jsvgPath();
         this.shapePath.setStrokeColor( "black" );
@@ -251,39 +285,494 @@ export class omdRectangle extends jsvgGroup
         if ( typeof data.showLabels != "undefined" )
             this.showLabels = data.showLabels;
 
+        if ( typeof data.labelMode != "undefined" )
+            this.labelMode = data.labelMode;
+
+        if ( typeof data.sideLabels != "undefined" && data.sideLabels && typeof data.sideLabels === "object" )
+            this.sideLabels = { ...data.sideLabels };
+
+        if ( typeof data.centerLabel != "undefined" )
+            this.centerLabel = data.centerLabel;
+
+        if ( typeof data.outsideTopLabel != "undefined" )
+            this.outsideTopLabel = data.outsideTopLabel;
+
+        if ( typeof data.outsideBottomLabel != "undefined" )
+            this.outsideBottomLabel = data.outsideBottomLabel;
+
+        if ( typeof data.outsideLeftLabel != "undefined" )
+            this.outsideLeftLabel = data.outsideLeftLabel;
+
+        if ( typeof data.outsideRightLabel != "undefined" )
+            this.outsideRightLabel = data.outsideRightLabel;
+
+        if ( typeof data.labelFontSize === "number" )
+            this.labelFontSize = data.labelFontSize;
+
         this.updateLayout();
+    }
+
+    getResolvedSideLabels()
+    {
+        const defaults = { top: "", right: "", bottom: "", left: "" };
+        if ( this.showLabels )
+        {
+            defaults.top = normalizeLabelValue(this.rectWidth);
+            defaults.right = normalizeLabelValue(this.rectHeight);
+            if ( this.labelMode === "side" )
+            {
+                defaults.bottom = normalizeLabelValue(this.rectWidth);
+                defaults.left = normalizeLabelValue(this.rectHeight);
+            }
+        }
+
+        if ( !this.sideLabels || typeof this.sideLabels !== "object" )
+            return defaults;
+
+        const sideLabels = this.sideLabels;
+        return {
+            top: typeof sideLabels.top !== "undefined" ? normalizeLabelValue(sideLabels.top) : defaults.top,
+            right: typeof sideLabels.right !== "undefined" ? normalizeLabelValue(sideLabels.right) : defaults.right,
+            bottom: typeof sideLabels.bottom !== "undefined" ? normalizeLabelValue(sideLabels.bottom) : defaults.bottom,
+            left: typeof sideLabels.left !== "undefined" ? normalizeLabelValue(sideLabels.left) : defaults.left,
+        };
+    }
+
+    hasAnyLabels()
+    {
+        const sideLabels = this.getResolvedSideLabels();
+        return (
+            labelHasText(sideLabels.top) ||
+            labelHasText(sideLabels.right) ||
+            labelHasText(sideLabels.bottom) ||
+            labelHasText(sideLabels.left) ||
+            labelHasText(this.centerLabel) ||
+            labelHasText(this.outsideTopLabel) ||
+            labelHasText(this.outsideBottomLabel) ||
+            labelHasText(this.outsideLeftLabel) ||
+            labelHasText(this.outsideRightLabel)
+        );
     }
 
     updateLayout()
     {
         // Center the rectangle within the viewBox
-        const padding = getShapePadding(this.showLabels);
+        const sideLabels = this.getResolvedSideLabels();
+        const hasAnyLabels = this.hasAnyLabels();
+        const hasOutsideLabels = (
+            labelHasText(this.outsideTopLabel) ||
+            labelHasText(this.outsideBottomLabel) ||
+            labelHasText(this.outsideLeftLabel) ||
+            labelHasText(this.outsideRightLabel)
+        );
+
+        let padding = DEFAULT_SHAPE_PADDING;
+        if ( hasAnyLabels ) padding = Math.max(padding, LABEL_SHAPE_PADDING);
+        if ( hasOutsideLabels ) padding = Math.max(padding, 52);
+
         const offsetX = padding;
         const offsetY = this.unitScale * this.rectHeight + padding;
+        const widthPx = this.unitScale * this.rectWidth;
+        const heightPx = this.unitScale * this.rectHeight;
 
         this.shapePath.clearPoints();
         this.shapePath.addPoint(offsetX, offsetY);
-        this.shapePath.addPoint(offsetX + this.unitScale * this.rectWidth, offsetY);
-        this.shapePath.addPoint(offsetX + this.unitScale * this.rectWidth, offsetY - this.unitScale * this.rectHeight);
-        this.shapePath.addPoint(offsetX, offsetY - this.unitScale * this.rectHeight);
+        this.shapePath.addPoint(offsetX + widthPx, offsetY);
+        this.shapePath.addPoint(offsetX + widthPx, offsetY - heightPx);
+        this.shapePath.addPoint(offsetX, offsetY - heightPx);
         this.shapePath.addPoint(offsetX, offsetY);
 
         this.shapePath.updatePath();
 
-        if ( this.showLabels )
+        this.labelsHolder.removeAllChildren();
+        if ( hasAnyLabels )
         {
-            this.labelsHolder.removeAllChildren();
-            var L = new omdShapeLabelSet();
-            var A = this.rectWidth.toString();
-            var B = this.rectHeight.toString();
-            L.initializeWithShapePath( this.shapePath, [A,B,"",""] );
-            this.labelsHolder.addChild( L );
+            const leftX = offsetX;
+            const rightX = offsetX + widthPx;
+            const topY = offsetY - heightPx;
+            const bottomY = offsetY;
+            const centerX = offsetX + widthPx * 0.5;
+            const centerY = offsetY - heightPx * 0.5;
+            const edgeOffset = 16;
+            const outerOffset = 36;
+
+            if ( labelHasText(sideLabels.top) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    sideLabels.top,
+                    centerX,
+                    topY - edgeOffset,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+
+            if ( labelHasText(sideLabels.right) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    sideLabels.right,
+                    rightX + edgeOffset,
+                    centerY,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+
+            if ( labelHasText(sideLabels.bottom) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    sideLabels.bottom,
+                    centerX,
+                    bottomY + edgeOffset,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+
+            if ( labelHasText(sideLabels.left) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    sideLabels.left,
+                    leftX - edgeOffset,
+                    centerY,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+
+            if ( labelHasText(this.centerLabel) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    this.centerLabel,
+                    centerX,
+                    centerY,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+
+            if ( labelHasText(this.outsideTopLabel) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    this.outsideTopLabel,
+                    centerX,
+                    topY - outerOffset,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+
+            if ( labelHasText(this.outsideBottomLabel) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    this.outsideBottomLabel,
+                    centerX,
+                    bottomY + outerOffset,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+
+            if ( labelHasText(this.outsideLeftLabel) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    this.outsideLeftLabel,
+                    leftX - outerOffset,
+                    centerY,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+
+            if ( labelHasText(this.outsideRightLabel) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    this.outsideRightLabel,
+                    rightX + outerOffset,
+                    centerY,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
         }
 
         // Set viewBox
-        this.width = this.unitScale * this.rectWidth + padding * 2;
-        this.height = this.unitScale * this.rectHeight + padding * 2;
+        this.width = widthPx + padding * 2;
+        this.height = heightPx + padding * 2;
         this.svgObject.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
+    }
+}
+
+export class omdRectangularPrism extends jsvgGroup
+{
+    constructor()
+    {
+        super();
+
+        this.type = "omdRectangularPrism";
+
+        this.prismLength = 5;
+        this.prismWidth = 3;
+        this.prismHeight = 4;
+        this.unitScale = 18;
+
+        this.showLabels = false;
+        this.sideLabels = null;
+        this.lengthLabel = "";
+        this.widthLabel = "";
+        this.heightLabel = "";
+        this.insideLabel = "";
+        this.outsideTopLabel = "";
+        this.labelFontSize = 12;
+
+        this.topFacePath = new jsvgPath();
+        this.topFacePath.setStrokeColor("black");
+        this.topFacePath.setStrokeWidth(2);
+        this.topFacePath.setFillColor("#e6edf7");
+        this.addChild(this.topFacePath);
+
+        this.sideFacePath = new jsvgPath();
+        this.sideFacePath.setStrokeColor("black");
+        this.sideFacePath.setStrokeWidth(2);
+        this.sideFacePath.setFillColor("#d5dfef");
+        this.addChild(this.sideFacePath);
+
+        this.frontFacePath = new jsvgPath();
+        this.frontFacePath.setStrokeColor("black");
+        this.frontFacePath.setStrokeWidth(2);
+        this.frontFacePath.setFillColor(omdColor.lightGray);
+        this.addChild(this.frontFacePath);
+
+        this.hiddenEdgeHolder = new jsvgGroup();
+        this.addChild(this.hiddenEdgeHolder);
+
+        this.labelsHolder = new jsvgGroup();
+        this.addChild(this.labelsHolder);
+
+        this.updateLayout();
+    }
+
+    loadFromJSON(data)
+    {
+        if ( typeof data.length != "undefined" )
+            this.prismLength = data.length;
+
+        if ( typeof data.width != "undefined" )
+            this.prismWidth = data.width;
+
+        if ( typeof data.height != "undefined" )
+            this.prismHeight = data.height;
+
+        if ( typeof data.unitScale != "undefined" )
+            this.unitScale = data.unitScale;
+
+        if ( typeof data.showLabels != "undefined" )
+            this.showLabels = data.showLabels;
+
+        if ( typeof data.sideLabels != "undefined" && data.sideLabels && typeof data.sideLabels === "object" )
+            this.sideLabels = { ...data.sideLabels };
+
+        if ( typeof data.lengthLabel != "undefined" )
+            this.lengthLabel = data.lengthLabel;
+
+        if ( typeof data.widthLabel != "undefined" )
+            this.widthLabel = data.widthLabel;
+
+        if ( typeof data.heightLabel != "undefined" )
+            this.heightLabel = data.heightLabel;
+
+        if ( typeof data.insideLabel != "undefined" )
+            this.insideLabel = data.insideLabel;
+
+        if ( typeof data.outsideTopLabel != "undefined" )
+            this.outsideTopLabel = data.outsideTopLabel;
+
+        if ( typeof data.labelFontSize === "number" )
+            this.labelFontSize = data.labelFontSize;
+
+        this.updateLayout();
+    }
+
+    getResolvedPrismLabels()
+    {
+        const defaults = {
+            length: "",
+            width: "",
+            height: "",
+        };
+
+        if ( this.showLabels )
+        {
+            defaults.length = normalizeLabelValue(this.prismLength);
+            defaults.width = normalizeLabelValue(this.prismWidth);
+            defaults.height = normalizeLabelValue(this.prismHeight);
+        }
+
+        const sideLabels = (this.sideLabels && typeof this.sideLabels === "object") ? this.sideLabels : {};
+
+        const resolved = {
+            length: defaults.length,
+            width: defaults.width,
+            height: defaults.height,
+        };
+
+        if ( typeof sideLabels.length != "undefined" ) resolved.length = normalizeLabelValue(sideLabels.length);
+        if ( typeof sideLabels.l != "undefined" ) resolved.length = normalizeLabelValue(sideLabels.l);
+
+        if ( typeof sideLabels.width != "undefined" ) resolved.width = normalizeLabelValue(sideLabels.width);
+        if ( typeof sideLabels.w != "undefined" ) resolved.width = normalizeLabelValue(sideLabels.w);
+
+        if ( typeof sideLabels.height != "undefined" ) resolved.height = normalizeLabelValue(sideLabels.height);
+        if ( typeof sideLabels.h != "undefined" ) resolved.height = normalizeLabelValue(sideLabels.h);
+
+        if ( labelHasText(this.lengthLabel) ) resolved.length = normalizeLabelValue(this.lengthLabel);
+        if ( labelHasText(this.widthLabel) ) resolved.width = normalizeLabelValue(this.widthLabel);
+        if ( labelHasText(this.heightLabel) ) resolved.height = normalizeLabelValue(this.heightLabel);
+
+        return resolved;
+    }
+
+    updateLayout()
+    {
+        const prismLength = Math.max(1, Number(this.prismLength) || 1);
+        const prismWidth = Math.max(1, Number(this.prismWidth) || 1);
+        const prismHeight = Math.max(1, Number(this.prismHeight) || 1);
+        const scale = Math.max(1, Number(this.unitScale) || 1);
+
+        const lengthPx = prismLength * scale;
+        const widthPx = prismWidth * scale;
+        const heightPx = prismHeight * scale;
+
+        const depthDx = widthPx * 0.8;
+        const depthDy = widthPx * 0.5;
+
+        const labels = this.getResolvedPrismLabels();
+        const hasLabels = (
+            labelHasText(labels.length) ||
+            labelHasText(labels.width) ||
+            labelHasText(labels.height) ||
+            labelHasText(this.insideLabel) ||
+            labelHasText(this.outsideTopLabel)
+        );
+
+        let padding = 16;
+        if ( hasLabels ) padding = Math.max(padding, 36);
+        if ( labelHasText(this.outsideTopLabel) ) padding = Math.max(padding, 56);
+
+        const frontTL = { x: padding, y: padding + depthDy };
+        const frontTR = { x: frontTL.x + lengthPx, y: frontTL.y };
+        const frontBR = { x: frontTR.x, y: frontTL.y + heightPx };
+        const frontBL = { x: frontTL.x, y: frontTL.y + heightPx };
+
+        const backTL = { x: frontTL.x + depthDx, y: frontTL.y - depthDy };
+        const backTR = { x: frontTR.x + depthDx, y: frontTR.y - depthDy };
+        const backBR = { x: frontBR.x + depthDx, y: frontBR.y - depthDy };
+        const backBL = { x: frontBL.x + depthDx, y: frontBL.y - depthDy };
+
+        this.topFacePath.clearPoints();
+        this.topFacePath.addPoint(frontTL.x, frontTL.y);
+        this.topFacePath.addPoint(frontTR.x, frontTR.y);
+        this.topFacePath.addPoint(backTR.x, backTR.y);
+        this.topFacePath.addPoint(backTL.x, backTL.y);
+        this.topFacePath.addPoint(frontTL.x, frontTL.y);
+        this.topFacePath.updatePath();
+
+        this.sideFacePath.clearPoints();
+        this.sideFacePath.addPoint(frontTR.x, frontTR.y);
+        this.sideFacePath.addPoint(frontBR.x, frontBR.y);
+        this.sideFacePath.addPoint(backBR.x, backBR.y);
+        this.sideFacePath.addPoint(backTR.x, backTR.y);
+        this.sideFacePath.addPoint(frontTR.x, frontTR.y);
+        this.sideFacePath.updatePath();
+
+        this.frontFacePath.clearPoints();
+        this.frontFacePath.addPoint(frontTL.x, frontTL.y);
+        this.frontFacePath.addPoint(frontTR.x, frontTR.y);
+        this.frontFacePath.addPoint(frontBR.x, frontBR.y);
+        this.frontFacePath.addPoint(frontBL.x, frontBL.y);
+        this.frontFacePath.addPoint(frontTL.x, frontTL.y);
+        this.frontFacePath.updatePath();
+
+        this.hiddenEdgeHolder.removeAllChildren();
+        const hiddenEdges = [
+            [backTL, backBL],
+            [backBL, backBR],
+            [frontBL, backBL],
+        ];
+
+        for ( const [p0, p1] of hiddenEdges )
+        {
+            const hiddenLine = new jsvgLine();
+            hiddenLine.setStrokeColor("black");
+            hiddenLine.setStrokeWidth(1.5);
+            hiddenLine.setEndpoints(p0.x, p0.y, p1.x, p1.y);
+            hiddenLine.svgObject.setAttribute("stroke-dasharray", "5 4");
+            this.hiddenEdgeHolder.addChild(hiddenLine);
+        }
+
+        this.labelsHolder.removeAllChildren();
+        if ( hasLabels )
+        {
+            const lengthLabelX = (frontBL.x + frontBR.x) * 0.5;
+            const lengthLabelY = frontBL.y + 18;
+
+            const heightLabelX = frontBR.x + 18;
+            const heightLabelY = (frontTR.y + frontBR.y) * 0.5;
+
+            const widthAngleRadians = Math.atan2(backTR.y - frontTR.y, backTR.x - frontTR.x);
+            const widthNormalX = -Math.sin(widthAngleRadians);
+            const widthNormalY = Math.cos(widthAngleRadians);
+            const widthLabelX = (frontTR.x + backTR.x) * 0.5 + widthNormalX * 12;
+            const widthLabelY = (frontTR.y + backTR.y) * 0.5 + widthNormalY * 12;
+
+            if ( labelHasText(labels.length) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    labels.length,
+                    lengthLabelX,
+                    lengthLabelY,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+
+            if ( labelHasText(labels.height) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    labels.height,
+                    heightLabelX,
+                    heightLabelY,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+
+            if ( labelHasText(labels.width) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    labels.width,
+                    widthLabelX,
+                    widthLabelY,
+                    {
+                        fontSize: this.labelFontSize,
+                        rotation: widthAngleRadians * 180.0 / Math.PI,
+                    }
+                ));
+            }
+
+            if ( labelHasText(this.insideLabel) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    this.insideLabel,
+                    (frontTL.x + frontBR.x) * 0.5,
+                    (frontTL.y + frontBR.y) * 0.5,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+
+            if ( labelHasText(this.outsideTopLabel) )
+            {
+                this.labelsHolder.addChild(createShapeTextLabel(
+                    this.outsideTopLabel,
+                    (backTL.x + backTR.x) * 0.5,
+                    backTL.y - 20,
+                    { fontSize: this.labelFontSize }
+                ));
+            }
+        }
+
+        this.width = Math.max(frontBR.x, backBR.x) + padding;
+        this.height = Math.max(frontBR.y, backBR.y) + padding;
+        this.svgObject.setAttribute("viewBox", `0 0 ${this.width} ${this.height}`);
     }
 }
 

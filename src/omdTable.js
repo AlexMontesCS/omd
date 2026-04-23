@@ -196,23 +196,9 @@ export class omdTable extends jsvgGroup
             console.warn("math.js evaluation failed, falling back to simple parser:", e);
         }
 
-        // Fallback to simple regex-based parsing
-        expression = expression
-            .replace(/(\d)([a-z])/gi, '$1*$2')
-            .replace(/([a-z])(\d)/gi, '$1*$2')
-            .replace(/\^/g, '**');
-
-        try {
-            const evaluateExpression = new Function('x', `return ${expression};`);
-
-            for (let x = this.xMin; x <= this.xMax; x += this.stepSize) {
-                let y = evaluateExpression(x);
-                y = Math.round(y * 100) / 100;
-                this.data.push([x, y]);
-            }
-        } catch (e) {
-            console.error("Error generating table data from equation:", e);
-        }
+        // CSP-safe behavior: do not fall back to dynamic code execution.
+        // Without math.js compilation support available, leave table data empty.
+        console.error("Unable to evaluate equation without math.js compile support under CSP-safe mode.");
     }
 
     updateLayout()

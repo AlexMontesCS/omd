@@ -39,6 +39,7 @@ import {
     omdRightTriangle,
     omdIsoscelesTriangle,
     omdRectangle,
+    omdRectangularPrism,
     omdEllipse,
     omdCircle,
     omdRegularPolygon
@@ -75,6 +76,7 @@ const OMD_TYPE_MAP = {
     'rightTriangle': omdRightTriangle,
     'isoscelesTriangle': omdIsoscelesTriangle,
     'rectangle': omdRectangle,
+    'rectangularPrism': omdRectangularPrism,
     'ellipse': omdEllipse,
     'circle': omdCircle,
     'regularPolygon': omdRegularPolygon,

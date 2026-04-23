@@ -95,15 +95,17 @@ export class omdOperatorNode extends omdLeafNode {
 
     highlight(color) {
         super.highlight(color);
-        if (this.opLabel) {
-            this.opLabel.setFillColor(omdColor.white);
+        const label = this.textElement || this.opLabel;
+        if (label) {
+            this.setHighlightForeground(label, omdColor.white);
         }
     }
 
     clearProvenanceHighlights() {
         super.clearProvenanceHighlights();
-        if (this.opLabel) {
-            this.opLabel.setFillColor(omdColor.text);
+        const label = this.textElement || this.opLabel;
+        if (label) {
+            this.restoreHighlightForeground(label, omdColor.text);
         }
     }
 }

@@ -81,6 +81,7 @@ export { omdNumberLine } from '../src/omdNumberLine.js';
 export { omdDoubleNumberLine } from '../src/omdDoubleNumberLine.js';
 export { omdNumberTile } from '../src/omdNumberTile.js';
 export { omdEquation } from '../src/omdEquation.js';
+export { omdDistributionWork } from '../src/omdDistributionWork.js';
 export { omdExpression } from '../src/omdExpression.js';
 export { omdTerm } from '../src/omdTerm.js';
 export { omdNumber } from '../src/omdNumber.js';

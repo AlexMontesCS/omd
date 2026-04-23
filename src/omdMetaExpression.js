@@ -67,6 +67,52 @@ export class omdMetaExpression extends jsvgGroup
         return this._backgroundStyle?.backgroundColor ?? omdColor.lightGray;
     }
 
+    _setForegroundColor(target, color) {
+        if (!target || !color) return;
+
+        if (typeof target.setFillColor === 'function') {
+            target.setFillColor(color);
+            return;
+        }
+
+        const svg = target.svgObject || target;
+        if (!svg || typeof svg.setAttribute !== 'function') return;
+        svg.setAttribute('fill', color);
+        if (svg.style) svg.style.fill = color;
+    }
+
+    _readForegroundColor(target) {
+        if (!target) return null;
+
+        const svg = target.svgObject || target;
+        if (!svg || typeof svg.getAttribute !== 'function') return null;
+
+        const styleFill = svg.style?.fill;
+        if (styleFill && styleFill !== 'none') return styleFill;
+
+        const attrFill = svg.getAttribute('fill');
+        if (attrFill && attrFill !== 'none') return attrFill;
+
+        return null;
+    }
+
+    setHighlightForeground(target, highlightColor = omdColor.white) {
+        if (!target) return;
+
+        // Capture current style each time before highlight is applied so restores
+        // reflect the latest caller-provided visual color.
+        target._omdOriginalForegroundColor = this._readForegroundColor(target);
+        this._setForegroundColor(target, highlightColor);
+    }
+
+    restoreHighlightForeground(target, fallbackColor = omdColor.text) {
+        if (!target) return;
+
+        const original = target._omdOriginalForegroundColor;
+        const nextColor = original || fallbackColor;
+        this._setForegroundColor(target, nextColor);
+    }
+
     // ===== PROVENANCE HIGHLIGHTING =====
 
     highlightProvenance(event, color = omdColor.hiliteColor, minStepNumber = -Infinity) {

@@ -5,25 +5,17 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: false,
+    sourcemap: false,
     minify: false,
     lib: {
-      entry: resolve(__dirname, 'browser/index.js'),
-      name: 'OMD',
-      formats: ['es', 'umd'],
-      fileName: (format) => (format === 'es' ? 'omd.browser.js' : 'omd.global.js'),
+      entry: resolve(__dirname, 'index.js'),
+      formats: ['es'],
+      fileName: () => 'omd.browser.js'
     },
     rollupOptions: {
       output: {
-        exports: 'named',
-      },
-    },
-  },
-  esbuild: {
-    keepNames: true,
-  },
-  resolve: {
-    alias: {
-      '@teachinglab/jsvg': resolve(__dirname, 'jsvg/jsvgComponents.js'),
-    },
-  },
+        inlineDynamicImports: true
+      }
+    }
+  }
 });

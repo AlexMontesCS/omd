@@ -1805,6 +1805,56 @@
                   "optional": true
                 }
               ]
+            },
+            {
+              "type": "object",
+              "fields": [
+                {
+                  "name": "omdType",
+                  "type": "string",
+                  "default": "rectangularPrism",
+                  "optional": false,
+                  "enum": [
+                    "rectangularPrism"
+                  ]
+                },
+                {
+                  "name": "length",
+                  "type": "number",
+                  "default": 5,
+                  "optional": false
+                },
+                {
+                  "name": "width",
+                  "type": "number",
+                  "default": 3,
+                  "optional": false
+                },
+                {
+                  "name": "height",
+                  "type": "number",
+                  "default": 4,
+                  "optional": false
+                },
+                {
+                  "name": "unitScale",
+                  "type": "number",
+                  "default": 18,
+                  "optional": true
+                },
+                {
+                  "name": "showLabels",
+                  "type": "boolean",
+                  "default": false,
+                  "optional": true
+                },
+                {
+                  "name": "insideLabel",
+                  "type": "string",
+                  "default": "",
+                  "optional": true
+                }
+              ]
             }
           ]
         }
@@ -3222,6 +3272,223 @@
         "default": false,
         "optional": true,
         "description": "Show dimension labels"
+      },
+      {
+        "name": "labelMode",
+        "type": "string",
+        "default": "edge",
+        "optional": true,
+        "description": "Rectangle label mode: 'edge' (top/right) or 'side' (all sides)",
+        "enum": [
+          "edge",
+          "side"
+        ]
+      },
+      {
+        "name": "sideLabels",
+        "type": "object",
+        "default": null,
+        "optional": true,
+        "description": "Optional side labels override",
+        "schema": {
+          "fields": [
+            {
+              "name": "top",
+              "type": "string",
+              "default": "",
+              "optional": true
+            },
+            {
+              "name": "right",
+              "type": "string",
+              "default": "",
+              "optional": true
+            },
+            {
+              "name": "bottom",
+              "type": "string",
+              "default": "",
+              "optional": true
+            },
+            {
+              "name": "left",
+              "type": "string",
+              "default": "",
+              "optional": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "centerLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Optional label shown at rectangle center"
+      },
+      {
+        "name": "outsideTopLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Optional label shown above rectangle"
+      },
+      {
+        "name": "outsideBottomLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Optional label shown below rectangle"
+      },
+      {
+        "name": "outsideLeftLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Optional label shown left of rectangle"
+      },
+      {
+        "name": "outsideRightLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Optional label shown right of rectangle"
+      },
+      {
+        "name": "labelFontSize",
+        "type": "number",
+        "default": 12,
+        "optional": true,
+        "description": "Rectangle label font size"
+      }
+    ]
+  },
+  "rectangularPrism": {
+    "notes": "Use length, width, and height for prism dimensions.",
+    "fields": [
+      {
+        "name": "length",
+        "type": "number",
+        "default": 5,
+        "optional": false,
+        "description": "Prism length in units"
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "default": 3,
+        "optional": false,
+        "description": "Prism width in units"
+      },
+      {
+        "name": "height",
+        "type": "number",
+        "default": 4,
+        "optional": false,
+        "description": "Prism height in units"
+      },
+      {
+        "name": "unitScale",
+        "type": "number",
+        "default": 18,
+        "optional": true,
+        "description": "Pixels per unit"
+      },
+      {
+        "name": "showLabels",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Show dimension labels"
+      },
+      {
+        "name": "sideLabels",
+        "type": "object",
+        "default": null,
+        "optional": true,
+        "description": "Optional labels for prism dimensions",
+        "schema": {
+          "fields": [
+            {
+              "name": "length",
+              "type": "string",
+              "default": "",
+              "optional": true
+            },
+            {
+              "name": "width",
+              "type": "string",
+              "default": "",
+              "optional": true
+            },
+            {
+              "name": "height",
+              "type": "string",
+              "default": "",
+              "optional": true
+            },
+            {
+              "name": "l",
+              "type": "string",
+              "default": "",
+              "optional": true
+            },
+            {
+              "name": "w",
+              "type": "string",
+              "default": "",
+              "optional": true
+            },
+            {
+              "name": "h",
+              "type": "string",
+              "default": "",
+              "optional": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "insideLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Optional label shown inside the front face"
+      },
+      {
+        "name": "outsideTopLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Optional label shown above top face"
+      },
+      {
+        "name": "lengthLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Direct length label override"
+      },
+      {
+        "name": "widthLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Direct width label override"
+      },
+      {
+        "name": "heightLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Direct height label override"
+      },
+      {
+        "name": "labelFontSize",
+        "type": "number",
+        "default": 12,
+        "optional": true,
+        "description": "Prism label font size"
       }
     ]
   },

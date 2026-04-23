@@ -8,6 +8,8 @@ export class jsvgObject
     {
         this.name = "";
         this.xpos = 0;
+        this._internalTransformOffsetX = 0;
+        this._internalTransformOffsetY = 0;
         this.scale = 1.0;
         this.rotation = 0.0;
         this.ypos = 0;
@@ -51,13 +53,27 @@ export class jsvgObject
         // Ensure xpos and ypos are valid numbers
         const x = isNaN(this.xpos) ? 0 : this.xpos;
         const y = isNaN(this.ypos) ? 0 : this.ypos;
+        const offsetX = isNaN(this._internalTransformOffsetX) ? 0 : this._internalTransformOffsetX;
+        const offsetY = isNaN(this._internalTransformOffsetY) ? 0 : this._internalTransformOffsetY;
         
-        var transformParams = " translate(" + x.toString() + "," + y.toString() + ") "
+        var transformParams = " translate(" + (x + offsetX).toString() + "," + (y + offsetY).toString() + ") "
         if ( this.scale != 1.0 )
             transformParams += " scale(" + this.scale.toString()  + ")";
         if ( this.rotation != 0.0 )
             transformParams += " rotate(" + this.rotation + ")";
         this.svgObject.setAttribute("transform", transformParams );
+    }
+
+    setInternalTransformOffset( x = 0, y = 0 )
+    {
+        const nextX = isNaN(x) ? 0 : x;
+        const nextY = isNaN(y) ? 0 : y;
+        if ( this._internalTransformOffsetX === nextX && this._internalTransformOffsetY === nextY )
+            return;
+
+        this._internalTransformOffsetX = nextX;
+        this._internalTransformOffsetY = nextY;
+        this.updateTransform();
     }
 
     setWidth( w )
@@ -759,6 +775,48 @@ function getPlainTranslateMirrorText( value )
     return walk( container );
 }
 
+function getTranslateMirrorViewportFitOffsetX( element, alignment = "left" )
+{
+    if ( !element || typeof element.getBoundingClientRect !== "function" ) return 0;
+
+    const ownerSvg = element.ownerSVGElement;
+    if ( !ownerSvg || typeof ownerSvg.getBoundingClientRect !== "function" ) return 0;
+
+    const elementRect = element.getBoundingClientRect();
+    const svgRect = ownerSvg.getBoundingClientRect();
+    if ( !svgRect.width || !elementRect.width ) return 0;
+
+    const overflowLeftPx = Math.max( 0, svgRect.left - elementRect.left );
+    const overflowRightPx = Math.max( 0, elementRect.right - svgRect.right );
+    if ( overflowLeftPx === 0 && overflowRightPx === 0 ) return 0;
+
+    let deltaPx = 0;
+    if ( elementRect.width <= svgRect.width )
+    {
+        if ( overflowLeftPx > 0 )
+            deltaPx = overflowLeftPx;
+        else if ( overflowRightPx > 0 )
+            deltaPx = -overflowRightPx;
+    }
+    else
+    {
+        const normalizedAlignment = (alignment || "left").toLowerCase();
+        if ( normalizedAlignment === "right" || normalizedAlignment === "end" )
+            deltaPx = -overflowRightPx;
+        else if ( normalizedAlignment === "center" || normalizedAlignment === "middle" )
+            deltaPx = (overflowLeftPx - overflowRightPx) / 2;
+        else
+            deltaPx = overflowLeftPx;
+    }
+
+    if ( deltaPx === 0 ) return 0;
+
+    const viewBox = ownerSvg.viewBox && ownerSvg.viewBox.baseVal;
+    if ( !viewBox || !viewBox.width ) return 0;
+
+    return deltaPx * (viewBox.width / svgRect.width);
+}
+
 export class jsvgTextLine extends jsvgObject
 {
     constructor( options = {} )
@@ -771,6 +829,7 @@ export class jsvgTextLine extends jsvgObject
         this._translateMirrorObserver = null;
         this._translateMirrorSourceText = "";
         this._translatedText = null;
+        this._translateMirrorFitScheduled = false;
 
         const svgNS = "http://www.w3.org/2000/svg";
         this.svgObject = document.createElementNS(svgNS, "text");
@@ -826,6 +885,7 @@ export class jsvgTextLine extends jsvgObject
             {
                 this._translatedText = null;
                 this.svgObject.textContent = this.text;
+                this.setInternalTransformOffset( 0, 0 );
             }
             return;
         }
@@ -833,20 +893,67 @@ export class jsvgTextLine extends jsvgObject
         if ( translated === this._translatedText ) return;
         this._translatedText = translated;
         this.svgObject.textContent = translated;
+        this._scheduleTranslateMirrorViewboxFit();
+    }
+
+    _scheduleTranslateMirrorViewboxFit()
+    {
+        if ( !this._translateMirrorEnabled ) return;
+        if ( this._translateMirrorFitScheduled ) return;
+
+        this._translateMirrorFitScheduled = true;
+        const runFit = () => {
+            this._translateMirrorFitScheduled = false;
+            this._updateTranslateMirrorViewboxFit();
+        };
+
+        if ( typeof requestAnimationFrame === "function" )
+            requestAnimationFrame( runFit );
+        else
+            runFit();
+    }
+
+    _updateTranslateMirrorViewboxFit()
+    {
+        if ( this._translatedText === null )
+        {
+            this.setInternalTransformOffset( 0, 0 );
+            return;
+        }
+
+        const textAnchor = this.svgObject.getAttribute("text-anchor") || "start";
+        const fitAlignment = textAnchor === "middle" ? "center" : (textAnchor === "end" ? "right" : "left");
+        const fitOffsetX = getTranslateMirrorViewportFitOffsetX( this.svgObject, fitAlignment );
+        this.setInternalTransformOffset( fitOffsetX, 0 );
     }
 
     setText( text )
     {
         this.text = text ?? "";
         this._translatedText = null;
+        this.setInternalTransformOffset( 0, 0 );
         this.svgObject.textContent = this.text;
         this._syncTranslateMirror();
     }
+
+    setPosition( x, y )
+    {
+        super.setPosition( x, y );
+        this._scheduleTranslateMirrorViewboxFit();
+    }
     getText() { return this.text; }
 
-    setFontSize( S ) { this.svgObject.style.fontSize = S.toString() + 'px'; }
+    setFontSize( S )
+    {
+        this.svgObject.style.fontSize = S.toString() + 'px';
+        this._scheduleTranslateMirrorViewboxFit();
+    }
 
-    setFontFamily( F ) { this.svgObject.style.fontFamily = F; }
+    setFontFamily( F )
+    {
+        this.svgObject.style.fontFamily = F;
+        this._scheduleTranslateMirrorViewboxFit();
+    }
 
     setFontColor( C ) { this.svgObject.style.fill = C; }
 
@@ -854,6 +961,7 @@ export class jsvgTextLine extends jsvgObject
     {
         // left, middle or right
         this.svgObject.setAttribute("text-anchor", A );  // fill color of the rectangle
+        this._scheduleTranslateMirrorViewboxFit();
     }
 
     setAlignment( A ) 
@@ -867,8 +975,10 @@ export class jsvgTextLine extends jsvgObject
             this.setTextAnchor( 'end' );
     }   
 
-    setFontWeight( W ) { 
-        this.svgObject.style.fontWeight = W.toString(); 
+    setFontWeight( W )
+    {
+        this.svgObject.style.fontWeight = W.toString();
+        this._scheduleTranslateMirrorViewboxFit();
     }
 }
 
@@ -888,6 +998,7 @@ export class jsvgTextBox extends jsvgGroup
         this._translateMirrorObserver = null;
         this._translateMirrorSourceText = "";
         this._translatedText = null;
+        this._translateMirrorFitScheduled = false;
         this._textAlign = "left";
         this._verticalCenter = false;
         this._lineHeight = null;
@@ -975,6 +1086,8 @@ export class jsvgTextBox extends jsvgGroup
         {
             this._renderSvgText( visibleText );
         }
+
+        this._scheduleTranslateMirrorViewboxFit();
     }
 
     _handleTranslateMirrorMutation()
@@ -988,6 +1101,7 @@ export class jsvgTextBox extends jsvgGroup
             {
                 this._translatedText = null;
                 this._applyVisibleText();
+                this.setInternalTransformOffset( 0, 0 );
             }
             return;
         }
@@ -995,6 +1109,45 @@ export class jsvgTextBox extends jsvgGroup
         if ( translated === this._translatedText ) return;
         this._translatedText = translated;
         this._applyVisibleText();
+    }
+
+    _scheduleTranslateMirrorViewboxFit()
+    {
+        if ( !this._translateMirrorEnabled ) return;
+        if ( this._translateMirrorFitScheduled ) return;
+
+        this._translateMirrorFitScheduled = true;
+        const runFit = () => {
+            this._translateMirrorFitScheduled = false;
+            this._updateTranslateMirrorViewboxFit();
+        };
+
+        if ( typeof requestAnimationFrame === "function" )
+            requestAnimationFrame( runFit );
+        else
+            runFit();
+    }
+
+    _updateTranslateMirrorViewboxFit()
+    {
+        if ( this._translatedText === null )
+        {
+            this.setInternalTransformOffset( 0, 0 );
+            return;
+        }
+
+        const fitTarget = this._useForeignObject ? this.foreignObject : this.textElement;
+        if ( !fitTarget )
+        {
+            this.setInternalTransformOffset( 0, 0 );
+            return;
+        }
+
+        const fitAlignment = this._textAlign === "center"
+            ? "center"
+            : ((this._textAlign === "right" || this._textAlign === "end") ? "right" : "left");
+        const fitOffsetX = getTranslateMirrorViewportFitOffsetX( fitTarget, fitAlignment );
+        this.setInternalTransformOffset( fitOffsetX, 0 );
     }
 
     _getLineHeight()
@@ -1127,14 +1280,22 @@ export class jsvgTextBox extends jsvgGroup
     {
         if ( this.textElement )
             this._renderSvgText( this._getVisibleText() );
+        this._scheduleTranslateMirrorViewboxFit();
     }
 
     setText( T )
     {
         this.text = T ?? "";
         this._translatedText = null;
+        this.setInternalTransformOffset( 0, 0 );
         this._applyVisibleText();
         this._syncTranslateMirror();
+    }
+
+    setPosition( x, y )
+    {
+        super.setPosition( x, y );
+        this._scheduleTranslateMirrorViewboxFit();
     }
 
     getText() { return this.text; }
@@ -1159,6 +1320,7 @@ export class jsvgTextBox extends jsvgGroup
             this.div.style.fontFamily = F;
         else if ( this.textElement )
             this.textElement.style.fontFamily = F;
+        this._scheduleTranslateMirrorViewboxFit();
     }
 
     setFontSize( S )
@@ -1171,6 +1333,7 @@ export class jsvgTextBox extends jsvgGroup
             this.textElement.style.fontSize = S.toString() + "px";
             this._updateSvgLayout();
         }
+        this._scheduleTranslateMirrorViewboxFit();
     }
 
     setLineHeight( H )
@@ -1180,6 +1343,7 @@ export class jsvgTextBox extends jsvgGroup
             this.div.style.lineHeight = H + 'px';
         else
             this._updateSvgLayout();
+        this._scheduleTranslateMirrorViewboxFit();
     }
 
     setFontWeight( W )
@@ -1189,6 +1353,7 @@ export class jsvgTextBox extends jsvgGroup
             this.div.style.fontWeight = W;
         else if ( this.textElement )
             this.textElement.style.fontWeight = W;
+        this._scheduleTranslateMirrorViewboxFit();
     }
 
     setFontColor( C )
@@ -1207,6 +1372,7 @@ export class jsvgTextBox extends jsvgGroup
             this.div.style.textAlign = A;
         else
             this._updateSvgLayout();
+        this._scheduleTranslateMirrorViewboxFit();
     }
     
     setVerticalCentering()

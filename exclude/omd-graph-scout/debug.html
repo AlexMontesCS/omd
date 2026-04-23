@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OMD Schema Debug Renderer</title>
+  <script src="/Users/alexmontes/Documents/omd/dist/omd.global.js"></script> 
+  <!-- https://unpkg.com/@teachinglab/omd -->
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --panel: #ffffff;
+      --ink: #0f172a;
+      --muted: #475569;
+      --line: #dbe4f2;
+      --ok: #065f46;
+      --ok-bg: #ecfdf5;
+      --err: #991b1b;
+      --err-bg: #fef2f2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Avenir Next", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 10%, #ffffff 0%, #f3f6fb 35%, #dbeafe 100%);
+    }
+
+    .shell {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    .header {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+    }
+
+    .header p {
+      margin-top: 8px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .grid {
+      margin-top: 18px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .card h2 {
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .meta {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stage {
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #ffffff;
+      min-height: 180px;
+      height: 180px;
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    .status {
+      margin-top: 10px;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      line-height: 1.4;
+      border: 1px solid transparent;
+    }
+
+    .status.ok {
+      color: var(--ok);
+      background: var(--ok-bg);
+      border-color: #bbf7d0;
+    }
+
+    .status.error {
+      color: var(--err);
+      background: var(--err-bg);
+      border-color: #fecaca;
+      white-space: pre-wrap;
+    }
+
+    details {
+      margin-top: 10px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 13px;
+      user-select: none;
+    }
+
+    pre {
+      margin: 8px 0 0;
+      max-height: 180px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.45;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    @media (max-width: 760px) {
+      .shell {
+        padding: 14px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+    <section class="header">
+      <h1>OMD Schema Debug Renderer</h1>
+      <p>
+        This page tries to render one sample for every OMD type listed in your schema.
+        Each card shows render status and the exact JSON payload used.
+      </p>
+    </section>
+
+    <section id="grid" class="grid"></section>
+  </div>
+
+  <script>
+    const { createFromJSON, omdDisplay } = window.OMD;
+
+    const samples = [
+      {
+        name: "equation",
+        minHeight: 160,
+        data: {
+          omdType: "equation",
+          equation: "3x + 5 = 20",
+          fontSize: 28,
+        },
+      },
+      {
+        name: "equationStack",
+        minHeight: 200,
+        data: {
+          omdType: "equationStack",
+          equations: ["3x + 5 = 20", "3x = 15", "x = 5"],
+          alignmentMode: "equals",
+          fontSize: 24,
+        },
+      },
+      {
+        name: "expression",
+        minHeight: 160,
+        data: {
+          omdType: "expression",
+          expression: "5(2 + x) - 3",
+          fontSize: 28,
+        },
+      },
+      {
+        name: "balanceHanger",
+        minHeight: 220,
+        displayOptions: {
+          fitToContent: true,
+          centerContent: true,
+        },
+        data: {
+          omdType: "balanceHanger",
+          leftValues: ["x", "x", 3],
+          rightValues: [9],
+          tilt: "none",
+          showBackground: true,
+        },
+      },
+      {
+        name: "numberLine",
+        minHeight: 180,
+    
+        data: {
+          omdType: "numberLine",
+          min: -5,
+          max: 5,
+          increment: 1,
+          dotValues: [-2, 0, 4],
+          title: "Sample Number Line",
+          showLeftArrow: true,
+          showRightArrow: true,
+          totalWidth: 200,
+        },
+      },
+      {
+        name: "doubleNumberLine",
+        minHeight: 230,
+        data: {
+          omdType: "doubleNumberLine",
+          topNumberLine: {
+            min: 0,
+            max: 10,
+            increment: 1,
+            dotValues: [2, 5, 8],
+            label: "cups",
+            totalWidth: 200,
+          },
+          bottomNumberLine: {
+            min: 0,
+            max: 40,
+            increment: 4,
+            dotValues: [8, 20, 32],
+            label: "ounces",
+            totalWidth: 200,
+          },
+          spacing: 28,
+        },
+      },
+      {
+        name: "coordinatePlane",
+        minHeight: 260,
+        data: {
+          omdType: "coordinatePlane",
+          xLabel: "Sample Graph",
+          xMin: -5,
+          xMax: 5,
+          yMin: -5,
+          yMax: 5,
+          tickInterval: 1,
+          showTickLabels: true,
+          graphEquations: [
+            { equation: "y = 2x - 1", color: "#0f766e", strokeWidth: 3 },
+          ],
+          dotValues: [[0, -1, "#f97316"], [2, 3, "#f97316"]],
+        },
+      },
+      {
+        name: "tapeDiagram",
+        minHeight: 220,
+        data: {
+          omdType: "tapeDiagram",
+          title: "Tape Diagram",
+          totalWidth: 150,
+          values: [
+            { value: "x", color: "#e0f2fe", strokeColor: "#bae6fd" },
+            { value: "x", color: "#e0f2fe", strokeColor: "#bae6fd" },
+            { value: "6", color: "#fef3c7", strokeColor: "#fde68a" },
+          ],
+          labelSet: [
+            { startIndex: 0, endIndex: 3, label: "total 18" },
+          ],
+        },
+      },
+      {
+        name: "doubleTapeDiagram",
+        minHeight: 260,
+        data: {
+          omdType: "doubleTapeDiagram",
+          topTapeDiagram: {
+            title: "Apples",
+            totalWidth: 200,
+            values: ["2", "2", "2", "2"],
+            labelSet: [{ startIndex: 0, endIndex: 4, label: "8" }],
+          },
+          bottomTapeDiagram: {
+            title: "Bananas",
+            totalWidth: 200,
+            values: ["4", "4"],
+            labelSet: [{ startIndex: 0, endIndex: 2, label: "8" }],
+          },
+          spacing: 24,
+        },
+      },
+      {
+        name: "tileEquation",
+        minHeight: 220,
+        data: {
+          omdType: "tileEquation",
+          equation: "x + 3 = 7",
+          tileSize: 30,
+          tileGap: 6,
+          equalGap: 26,
+        },
+      },
+      {
+        name: "table",
+        minHeight: 240,
+        data: {
+          omdType: "table",
+          equation: "y = 2x + 1",
+          headers: ["x", "y"],
+          xMin: -2,
+          xMax: 2,
+          stepSize: 1,
+          title: "Function Table",
+        },
+      },
+      {
+        name: "ratioChart",
+        minHeight: 220,
+        data: {
+          omdType: "ratioChart",
+          valueA: 3,
+          valueB: 2,
+          renderType: "pie",
+          size: "medium",
+        },
+      },
+      {
+        name: "rightTriangle",
+        minHeight: 220,
+        data: {
+          omdType: "rightTriangle",
+          horizontalLeg: 4,
+          verticalLeg: 3,
+          unitScale: 24,
+          showLabels: true,
+        },
+      },
+      {
+        name: "isoscelesTriangle",
+        minHeight: 220,
+        data: {
+          omdType: "isoscelesTriangle",
+          base: 6,
+          height: 4,
+          unitScale: 24,
+          showLabels: true,
+        },
+      },
+      {
+        name: "rectangle",
+        minHeight: 220,
+        data: {
+          omdType: "rectangle",
+          width: 6,
+          height: 4,
+          unitScale: 22,
+          showLabels: true,
+        },
+      },
+      {
+        name: "ellipse",
+        minHeight: 220,
+        data: {
+          omdType: "ellipse",
+          width: 7,
+          height: 4,
+          unitScale: 20,
+          showLabels: true,
+        },
+      },
+      {
+        name: "circle",
+        minHeight: 220,
+        data: {
+          omdType: "circle",
+          radius: 4,
+          unitScale: 22,
+          showLabels: true,
+        },
+      },
+      {
+        name: "regularPolygon",
+        minHeight: 220,
+        data: {
+          omdType: "regularPolygon",
+          numberOfSides: 6,
+          radius: 4,
+          unitScale: 24,
+          showLabels: true,
+        },
+      },
+      {
+        name: "spinner",
+        minHeight: 220,
+        data: {
+          omdType: "spinner",
+          divisions: 8,
+          arrowPosition: 45,
+          size: "medium",
+        },
+      },
+      {
+        name: "label",
+        minHeight: 160,
+        data: {
+          omdType: "label",
+          text: "Debug Label",
+          size: "large",
+          color: "#0f172a",
+        },
+      },
+    ];
+
+    function stabilizeDisplay(display) {
+      if (!display) return;
+      requestAnimationFrame(() => {
+        try {
+          display.resizeObserver?.disconnect();
+        } catch (_) {
+          // Ignore cleanup errors for static debug renders.
+        }
+      });
+    }
+
+    function makeCard(sample) {
+      const card = document.createElement("article");
+      card.className = "card";
+
+      const title = document.createElement("h2");
+      title.textContent = sample.name;
+      card.appendChild(title);
+
+      const meta = document.createElement("p");
+      meta.className = "meta";
+      meta.textContent = `omdType: ${sample.data.omdType}`;
+      card.appendChild(meta);
+
+      const stage = document.createElement("div");
+      stage.className = "stage";
+      stage.style.minHeight = `${sample.minHeight || 180}px`;
+      stage.style.height = `${sample.minHeight || 180}px`;
+      card.appendChild(stage);
+
+      const status = document.createElement("div");
+      status.className = "status";
+      card.appendChild(status);
+
+      const details = document.createElement("details");
+      const summary = document.createElement("summary");
+      summary.textContent = "Show payload";
+      details.appendChild(summary);
+
+      const pre = document.createElement("pre");
+      pre.textContent = JSON.stringify(sample.data, null, 2);
+      details.appendChild(pre);
+      card.appendChild(details);
+
+      try {
+        const node = createFromJSON(sample.data);
+        const display = new omdDisplay(stage, {
+          fontSize: 24,
+          centerContent: true,
+          fitToContent: true,
+          observeResize: false,
+          ...(sample.displayOptions || {}),
+        });
+        display.render(node);
+        stabilizeDisplay(display);
+
+        status.classList.add("ok");
+        status.textContent = "Render OK";
+      } catch (error) {
+        console.error("Render failed for", sample.name, error);
+        status.classList.add("error");
+        status.textContent = `Render failed: ${error?.message || error}`;
+      }
+
+      return card;
+    }
+
+    function init() {
+      const grid = document.getElementById("grid");
+      samples.forEach((sample) => {
+        grid.appendChild(makeCard(sample));
+      });
+    }
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(init).catch(init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+
+</html>
