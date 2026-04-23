@@ -30,15 +30,23 @@ async function openAIrequest( topic )
   request += "3) Do not invent aliases or legacy fields if they are not in schema.\n";
   request += "4) If the request is ambiguous, choose the simplest valid object that best matches intent.\n\n";
 
-  request += "Routing hints for ambiguous language:\n";
+  request += "### Schema selection rules:\n";
+  request += "1) Consider every schema equally; do not favor any omdType by default.\n";
+  request += "2) Choose the schema whose notes, required fields, and sample structure best match the request.\n";
+  request += "3) A literal equation shown as part of a shape or diagram is not equationWork unless the user asks for worked steps, solving, or row-by-row transformations.\n";
+  request += "4) Use equationWork only when the request clearly asks for solution steps or equation manipulation.\n";
+  request += "5) If the user describes a diagram or object and also includes text inside or below it, prefer the diagram/object schema unless the request is explicitly about solving the equation.\n\n";
+
+  request += "Intent hints for common requests:\n";
   request += "- number line / dots on a line -> numberLine\n";
   request += "- graph / coordinate / y= -> coordinatePlane\n";
   request += "- equation stack -> equationStack\n";
   request += "- equation work / worked steps / solve step by step -> equationWork\n";
   request += "- balance / hanger -> balanceHanger\n";
   request += "- table / data table -> table\n\n";
-  request += "- shape-only language (e.g. triangle, rectangle) -> shape types\n";
-  request += "- none of these? REFER TO THE SCHEMA TO FIND BEST FIT BASED ON REQUEST."
+  request += "- shape-only language (e.g. triangle, rectangle) -> matching shape schema\n";
+  request += "- if multiple schemas seem possible, pick the one with the fewest required fields that still fully matches the request.\n";
+  request += "- none of these? REFER TO THE SCHEMA TO FIND BEST FIT BASED ON REQUEST.\n\n";
 
   request += "Formatting preferences:\n";
   request += "- For omdType='equation', prefer string equation form when schema supports it.\n";
@@ -81,52 +89,6 @@ const handler = async (event) => {
       headers,
       body: ''
     };
-  }
-
-  try {
-    const topic = event.queryStringParameters.topic || 'make a number line';
-
-    // Deterministic handling for direct equationWork requests.
-    if (/\bomdequationwork\b|\bequation\s*work\b|\bworked\s*steps\b/i.test(topic)) {
-      const inlineEquationMatch = topic.match(/([^=\n]+)=([^\n]+)/);
-      const leftSide = inlineEquationMatch
-        ? inlineEquationMatch[1].replace(/^.*?:\s*/, '').trim()
-        : '';
-      const rightSide = inlineEquationMatch ? inlineEquationMatch[2].trim() : '';
-      const equationWorkResult = {
-        omdType: 'equationWork',
-        rows: inlineEquationMatch
-          ? [
-              {
-                kind: 'equation',
-                left: leftSide,
-                right: rightSide
-              }
-            ]
-          : []
-      };
-
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify(equationWorkResult)
-      };
-    }
-
-    var response = await openAIrequest( topic );
-    console.log( "response: ", response );
-
-    return {
-      statusCode: 200,
-      headers,
-      body: response
-    }
-  } catch (error) {
-    return { 
-      statusCode: 500, 
-      headers,
-      body: error.toString() 
-    }
   }
 }
 
