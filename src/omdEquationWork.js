@@ -1,5 +1,6 @@
 import { jsvgGroup, jsvgLine, jsvgTextBox } from "@teachinglab/jsvg";
 import { getNodeForAST } from "../omd/core/omdUtilities.js";
+import { math } from "../omd/utils/math.js";
 
 let sharedMeasureContext = null;
 
@@ -522,7 +523,7 @@ export class omdEquationWork extends jsvgGroup {
         const expression = normalizeMathText(value);
         if (!expression) return null;
 
-        if (typeof math === 'undefined' || typeof math.parse !== 'function') {
+        if (typeof math.parse !== 'function') {
             return null;
         }
 

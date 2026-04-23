@@ -9,6 +9,7 @@ import { omdVariable } from "./omdVariable.js";
 import { omdMetaExpression } from "./omdMetaExpression.js"
 import { parseExpressionString } from "./omdUtils.js";
 import { getNodeForAST } from "../omd/core/omdUtilities.js";
+import { math } from "../omd/utils/math.js";
 
 export class omdExpression extends omdMetaExpression
 {
@@ -31,7 +32,7 @@ export class omdExpression extends omdMetaExpression
     }
 
     _renderWithExpressionNode(expressionString, fontSize) {
-        if (typeof math === 'undefined' || typeof math.parse !== 'function') {
+        if (typeof math.parse !== 'function') {
             throw new Error('math.js is required to parse expression strings');
         }
 

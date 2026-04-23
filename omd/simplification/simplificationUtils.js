@@ -7,6 +7,7 @@ import { omdPowerNode } from "../nodes/omdPowerNode.js";
 import { omdVariableNode } from "../nodes/omdVariableNode.js";
 import { SimplificationEngine } from "./omdSimplificationEngine.js";
 import { getMultiplicationSymbol } from '../config/omdConfigManager.js';
+import { math } from '../utils/math.js';
 
 // ===== MANUAL PROVENANCE HELPER FUNCTIONS =====
 

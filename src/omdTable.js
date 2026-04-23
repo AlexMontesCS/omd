@@ -1,5 +1,6 @@
 import { omdColor } from "./omdColor.js";
 import { jsvgGroup, jsvgRect, jsvgTextBox, jsvgClipMask } from "@teachinglab/jsvg";
+import { math } from "../omd/utils/math.js";
 
 export class omdTable extends jsvgGroup
 {
@@ -178,7 +179,7 @@ export class omdTable extends jsvgGroup
 
         try {
             // Use math.js if available (preferred)
-            if (typeof math !== 'undefined' && math.compile) {
+            if (math.compile) {
                 const compiled = math.compile(expression);
                 for (let x = this.xMin; x <= this.xMax; x += this.stepSize) {
                     try {

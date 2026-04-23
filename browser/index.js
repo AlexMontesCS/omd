@@ -1,23 +1,8 @@
-import * as mathjs from 'mathjs';
+import { math as mathjs } from '../omd/utils/math.js';
 
 import { getNodeForAST } from '../omd/core/omdUtilities.js';
 import { omdEquationNode } from '../omd/nodes/omdEquationNode.js';
 import { omdStepVisualizer } from '../omd/step-visualizer/omdStepVisualizer.js';
-
-const globalScope = (() => {
-    if (typeof globalThis !== 'undefined') return globalThis;
-    if (typeof window !== 'undefined') return window;
-    if (typeof global !== 'undefined') return global;
-    return undefined;
-})();
-
-if (globalScope && !globalScope.math) {
-    try {
-        globalScope.math = mathjs;
-    } catch (_) {
-        // Ignore read-only global environments.
-    }
-}
 
 export const math = mathjs;
 

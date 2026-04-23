@@ -10,6 +10,7 @@ import { omdString } from "./omdString.js";
 import { omdNumber } from "./omdNumber.js";
 import { parseEquationString } from "./omdUtils.js";
 import { omdEquationNode } from "../omd/nodes/omdEquationNode.js";
+import { math } from "../omd/utils/math.js";
 
 export class omdEquation extends omdMetaExpression
 {
@@ -150,7 +151,7 @@ export class omdEquation extends omdMetaExpression
     }
 
     _renderWithEquationNode(equationString, fontSize) {
-        if (typeof math === 'undefined' || typeof math.parse !== 'function') {
+        if (typeof math.parse !== 'function') {
             throw new Error('math.js is required to parse equation strings');
         }
 

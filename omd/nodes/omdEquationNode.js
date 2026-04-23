@@ -7,9 +7,10 @@ import { omdParenthesisNode } from "./omdParenthesisNode.js";
 import { omdRationalNode } from "./omdRationalNode.js";
 import { omdFunctionNode } from "./omdFunctionNode.js";
 import { omdUnaryExpressionNode } from './omdUnaryExpressionNode.js';
+import { math } from '../utils/math.js';
 
 /**
- * @global {math} math - The global math.js instance.
+ * Uses the shared math.js instance.
  */
 
 export class omdEquationNode extends omdNode {

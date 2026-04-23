@@ -38,6 +38,7 @@ async function openAIrequest( topic )
   request += "- balance / hanger -> balanceHanger\n";
   request += "- table / data table -> table\n\n";
   request += "- shape-only language (e.g. triangle, rectangle) -> shape types\n";
+  request += "- none of these? REFER TO THE SCHEMA TO FIND BEST FIT BASED ON REQUEST."
 
   request += "Formatting preferences:\n";
   request += "- For omdType='equation', prefer string equation form when schema supports it.\n";
