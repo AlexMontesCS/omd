@@ -30,13 +30,14 @@ async function openAIrequest( topic )
   request += "3) Do not invent aliases or legacy fields if they are not in schema.\n";
   request += "4) If the request is ambiguous, choose the simplest valid object that best matches intent.\n\n";
 
-  // request += "Routing hints for ambiguous language:\n";
-  // request += "- number line / dots on a line -> numberLine\n";
-  // request += "- graph / coordinate / y= -> coordinatePlane\n";
-  // request += "- equation stack -> equationStack\n";
-  // request += "- equation work / worked steps / solve step by step -> equationWork\n";
-  // request += "- balance / hanger -> balanceHanger\n";
-  // request += "- table / data table -> table\n\n";
+  request += "Routing hints for ambiguous language:\n";
+  request += "- number line / dots on a line -> numberLine\n";
+  request += "- graph / coordinate / y= -> coordinatePlane\n";
+  request += "- equation stack -> equationStack\n";
+  request += "- equation work / worked steps / solve step by step -> equationWork\n";
+  request += "- balance / hanger -> balanceHanger\n";
+  request += "- table / data table -> table\n\n";
+  request += "- shape-only language (e.g. triangle, rectangle) -> shape types\n";
 
   request += "Formatting preferences:\n";
   request += "- For omdType='equation', prefer string equation form when schema supports it.\n";
