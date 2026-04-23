@@ -90,6 +90,25 @@ const handler = async (event) => {
       body: ''
     };
   }
+
+  try {
+    const topic = event.queryStringParameters?.topic || 'make a number line';
+
+    const response = await openAIrequest(topic);
+    console.log('response: ', response);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: response
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers,
+      body: error.toString()
+    };
+  }
 }
 
 module.exports = { handler }
