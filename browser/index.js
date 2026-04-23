@@ -49,6 +49,7 @@ export { omdNodeOverlay, omdNodeOverlayPresets } from '../omd/utils/omdNodeOverl
 export { omdTranscriptionService } from '../omd/utils/omdTranscriptionService.js';
 export { getNodeForAST } from '../omd/core/omdUtilities.js';
 export { simplifyStep } from '../omd/simplification/omdSimplification.js';
+export { default as omdSchemas, omdSchemas as omdSchemasObject, omdSchemaTypes, getOmdSchema, getOmdSchemaTypes } from '../src/omdSchemas.js';
 export {
     initializeConfig,
     setConfig,

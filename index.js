@@ -30,6 +30,7 @@ export { EventManager } from './canvas/events/eventManager.js';
 // Export utility components
 export { omdNodeOverlay, omdNodeOverlayPresets } from './omd/utils/omdNodeOverlay.js';
 export { omdTranscriptionService } from './omd/utils/omdTranscriptionService.js';
+export { default as omdSchemas, omdSchemas as omdSchemasObject, omdSchemaTypes, getOmdSchema, getOmdSchemaTypes } from './src/omdSchemas.js';
 
 // Re-export the most commonly used components for easy access
 export { omdTable } from './src/omdTable.js';

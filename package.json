@@ -1,6 +1,6 @@
 {
   "name": "@teachinglab/omd",
-  "version": "0.9.01",
+  "version": "0.9.3s",
   "description": "omd",
   "main": "./index.js",
   "module": "./index.js",
@@ -11,6 +11,8 @@
     ".": "./index.js",
     "./browser": "./dist/omd.browser.js",
     "./global": "./dist/omd.global.js",
+    "./schemas": "./src/omdSchemas.js",
+    "./schemas.json": "./src/omd-schemas.json",
     "./register-math": "./omd/utils/registerMathGlobal.js",
     "./package.json": "./package.json"
   },

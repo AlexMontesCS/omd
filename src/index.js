@@ -37,6 +37,7 @@ export { omdNodeOverlay, omdNodeOverlayPresets } from '../omd/utils/omdNodeOverl
 // OMD Utilities and Helpers
 export { omdColor } from './omdColor.js';
 export { createFromJSON, getSupportedTypes, isTypeSupported } from './omdFactory.js';
+export { default as omdSchemas, omdSchemas as omdSchemasObject, omdSchemaTypes, getOmdSchema, getOmdSchemaTypes } from './omdSchemas.js';
 
 // OMD Shape Classes
 export { 

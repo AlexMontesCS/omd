@@ -35,12 +35,15 @@ async function openAIrequest( topic )
   request += "2) Choose the schema whose notes, required fields, and sample structure best match the request.\n";
   request += "3) A literal equation shown as part of a shape or diagram is not equationWork unless the user asks for worked steps, solving, or row-by-row transformations.\n";
   request += "4) Use equationWork only when the request clearly asks for solution steps or equation manipulation.\n";
-  request += "5) If the user describes a diagram or object and also includes text inside or below it, prefer the diagram/object schema unless the request is explicitly about solving the equation.\n\n";
+  request += "5) If the user describes stacked arithmetic (e.g. add/subtract numbers one on top of another, align decimal points, carry/borrow), use equationWork rows, not equationStack.\n";
+  request += "6) Use equationStack only for sequences of full equations (typically containing '='), not for vertical arithmetic formatting prompts.\n";
+  request += "7) If the user describes a diagram or object and also includes text inside or below it, prefer the diagram/object schema unless the request is explicitly about solving the equation.\n\n";
 
   request += "Intent hints for common requests:\n";
   request += "- number line / dots on a line -> numberLine\n";
   request += "- graph / coordinate / y= -> coordinatePlane\n";
-  request += "- equation stack -> equationStack\n";
+  request += "- equation stack (multiple equations, usually with '=') -> equationStack\n";
+  request += "- stacked arithmetic / line up decimals / vertical addition-subtraction -> equationWork\n";
   request += "- equation work / worked steps / solve step by step -> equationWork\n";
   request += "- balance / hanger -> balanceHanger\n";
   request += "- table / data table -> table\n\n";
