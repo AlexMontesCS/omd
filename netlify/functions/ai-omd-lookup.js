@@ -111,15 +111,6 @@ const handler = async (event) => {
       };
     }
 
-    // If the request looks like an equation, return the string form directly (math.js parsing happens client-side)
-    const equationMatch = topic.match(/(?:omdEquation|equation)\s+(?:of|for|=)?\s*([^.\\n]+)=([^.\\n]+)/i);
-    if (equationMatch) {
-      const equationString = `${equationMatch[1].trim()}=${equationMatch[2].trim()}`;
-      console.log("Detected equation string:", equationString);
-      const result = { omdType: 'equation', equation: equationString };
-      return { statusCode: 200, headers, body: JSON.stringify(result) };
-    }
-
     var response = await openAIrequest( topic );
     console.log( "response: ", response );
 
