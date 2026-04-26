@@ -484,6 +484,9 @@ export class omdCoordinatePlane extends jsvgGroup {
             const x = leftLimit + (span * i) / pointCount;
             const y = compiledExpression.evaluate(this.getEvaluationScope({ x }));
             if (!Number.isFinite(y)) continue;
+            // Keep the rendered path inside the plane range so clipped-off
+            // spikes do not inflate SVG bounds/viewBox measurements.
+            if (y < this.yMin || y > this.yMax) continue;
             pathObject.addPoint(this.toGraphPixelX(x), this.toGraphPixelY(y));
         }
         pathObject.updatePath();
@@ -517,7 +520,9 @@ export class omdCoordinatePlane extends jsvgGroup {
 
         let anchorY = this.yMin + (this.yMax - this.yMin) * 0.1;
         const yVal = compiledExpression.evaluate(this.getEvaluationScope({ x: anchorX }));
-        anchorY = yVal;
+        anchorY = Number.isFinite(yVal)
+            ? Math.max(this.yMin, Math.min(this.yMax, yVal))
+            : anchorY;
 
         const xPx = this.toGraphPixelX(anchorX);
         const yPx = this.toGraphPixelY(anchorY);
@@ -542,6 +547,13 @@ export class omdCoordinatePlane extends jsvgGroup {
             default:
                 finalY = yPx + offset;
         }
+
+        const minX = this.paddingLeft + 8;
+        const maxX = this.paddingLeft + this.graphWidth - 8;
+        const minY = this.paddingTop + 8;
+        const maxY = this.paddingTop + this.graphHeight - 8;
+        finalX = Math.max(minX, Math.min(maxX, finalX));
+        finalY = Math.max(minY, Math.min(maxY, finalY));
 
         label.setPosition(finalX, finalY);
     }

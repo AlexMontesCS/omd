@@ -35,6 +35,17 @@ function getShapePadding(showLabels) {
     return showLabels ? LABEL_SHAPE_PADDING : DEFAULT_SHAPE_PADDING;
 }
 
+function estimateLabelWidth(text, fontSize = 12) {
+    const normalized = normalizeLabelValue(text);
+    if (!normalized) return 0;
+    // Approximate average latin glyph width at ~0.58em for compact layout sizing.
+    return normalized.length * fontSize * 0.58;
+}
+
+function estimateLabelHeight(fontSize = 12) {
+    return fontSize * 1.2;
+}
+
 function getClosedPolygonVertices(shapePath) {
     const points = Array.isArray(shapePath?.points) ? shapePath.points : [];
     if (points.length <= 1) return points.slice();
@@ -356,24 +367,116 @@ export class omdRectangle extends jsvgGroup
 
     updateLayout()
     {
-        // Center the rectangle within the viewBox
+        // Compute compact per-side padding so the exported container hugs visible content.
         const sideLabels = this.getResolvedSideLabels();
         const hasAnyLabels = this.hasAnyLabels();
-        const hasOutsideLabels = (
-            labelHasText(this.outsideTopLabel) ||
-            labelHasText(this.outsideBottomLabel) ||
-            labelHasText(this.outsideLeftLabel) ||
-            labelHasText(this.outsideRightLabel)
-        );
+        const fontSize = this.labelFontSize;
+        const strokeWidth = 2;
+        const basePadding = Math.max(2, strokeWidth * 0.5 + 1);
 
-        let padding = DEFAULT_SHAPE_PADDING;
-        if ( hasAnyLabels ) padding = Math.max(padding, LABEL_SHAPE_PADDING);
-        if ( hasOutsideLabels ) padding = Math.max(padding, 52);
+        const edgeOffset = 16;
+        const outerOffset = 36;
 
-        const offsetX = padding;
-        const offsetY = this.unitScale * this.rectHeight + padding;
         const widthPx = this.unitScale * this.rectWidth;
         const heightPx = this.unitScale * this.rectHeight;
+
+        let leftPad = basePadding;
+        let rightPad = basePadding;
+        let topPad = basePadding;
+        let bottomPad = basePadding;
+
+        if ( hasAnyLabels )
+        {
+            const topHeight = estimateLabelHeight(fontSize);
+            const rightHeight = estimateLabelHeight(fontSize);
+            const bottomHeight = estimateLabelHeight(fontSize);
+            const leftHeight = estimateLabelHeight(fontSize);
+
+            const topWidth = estimateLabelWidth(sideLabels.top, fontSize);
+            const rightWidth = estimateLabelWidth(sideLabels.right, fontSize);
+            const bottomWidth = estimateLabelWidth(sideLabels.bottom, fontSize);
+            const leftWidth = estimateLabelWidth(sideLabels.left, fontSize);
+
+            const centerWidth = estimateLabelWidth(this.centerLabel, fontSize);
+            const centerHeight = estimateLabelHeight(fontSize);
+
+            const outTopHeight = estimateLabelHeight(fontSize);
+            const outRightHeight = estimateLabelHeight(fontSize);
+            const outBottomHeight = estimateLabelHeight(fontSize);
+            const outLeftHeight = estimateLabelHeight(fontSize);
+
+            const outTopWidth = estimateLabelWidth(this.outsideTopLabel, fontSize);
+            const outRightWidth = estimateLabelWidth(this.outsideRightLabel, fontSize);
+            const outBottomWidth = estimateLabelWidth(this.outsideBottomLabel, fontSize);
+            const outLeftWidth = estimateLabelWidth(this.outsideLeftLabel, fontSize);
+
+            if ( labelHasText(sideLabels.top) )
+            {
+                topPad = Math.max(topPad, edgeOffset + topHeight * 0.5 + basePadding);
+                leftPad = Math.max(leftPad, topWidth * 0.5 + basePadding);
+                rightPad = Math.max(rightPad, topWidth * 0.5 + basePadding);
+            }
+
+            if ( labelHasText(sideLabels.right) )
+            {
+                rightPad = Math.max(rightPad, edgeOffset + rightWidth * 0.5 + basePadding);
+                topPad = Math.max(topPad, rightHeight * 0.5 + basePadding);
+                bottomPad = Math.max(bottomPad, rightHeight * 0.5 + basePadding);
+            }
+
+            if ( labelHasText(sideLabels.bottom) )
+            {
+                bottomPad = Math.max(bottomPad, edgeOffset + bottomHeight * 0.5 + basePadding);
+                leftPad = Math.max(leftPad, bottomWidth * 0.5 + basePadding);
+                rightPad = Math.max(rightPad, bottomWidth * 0.5 + basePadding);
+            }
+
+            if ( labelHasText(sideLabels.left) )
+            {
+                leftPad = Math.max(leftPad, edgeOffset + leftWidth * 0.5 + basePadding);
+                topPad = Math.max(topPad, leftHeight * 0.5 + basePadding);
+                bottomPad = Math.max(bottomPad, leftHeight * 0.5 + basePadding);
+            }
+
+            if ( labelHasText(this.centerLabel) )
+            {
+                leftPad = Math.max(leftPad, centerWidth * 0.5 + basePadding);
+                rightPad = Math.max(rightPad, centerWidth * 0.5 + basePadding);
+                topPad = Math.max(topPad, centerHeight * 0.5 + basePadding);
+                bottomPad = Math.max(bottomPad, centerHeight * 0.5 + basePadding);
+            }
+
+            if ( labelHasText(this.outsideTopLabel) )
+            {
+                topPad = Math.max(topPad, outerOffset + outTopHeight * 0.5 + basePadding);
+                leftPad = Math.max(leftPad, outTopWidth * 0.5 + basePadding);
+                rightPad = Math.max(rightPad, outTopWidth * 0.5 + basePadding);
+            }
+
+            if ( labelHasText(this.outsideBottomLabel) )
+            {
+                bottomPad = Math.max(bottomPad, outerOffset + outBottomHeight * 0.5 + basePadding);
+                leftPad = Math.max(leftPad, outBottomWidth * 0.5 + basePadding);
+                rightPad = Math.max(rightPad, outBottomWidth * 0.5 + basePadding);
+            }
+
+            if ( labelHasText(this.outsideLeftLabel) )
+            {
+                leftPad = Math.max(leftPad, outerOffset + outLeftWidth * 0.5 + basePadding);
+                topPad = Math.max(topPad, outLeftHeight * 0.5 + basePadding);
+                bottomPad = Math.max(bottomPad, outLeftHeight * 0.5 + basePadding);
+            }
+
+            if ( labelHasText(this.outsideRightLabel) )
+            {
+                rightPad = Math.max(rightPad, outerOffset + outRightWidth * 0.5 + basePadding);
+                topPad = Math.max(topPad, outRightHeight * 0.5 + basePadding);
+                bottomPad = Math.max(bottomPad, outRightHeight * 0.5 + basePadding);
+            }
+        }
+
+        const offsetX = leftPad;
+        const offsetY = topPad + heightPx;
 
         this.shapePath.clearPoints();
         this.shapePath.addPoint(offsetX, offsetY);
@@ -393,16 +496,13 @@ export class omdRectangle extends jsvgGroup
             const bottomY = offsetY;
             const centerX = offsetX + widthPx * 0.5;
             const centerY = offsetY - heightPx * 0.5;
-            const edgeOffset = 16;
-            const outerOffset = 36;
-
             if ( labelHasText(sideLabels.top) )
             {
                 this.labelsHolder.addChild(createShapeTextLabel(
                     sideLabels.top,
                     centerX,
                     topY - edgeOffset,
-                    { fontSize: this.labelFontSize }
+                    { fontSize }
                 ));
             }
 
@@ -412,7 +512,7 @@ export class omdRectangle extends jsvgGroup
                     sideLabels.right,
                     rightX + edgeOffset,
                     centerY,
-                    { fontSize: this.labelFontSize }
+                    { fontSize }
                 ));
             }
 
@@ -422,7 +522,7 @@ export class omdRectangle extends jsvgGroup
                     sideLabels.bottom,
                     centerX,
                     bottomY + edgeOffset,
-                    { fontSize: this.labelFontSize }
+                    { fontSize }
                 ));
             }
 
@@ -432,7 +532,7 @@ export class omdRectangle extends jsvgGroup
                     sideLabels.left,
                     leftX - edgeOffset,
                     centerY,
-                    { fontSize: this.labelFontSize }
+                    { fontSize }
                 ));
             }
 
@@ -442,7 +542,7 @@ export class omdRectangle extends jsvgGroup
                     this.centerLabel,
                     centerX,
                     centerY,
-                    { fontSize: this.labelFontSize }
+                    { fontSize }
                 ));
             }
 
@@ -452,7 +552,7 @@ export class omdRectangle extends jsvgGroup
                     this.outsideTopLabel,
                     centerX,
                     topY - outerOffset,
-                    { fontSize: this.labelFontSize }
+                    { fontSize }
                 ));
             }
 
@@ -462,7 +562,7 @@ export class omdRectangle extends jsvgGroup
                     this.outsideBottomLabel,
                     centerX,
                     bottomY + outerOffset,
-                    { fontSize: this.labelFontSize }
+                    { fontSize }
                 ));
             }
 
@@ -472,7 +572,7 @@ export class omdRectangle extends jsvgGroup
                     this.outsideLeftLabel,
                     leftX - outerOffset,
                     centerY,
-                    { fontSize: this.labelFontSize }
+                    { fontSize }
                 ));
             }
 
@@ -482,14 +582,13 @@ export class omdRectangle extends jsvgGroup
                     this.outsideRightLabel,
                     rightX + outerOffset,
                     centerY,
-                    { fontSize: this.labelFontSize }
+                    { fontSize }
                 ));
             }
         }
 
-        // Set viewBox
-        this.width = widthPx + padding * 2;
-        this.height = heightPx + padding * 2;
+        this.width = widthPx + leftPad + rightPad;
+        this.height = heightPx + topPad + bottomPad;
         this.svgObject.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
     }
 }
@@ -514,6 +613,7 @@ export class omdRectangularPrism extends jsvgGroup
         this.heightLabel = "";
         this.insideLabel = "";
         this.outsideTopLabel = "";
+        this.showHiddenEdges = true;
         this.labelFontSize = 12;
 
         this.topFacePath = new jsvgPath();
@@ -577,6 +677,9 @@ export class omdRectangularPrism extends jsvgGroup
 
         if ( typeof data.outsideTopLabel != "undefined" )
             this.outsideTopLabel = data.outsideTopLabel;
+
+        if ( typeof data.showHiddenEdges != "undefined" )
+            this.showHiddenEdges = data.showHiddenEdges !== false;
 
         if ( typeof data.labelFontSize === "number" )
             this.labelFontSize = data.labelFontSize;
@@ -685,36 +788,39 @@ export class omdRectangularPrism extends jsvgGroup
         this.frontFacePath.updatePath();
 
         this.hiddenEdgeHolder.removeAllChildren();
-        const hiddenEdges = [
-            [backTL, backBL],
-            [backBL, backBR],
-            [frontBL, backBL],
-        ];
-
-        for ( const [p0, p1] of hiddenEdges )
+        if ( this.showHiddenEdges )
         {
-            const hiddenLine = new jsvgLine();
-            hiddenLine.setStrokeColor("black");
-            hiddenLine.setStrokeWidth(1.5);
-            hiddenLine.setEndpoints(p0.x, p0.y, p1.x, p1.y);
-            hiddenLine.svgObject.setAttribute("stroke-dasharray", "5 4");
-            this.hiddenEdgeHolder.addChild(hiddenLine);
+            const hiddenEdges = [
+                [backTL, backBL],
+                [backBL, backBR],
+                [frontBL, backBL],
+            ];
+
+            for ( const [p0, p1] of hiddenEdges )
+            {
+                const hiddenLine = new jsvgLine();
+                hiddenLine.setStrokeColor("black");
+                hiddenLine.setStrokeWidth(1);
+                hiddenLine.setEndpoints(p0.x, p0.y, p1.x, p1.y);
+                hiddenLine.svgObject.setAttribute("stroke-dasharray", "3 2");
+                this.hiddenEdgeHolder.addChild(hiddenLine);
+            }
         }
 
         this.labelsHolder.removeAllChildren();
         if ( hasLabels )
         {
             const lengthLabelX = (frontBL.x + frontBR.x) * 0.5;
-            const lengthLabelY = frontBL.y + 18;
+            const lengthLabelY = frontBL.y + 12;
 
-            const heightLabelX = frontBR.x + 18;
+            const heightLabelX = frontBR.x + 12;
             const heightLabelY = (frontTR.y + frontBR.y) * 0.5;
 
             const widthAngleRadians = Math.atan2(backTR.y - frontTR.y, backTR.x - frontTR.x);
             const widthNormalX = -Math.sin(widthAngleRadians);
             const widthNormalY = Math.cos(widthAngleRadians);
-            const widthLabelX = (frontTR.x + backTR.x) * 0.5 + widthNormalX * 12;
-            const widthLabelY = (frontTR.y + backTR.y) * 0.5 + widthNormalY * 12;
+            const widthLabelX = (frontTR.x + backTR.x) * 0.5 + widthNormalX * 16;
+            const widthLabelY = (frontTR.y + backTR.y) * 0.5 + widthNormalY * 16;
 
             if ( labelHasText(labels.length) )
             {
@@ -742,10 +848,7 @@ export class omdRectangularPrism extends jsvgGroup
                     labels.width,
                     widthLabelX,
                     widthLabelY,
-                    {
-                        fontSize: this.labelFontSize,
-                        rotation: widthAngleRadians * 180.0 / Math.PI,
-                    }
+                    { fontSize: this.labelFontSize }
                 ));
             }
 
@@ -754,7 +857,7 @@ export class omdRectangularPrism extends jsvgGroup
                 this.labelsHolder.addChild(createShapeTextLabel(
                     this.insideLabel,
                     (frontTL.x + frontBR.x) * 0.5,
-                    (frontTL.y + frontBR.y) * 0.5,
+                    frontBL.y + 30,
                     { fontSize: this.labelFontSize }
                 ));
             }

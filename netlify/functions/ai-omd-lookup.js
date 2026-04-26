@@ -29,6 +29,7 @@ async function openAIrequest( topic )
   request += "2) Include all required fields for the selected omdType.\n";
   request += "3) Do not invent aliases or legacy fields if they are not in schema.\n";
   request += "4) If the request is ambiguous, choose the simplest valid object that best matches intent.\n\n";
+  request += "5) DO NOT FILL IN OPTIONAL FIELDS IF IT IS NOT WHAT THE USER ASKED FOR, the fields all have sensible defaults and unless the user points you in the direction of it being changed do not change it.\n\n";
 
   request += "### Schema selection rules:\n";
   request += "1) Consider every schema equally; do not favor any omdType by default.\n";

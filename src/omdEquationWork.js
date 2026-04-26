@@ -97,6 +97,7 @@ function normalizeAlignment(rawAlign, side) {
 
     if (lower === 'start' || lower === 'left') return 'start';
     if (lower === 'center' || lower === 'middle') return 'center';
+    if (lower === 'decimal' || lower === 'decimals') return 'decimal';
     if (lower === 'end' || lower === 'right') return 'end';
 
     if (lower === 'equals' || lower === 'nearequals' || lower === 'near-equals') {
@@ -178,6 +179,15 @@ function parseRowFromString(entry) {
         };
     }
 
+    // Treat math-like standalone strings as expression rows so they can align
+    // (including decimal alignment) in stacked arithmetic workflows.
+    if (/[-+*/^().]|\d/.test(trimmed)) {
+        return {
+            kind: 'expression',
+            expression: trimmed
+        };
+    }
+
     return {
         kind: 'text',
         text: trimmed
@@ -213,6 +223,9 @@ function normalizeRowEntry(entry) {
     ).trim();
     const center = toStringOrEmpty(entry.center ?? entry.centerText ?? entry.middle).trim();
     const text = toStringOrEmpty(entry.text ?? entry.value).trim();
+    const expression = toStringOrEmpty(
+        entry.expression ?? entry.expr ?? entry.left ?? entry.leftExpression ?? entry.text
+    ).trim();
 
     const sharedAnchorRow = parseOptionalNonNegativeIndex(entry.anchorRow);
     const sharedAnchorTerm = entry.anchorTerm;
@@ -235,11 +248,15 @@ function normalizeRowEntry(entry) {
     }
 
     return {
-        kind: kind === 'operation' ? 'operation' : (kind === 'text' ? 'text' : 'equation'),
+        kind:
+            kind === 'operation'
+                ? 'operation'
+                : (kind === 'text' ? 'text' : (kind === 'expression' ? 'expression' : 'equation')),
         left,
         right,
         center,
         text,
+        expression,
         fontSize: toFiniteNumber(entry.fontSize, NaN),
         affectsDividerWidth: toBoolean(entry.affectsDividerWidth, true),
         leftAlign: normalizeAlignment(entry.leftAlign, 'left'),
@@ -328,6 +345,7 @@ export class omdEquationWork extends jsvgGroup {
         this.operationRightAlign = '';
         this.equationLeftAlign = 'end';
         this.equationRightAlign = 'start';
+        this.expressionAlign = 'end';
 
         this.drawLineBeforeRows = new Set();
         this.drawLineAfterRows = new Set();
@@ -373,6 +391,7 @@ export class omdEquationWork extends jsvgGroup {
         if (typeof data.operationRightAlign !== 'undefined') this.operationRightAlign = data.operationRightAlign;
         if (typeof data.equationLeftAlign !== 'undefined') this.equationLeftAlign = data.equationLeftAlign;
         if (typeof data.equationRightAlign !== 'undefined') this.equationRightAlign = data.equationRightAlign;
+        if (typeof data.expressionAlign !== 'undefined') this.expressionAlign = data.expressionAlign;
 
         this.drawLineAfterRows = new Set(
             Array.isArray(data.drawLineAfterRows)
@@ -416,7 +435,33 @@ export class omdEquationWork extends jsvgGroup {
             return side === 'left' ? 'end' : 'start';
         }
 
+        if (row.kind === 'expression') {
+            const explicitExpressionAlign = normalizeAlignment(this.expressionAlign, side);
+            if (explicitExpressionAlign) return explicitExpressionAlign;
+            return side === 'left' ? 'end' : 'start';
+        }
+
         return 'center';
+    }
+
+    _getDecimalAlignmentInfo(visual) {
+        if (!visual) return null;
+
+        const text = normalizeMathText(visual.text);
+        const dotIndex = text.indexOf('.');
+        if (dotIndex < 0) return null;
+
+        const beforeDecimal = text.slice(0, dotIndex);
+        const widthBefore = measureTextWidth(
+            beforeDecimal,
+            visual.fontSize || this.fontSize,
+            this.fontFamily,
+            visual.fontWeight ?? this.fontWeight
+        );
+
+        return {
+            widthBefore
+        };
     }
 
     _walkMathNodes(rootNode, visitor) {
@@ -916,6 +961,30 @@ export class omdEquationWork extends jsvgGroup {
                 return;
             }
 
+            if (row.kind === 'expression') {
+                const expressionVisual = this._createSideVisual(
+                    row.expression,
+                    globalFontSize,
+                    globalFontWeight,
+                    row.color || this.textColor
+                );
+
+                const expressionWidth = expressionVisual?.width || 0;
+                if (row.affectsDividerWidth !== false) {
+                    leftColumnWidth = Math.max(leftColumnWidth, expressionWidth);
+                }
+
+                rowLayouts.push({
+                    index,
+                    row,
+                    kind: 'expression',
+                    expressionVisual,
+                    leftWidth: expressionWidth,
+                    rowHeight: Math.max(18, globalFontSize * this.rowHeightMultiplier, expressionVisual?.height || 0)
+                });
+                return;
+            }
+
             const rowColor = row.color || (row.kind === 'operation' ? this.operationColor : this.equationColor);
 
             const leftVisual = this._createSideVisual(
@@ -1087,6 +1156,28 @@ export class omdEquationWork extends jsvgGroup {
             });
         });
 
+        let leftDecimalAnchorOffset = null;
+        layoutRows.forEach(({ layout, row }) => {
+            const leftVisual = layout.leftVisual || layout.expressionVisual;
+            if (!leftVisual) return;
+
+            const leftAlign = this._resolveSideAlignment(row, 'left');
+            if (leftAlign !== 'decimal') return;
+
+            const decimalInfo = this._getDecimalAlignmentInfo(leftVisual);
+            if (!decimalInfo) return;
+
+            leftDecimalAnchorOffset = Math.max(
+                leftDecimalAnchorOffset ?? 0,
+                decimalInfo.widthBefore
+            );
+        });
+
+        const leftDecimalAnchorX =
+            leftDecimalAnchorOffset === null
+                ? null
+                : leftStartX + leftDecimalAnchorOffset;
+
         lines.forEach((line) => {
             const inset = Math.max(0, line.inset || 0);
             const clampedInset = Math.min(inset, Math.max(0, (contentWidth / 2) - 6));
@@ -1115,6 +1206,35 @@ export class omdEquationWork extends jsvgGroup {
                 return;
             }
 
+            if (layout.kind === 'expression') {
+                const leftAlign = this._resolveSideAlignment(row, 'left');
+                let expressionX = this._resolveAlignedX(
+                    leftStartX,
+                    leftColumnWidth,
+                    layout.leftWidth || 0,
+                    leftAlign,
+                    row.leftOffset || 0
+                );
+
+                if (leftAlign === 'decimal' && leftDecimalAnchorX !== null) {
+                    const decimalInfo = this._getDecimalAlignmentInfo(layout.expressionVisual);
+                    if (decimalInfo) {
+                        expressionX = leftDecimalAnchorX - decimalInfo.widthBefore + (row.leftOffset || 0);
+                    } else {
+                        expressionX = this._resolveAlignedX(
+                            leftStartX,
+                            leftColumnWidth,
+                            layout.leftWidth || 0,
+                            'end',
+                            row.leftOffset || 0
+                        );
+                    }
+                }
+
+                this._placeVisual(layout.expressionVisual, expressionX, centerY, rowHeight, 'left');
+                return;
+            }
+
             const leftAlign = this._resolveSideAlignment(row, 'left');
             const rightAlign = this._resolveSideAlignment(row, 'right');
 
@@ -1133,6 +1253,21 @@ export class omdEquationWork extends jsvgGroup {
                 rightAlign,
                 row.rightOffset || 0
             );
+
+            if (leftAlign === 'decimal' && leftDecimalAnchorX !== null) {
+                const decimalInfo = this._getDecimalAlignmentInfo(layout.leftVisual);
+                if (decimalInfo) {
+                    leftX = leftDecimalAnchorX - decimalInfo.widthBefore + (row.leftOffset || 0);
+                } else {
+                    leftX = this._resolveAlignedX(
+                        leftStartX,
+                        leftColumnWidth,
+                        layout.leftWidth || 0,
+                        'end',
+                        row.leftOffset || 0
+                    );
+                }
+            }
 
             if (layout.kind === 'operation') {
                 leftX = this._resolveAnchoredSideX({

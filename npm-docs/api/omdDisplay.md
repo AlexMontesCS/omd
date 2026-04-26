@@ -16,14 +16,18 @@ Creates a new `omdDisplay` instance.
 
 -   **`container`** (`HTMLElement`): The DOM element where the expression will be rendered.
 -   **`options`** (`object`, optional): Configuration options:
-    -   `fontSize` (`number`): The base font size in pixels for the expression. Default: `32`.
+    -   `fontSize` (`number`): Optional base font size in pixels. If omitted, the rendered node keeps its own font sizing. Parsed equation nodes default to their normal node font size.
     -   `centerContent` (`boolean`): If `true`, the content is automatically centered within the container. Default: `true`.
     -   `topMargin` (`number`): The top margin in pixels, used when centering content. Default: `40`.
     -   `bottomMargin` (`number`): The bottom margin in pixels. Default: `16`.
     -   `fitToContent` (`boolean`): If `true`, the SVG container will resize to tightly fit the content. Default: `false`.
     -   `autoScale` (`boolean`): If `true`, content will automatically scale down to fit the container. Default: `true`.
     -   `maxScale` (`number`): Maximum scale factor for `autoScale`. Default: `1` (no upscaling).
-    -   `edgePadding` (`number`): Horizontal padding from edges when `autoScale` is enabled. Default: `16`.
+    -   `edgePadding` (`number`): Horizontal padding for preserved equation-style panes. Default: `16`.
+    -   `contentPadding` (`number` | `object`): Explicit padding for compact visual output. Supports `{ top, right, bottom, left }`, `{ x, y }`, or a single number.
+    -   `fitPadding` (`number` | `object`): Backward-compatible alias for `contentPadding`.
+    -   `compactBleed` (`number` | `object`): Small default safety padding for compact visual output, preventing strokes, rounded clips, and antialiasing from being shaved off. Default: `2`.
+    -   `preserveContainerSize` (`boolean` | `'auto'` | `'width'` | `'height'` | `object`): If `true`, the SVG keeps at least the host container width and height. If `false`, the SVG shrinks to content. `'width'` fills the parent width while keeping natural content height, which is the default for responsive previews. `'auto'` preserves both axes for equation/stack layouts and compacts standalone visuals. Default: `'width'`.
 
 ## Public Methods
 
@@ -32,12 +36,12 @@ Creates a new `omdDisplay` instance.
 Renders a mathematical expression or equation within the display. It intelligently handles different input types:
 
 -   If `expression` is a string containing semicolons (`;`), it's treated as a sequence of equations and rendered as an `omdStepVisualizer`.
--   If `expression` is a string containing an equals sign (`=`), it's treated as a single equation and wrapped in an `omdStepVisualizer`.
+-   If `expression` is a string containing an equals sign (`=`), it's treated as an equation step.
 -   Otherwise, if `expression` is a string, it's parsed as a single mathematical expression.
 -   If `expression` is already an `omdNode` instance, it's rendered directly.
 
--   **`expression`** (`string` | `omdNode`): The mathematical expression string or a pre-existing `omdNode` instance.
--   **Returns**: `omdNode` - The root node of the rendered content (often an `omdStepVisualizer`).
+-   **`expression`** (`string` | `omdNode` | `Array`): The mathematical expression string, a pre-existing node, or an array of string/node steps.
+-   **Returns**: `omdNode` - The root node of the rendered content.
 
 ### `update(newNode)`
 
@@ -57,7 +61,7 @@ Manually triggers the centering and scaling logic for the current node. This is 
 
 ### `fitToContent()`
 
-Adjusts the SVG container's dimensions to tightly fit the rendered content, adding a small padding. This is useful for generating images or when the display needs to precisely match the content size.
+Adjusts the SVG container's dimensions to tightly fit the rendered content. Use `contentPadding` when exported SVGs need extra breathing room.
 
 ### `setFontSize(size)`
 

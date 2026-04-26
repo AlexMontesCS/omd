@@ -248,6 +248,7 @@ Balance scale visualizations.
     equation: string,
     color?: string,
     strokeWidth?: number,
+    labelAtX?: number,
     domain?: { min: number, max: number }
   }>,
   lineSegments?: Array<{

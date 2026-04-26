@@ -52,7 +52,7 @@
     ]
   },
   "equationWork": {
-    "notes": "Use typed rows to show equation-solving work. Operation rows include optional term-anchor controls; equation/text/line rows stay minimal. Left/right expressions are parsed as math, so fractions (e.g. 1/3) render as actual fractions.",
+    "notes": "Use typed rows to show equation-solving work or stacked arithmetic. Operation rows include optional term-anchor controls; equation/expression/text/line rows stay minimal. Left/right expressions are parsed as math, so fractions (e.g. 1/3) render as actual fractions.",
     "fields": [
       {
         "name": "rows",
@@ -106,6 +106,7 @@
                   "enum": [
                     "start",
                     "center",
+                    "decimal",
                     "end",
                     "equals",
                     "outer"
@@ -120,6 +121,7 @@
                   "enum": [
                     "start",
                     "center",
+                    "decimal",
                     "end",
                     "equals",
                     "outer"
@@ -262,6 +264,7 @@
                   "enum": [
                     "start",
                     "center",
+                    "decimal",
                     "end",
                     "equals",
                     "outer"
@@ -276,6 +279,7 @@
                   "enum": [
                     "start",
                     "center",
+                    "decimal",
                     "end",
                     "equals",
                     "outer"
@@ -466,6 +470,106 @@
             },
             {
               "type": "object",
+              "description": "Expression row (single-side expression, useful for stacked arithmetic)",
+              "fields": [
+                {
+                  "name": "kind",
+                  "type": "string",
+                  "default": "expression",
+                  "optional": false,
+                  "description": "Row type",
+                  "enum": [
+                    "expression"
+                  ]
+                },
+                {
+                  "name": "expression",
+                  "type": "string",
+                  "default": "",
+                  "optional": true,
+                  "description": "Standalone expression text for this row"
+                },
+                {
+                  "name": "leftAlign",
+                  "type": "string",
+                  "default": "",
+                  "optional": true,
+                  "description": "Expression alignment override",
+                  "enum": [
+                    "start",
+                    "center",
+                    "decimal",
+                    "end",
+                    "equals",
+                    "outer"
+                  ]
+                },
+                {
+                  "name": "leftOffset",
+                  "type": "number",
+                  "default": 0,
+                  "optional": true,
+                  "description": "Horizontal nudge for expression text in px"
+                },
+                {
+                  "name": "fontSize",
+                  "type": "number",
+                  "optional": true,
+                  "description": "Row font size in px (overrides global fontSize for this row only)"
+                },
+                {
+                  "name": "affectsDividerWidth",
+                  "type": "boolean",
+                  "default": true,
+                  "optional": true,
+                  "description": "If false, this row's width will not expand divider length"
+                },
+                {
+                  "name": "drawLineBefore",
+                  "type": "boolean",
+                  "default": false,
+                  "optional": true,
+                  "description": "Draw a divider line before this row"
+                },
+                {
+                  "name": "drawLineAfter",
+                  "type": "boolean",
+                  "default": false,
+                  "optional": true,
+                  "description": "Draw a divider line after this row"
+                },
+                {
+                  "name": "color",
+                  "type": "string",
+                  "default": "",
+                  "optional": true,
+                  "description": "Text color override"
+                },
+                {
+                  "name": "lineColor",
+                  "type": "string",
+                  "default": "",
+                  "optional": true,
+                  "description": "Divider color override for this row"
+                },
+                {
+                  "name": "lineStrokeWidth",
+                  "type": "number",
+                  "default": 4,
+                  "optional": true,
+                  "description": "Divider thickness override in px"
+                },
+                {
+                  "name": "lineInset",
+                  "type": "number",
+                  "default": 6,
+                  "optional": true,
+                  "description": "Divider inset override in px"
+                }
+              ]
+            },
+            {
+              "type": "object",
               "description": "Text row",
               "fields": [
                 {
@@ -591,6 +695,7 @@
         "enum": [
           "start",
           "center",
+          "decimal",
           "end",
           "equals",
           "outer"
@@ -605,6 +710,7 @@
         "enum": [
           "start",
           "center",
+          "decimal",
           "end",
           "equals",
           "outer"
@@ -619,6 +725,7 @@
         "enum": [
           "start",
           "center",
+          "decimal",
           "end",
           "equals",
           "outer"
@@ -633,6 +740,22 @@
         "enum": [
           "start",
           "center",
+          "decimal",
+          "end",
+          "equals",
+          "outer"
+        ]
+      },
+      {
+        "name": "expressionAlign",
+        "type": "string",
+        "default": "end",
+        "optional": true,
+        "description": "Default expression-row alignment (use 'decimal' to align by decimal point)",
+        "enum": [
+          "start",
+          "center",
+          "decimal",
           "end",
           "equals",
           "outer"
@@ -1371,6 +1494,13 @@
               "default": "",
               "optional": true,
               "description": "Optional legend/curve label"
+            },
+            {
+              "name": "labelAtX",
+              "type": "number",
+              "default": 0,
+              "optional": true,
+              "description": "Optional x-value where the curve label is anchored"
             },
             {
               "name": "domain",
@@ -3453,7 +3583,7 @@
         "type": "string",
         "default": "",
         "optional": true,
-        "description": "Optional label shown inside the front face"
+        "description": "Optional label shown below the prism"
       },
       {
         "name": "outsideTopLabel",
@@ -3461,6 +3591,13 @@
         "default": "",
         "optional": true,
         "description": "Optional label shown above top face"
+      },
+      {
+        "name": "showHiddenEdges",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Show dashed hidden edges"
       },
       {
         "name": "lengthLabel",

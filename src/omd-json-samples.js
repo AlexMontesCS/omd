@@ -388,6 +388,7 @@ export const omdSampleCatalog = {
                 height: 'h'
             },
             insideLabel: 'V = 60',
+            showHiddenEdges: false,
             unitScale: 20
         }
     ],

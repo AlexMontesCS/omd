@@ -4,6 +4,27 @@ import { getNodeForAST } from '../core/omdUtilities.js';
 import { jsvgContainer } from '@teachinglab/jsvg';
 
 const ACTIVE_DISPLAYS = new Set();
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const DEFAULT_CANVAS_WIDTH = 800;
+const DEFAULT_CANVAS_HEIGHT = 600;
+
+const DEFAULT_OPTIONS = {
+    fontSize: undefined,
+    centerContent: true,
+    topMargin: 40,
+    bottomMargin: 16,
+    observeResize: true,
+    expandViewboxToFitContent: true,
+    fitToContent: false,
+    autoScale: true,
+    maxScale: 1,
+    edgePadding: 16,
+    contentPadding: undefined,
+    fitPadding: undefined,
+    compactBleed: 2,
+    preserveContainerSize: 'width',
+    autoCloseStepVisualizer: true
+};
 
 /**
  * OMD Renderer - Handles rendering of mathematical expressions
@@ -12,7 +33,12 @@ const ACTIVE_DISPLAYS = new Set();
  */
 export class omdDisplay {
     constructor(container, options = {}) {
+        if (!container || typeof container.appendChild !== 'function') {
+            throw new Error('omdDisplay requires a valid DOM container element.');
+        }
+
         this.container = container;
+        this._providedOptions = { ...(options || {}) };
         this._initialContainerStyle = {
             width: container?.style?.width || '',
             height: container?.style?.height || '',
@@ -29,17 +55,7 @@ export class omdDisplay {
         } = options || {};
 
         this.options = {
-            fontSize: 32,
-            centerContent: true,
-            topMargin: 40,
-            bottomMargin: 16,
-            observeResize: true,
-            expandViewboxToFitContent: true,
-            fitToContent: false,
-            autoScale: true,
-            maxScale: 1,
-            edgePadding: 16,
-            autoCloseStepVisualizer: true,
+            ...DEFAULT_OPTIONS,
             stepVisualizer,
             stackOptions,
             math: mathInstance,
@@ -56,16 +72,19 @@ export class omdDisplay {
         this._lastContainerHeight = null;
         this._deferredLayoutFrame = null;
         this._deferredLayoutAttempts = 0;
+        this._destroyed = false;
 
         this._setupSVG();
         this._registerGlobalRefreshHook();
+        this._scheduleFontReadyLayoutRefresh();
     }
 
     _setupSVG() {
-        const width = this.container.offsetWidth || 800;
-        const height = this.container.offsetHeight || 600;
+        const width = this.container.offsetWidth || DEFAULT_CANVAS_WIDTH;
+        const height = this.container.offsetHeight || DEFAULT_CANVAS_HEIGHT;
 
         this.svg.setViewbox(width, height);
+        this.svg.svgObject.removeAttribute('backgroundColor');
         this.svg.svgObject.style.display = 'block';
         this.svg.svgObject.style.verticalAlign = 'middle';
         this.svg.svgObject.style.maxWidth = 'none';
@@ -74,8 +93,7 @@ export class omdDisplay {
         this.container.appendChild(this.svg.svgObject);
 
         try {
-            const ns = 'http://www.w3.org/2000/svg';
-            this._contentGroup = document.createElementNS(ns, 'g');
+            this._contentGroup = document.createElementNS(SVG_NS, 'g');
             this._contentGroup.setAttribute('id', 'omd-content-root');
             this.svg.svgObject.appendChild(this._contentGroup);
         } catch (_) {
@@ -140,9 +158,7 @@ export class omdDisplay {
             }
         }
 
-        this._prepareNodeForLayout(this.node);
-        this._applyLayoutOptions();
-        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
+        this._refreshCurrentNodeLayout();
     }
 
     _handleResize() {
@@ -231,6 +247,112 @@ export class omdDisplay {
         this.container.style.overflowY = needsY ? 'auto' : 'hidden';
     }
 
+    _hasProvidedOption(optionName) {
+        return Object.prototype.hasOwnProperty.call(this._providedOptions, optionName);
+    }
+
+    _toFiniteNumber(value, fallback = 0) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : fallback;
+    }
+
+    _toNonNegativeNumber(value, fallback = 0) {
+        return Math.max(0, this._toFiniteNumber(value, fallback));
+    }
+
+    _normalizePadding(value, fallback = { top: 0, right: 0, bottom: 0, left: 0 }) {
+        const normalizedFallback = {
+            top: this._toNonNegativeNumber(fallback?.top, 0),
+            right: this._toNonNegativeNumber(fallback?.right, 0),
+            bottom: this._toNonNegativeNumber(fallback?.bottom, 0),
+            left: this._toNonNegativeNumber(fallback?.left, 0)
+        };
+
+        if (value === undefined || value === null) {
+            return normalizedFallback;
+        }
+
+        if (typeof value === 'number' || typeof value === 'string') {
+            const padding = this._toNonNegativeNumber(value, 0);
+            return { top: padding, right: padding, bottom: padding, left: padding };
+        }
+
+        if (typeof value !== 'object') {
+            return normalizedFallback;
+        }
+
+        const horizontal = value.x ?? value.horizontal;
+        const vertical = value.y ?? value.vertical;
+        const left = value.left ?? horizontal ?? normalizedFallback.left;
+        const right = value.right ?? horizontal ?? normalizedFallback.right;
+        const top = value.top ?? vertical ?? normalizedFallback.top;
+        const bottom = value.bottom ?? vertical ?? normalizedFallback.bottom;
+
+        return {
+            top: this._toNonNegativeNumber(top, normalizedFallback.top),
+            right: this._toNonNegativeNumber(right, normalizedFallback.right),
+            bottom: this._toNonNegativeNumber(bottom, normalizedFallback.bottom),
+            left: this._toNonNegativeNumber(left, normalizedFallback.left)
+        };
+    }
+
+    _getPreservedLayoutPadding() {
+        const edgePadding = this._toNonNegativeNumber(this.options.edgePadding, 0);
+        return {
+            top: this._toNonNegativeNumber(this.options.topMargin, 0),
+            right: edgePadding,
+            bottom: this._toNonNegativeNumber(this.options.bottomMargin, 0),
+            left: edgePadding
+        };
+    }
+
+    _getCompactLayoutPadding() {
+        if (this.options.contentPadding !== undefined) {
+            return this._normalizePadding(this.options.contentPadding);
+        }
+
+        if (this.options.fitPadding !== undefined) {
+            return this._normalizePadding(this.options.fitPadding);
+        }
+
+        if (this.options.fitToContent && this._hasProvidedOption('edgePadding')) {
+            return this._normalizePadding(this.options.edgePadding);
+        }
+
+        return this._normalizePadding(this.options.compactBleed);
+    }
+
+    _getLayoutPadding({ preserveAxes = this._getPreserveContainerAxes() } = {}) {
+        const preserved = this._getPreservedLayoutPadding();
+        const compact = this._getCompactLayoutPadding();
+
+        return {
+            top: preserveAxes.height ? preserved.top : compact.top,
+            right: preserveAxes.width ? preserved.right : compact.right,
+            bottom: preserveAxes.height ? preserved.bottom : compact.bottom,
+            left: preserveAxes.width ? preserved.left : compact.left
+        };
+    }
+
+    _getCanvasDimensions() {
+        const widthAttr = this._toFiniteNumber(this.svg?.svgObject?.getAttribute?.('width'), 0);
+        const heightAttr = this._toFiniteNumber(this.svg?.svgObject?.getAttribute?.('height'), 0);
+        if (widthAttr > 0 && heightAttr > 0) {
+            return { width: widthAttr, height: heightAttr };
+        }
+
+        const viewBox = this.svg?.svgObject?.getAttribute?.('viewBox') || '';
+        const parts = viewBox.split(/\s+/).map(Number).filter(Number.isFinite);
+        if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
+            return { width: parts[2], height: parts[3] };
+        }
+
+        return {
+            width: this.container.offsetWidth || 0,
+            height: this.container.offsetHeight || 0
+        };
+    }
+
     _needsDeferredLayout() {
         if (!this.node || typeof window === 'undefined') return false;
         if (!this.container?.isConnected || !this.svg?.svgObject?.isConnected) return true;
@@ -259,8 +381,7 @@ export class omdDisplay {
             }
 
             this._deferredLayoutAttempts = 0;
-            this._prepareNodeForLayout(this.node);
-            this._applyLayoutOptions();
+            this._refreshCurrentNodeLayout();
         });
     }
 
@@ -271,6 +392,19 @@ export class omdDisplay {
         }
         this._deferredLayoutFrame = null;
         this._deferredLayoutAttempts = 0;
+    }
+
+    _scheduleFontReadyLayoutRefresh() {
+        if (typeof document === 'undefined') return;
+        const fontReady = document.fonts?.ready;
+        if (!fontReady || typeof fontReady.then !== 'function') return;
+
+        fontReady.then(() => {
+            if (this._destroyed || !this.node) return;
+            this._refreshCurrentNodeLayout();
+        }).catch(() => {
+            // Font readiness is best-effort; rendering should not depend on it.
+        });
     }
 
     _appendNode(node) {
@@ -309,12 +443,56 @@ export class omdDisplay {
             while (this._contentGroup.lastChild) {
                 this._contentGroup.removeChild(this._contentGroup.lastChild);
             }
+
+            if (Array.isArray(this.svg?.childList)) {
+                for (const child of this.svg.childList.slice()) {
+                    if (!child?.svgObject || child.svgObject === this._contentGroup) continue;
+                    try {
+                        if (this.svg.svgObject?.contains(child.svgObject)) {
+                            this.svg.svgObject.removeChild(child.svgObject);
+                        }
+                    } catch (_) {
+                        // no-op
+                    }
+                }
+                this.svg.childList = [];
+            }
             return;
         }
 
         if (typeof this.svg?.removeAllChildren === 'function') {
             this.svg.removeAllChildren();
         }
+    }
+
+    _resetRenderedContent() {
+        this._cancelDeferredLayout();
+        this._removeAllContentChildren();
+        this.node = null;
+    }
+
+    _layoutCurrentNode() {
+        if (!this.node) return;
+        this._applyLayoutOptions();
+        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
+    }
+
+    _refreshCurrentNodeLayout() {
+        if (!this.node) return;
+        this._prepareNodeForLayout(this.node);
+        this._layoutCurrentNode();
+    }
+
+    _mountRootNode(node, { append = true } = {}) {
+        if (!node) {
+            throw new Error('omdDisplay.render() was unable to create a node from the provided expression.');
+        }
+
+        this.node = node;
+        this._captureBaseNodeScale(this.node);
+        if (append) this._appendNode(this.node);
+        this._refreshCurrentNodeLayout();
+        return this.node;
     }
 
     _captureBaseNodeScale(node = this.node) {
@@ -426,6 +604,42 @@ export class omdDisplay {
         };
     }
 
+    _getSvgBBox(element) {
+        if (!element || typeof element.getBBox !== 'function') return null;
+
+        try {
+            return element.getBBox({ stroke: true, markers: true });
+        } catch (_) {
+            try {
+                return element.getBBox();
+            } catch (_) {
+                return null;
+            }
+        }
+    }
+
+    _boundsFromBBox(bbox, matrix = null) {
+        if (!bbox) return this._normalizeBounds(0, 0, 0, 0);
+
+        if (!matrix) {
+            return this._normalizeBounds(bbox.x, bbox.y, bbox.x + bbox.width, bbox.y + bbox.height);
+        }
+
+        const corners = [
+            this._transformPoint(matrix, bbox.x, bbox.y),
+            this._transformPoint(matrix, bbox.x + bbox.width, bbox.y),
+            this._transformPoint(matrix, bbox.x, bbox.y + bbox.height),
+            this._transformPoint(matrix, bbox.x + bbox.width, bbox.y + bbox.height)
+        ];
+
+        return this._normalizeBounds(
+            Math.min(...corners.map(point => point.x)),
+            Math.min(...corners.map(point => point.y)),
+            Math.max(...corners.map(point => point.x)),
+            Math.max(...corners.map(point => point.y))
+        );
+    }
+
     _normalizeBounds(minX, minY, maxX, maxY) {
         if (![minX, minY, maxX, maxY].every(Number.isFinite)) {
             return { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0 };
@@ -439,6 +653,25 @@ export class omdDisplay {
             width: Math.max(0, maxX - minX),
             height: Math.max(0, maxY - minY)
         };
+    }
+
+    _unionBounds(boundsList) {
+        const validBounds = boundsList.filter(bounds => (
+            bounds &&
+            [bounds.minX, bounds.minY, bounds.maxX, bounds.maxY].every(Number.isFinite) &&
+            (bounds.width > 0 || bounds.height > 0)
+        ));
+
+        if (!validBounds.length) {
+            return this._normalizeBounds(0, 0, 0, 0);
+        }
+
+        return this._normalizeBounds(
+            Math.min(...validBounds.map(bounds => bounds.minX)),
+            Math.min(...validBounds.map(bounds => bounds.minY)),
+            Math.max(...validBounds.map(bounds => bounds.maxX)),
+            Math.max(...validBounds.map(bounds => bounds.maxY))
+        );
     }
 
     _getMatrixRelativeToNode(target) {
@@ -464,62 +697,17 @@ export class omdDisplay {
         }
 
         try {
-            const bbox = target.svgObject?.getBBox?.();
+            const bbox = this._getSvgBBox(target.svgObject);
             if (bbox) {
                 const matrix = this._getMatrixRelativeToNode(target);
-                if (!matrix) {
-                    return this._normalizeBounds(bbox.x, bbox.y, bbox.x + bbox.width, bbox.y + bbox.height);
-                }
-
-                const corners = [
-                    this._transformPoint(matrix, bbox.x, bbox.y),
-                    this._transformPoint(matrix, bbox.x + bbox.width, bbox.y),
-                    this._transformPoint(matrix, bbox.x, bbox.y + bbox.height),
-                    this._transformPoint(matrix, bbox.x + bbox.width, bbox.y + bbox.height)
-                ];
-
-                return this._normalizeBounds(
-                    Math.min(...corners.map(point => point.x)),
-                    Math.min(...corners.map(point => point.y)),
-                    Math.max(...corners.map(point => point.x)),
-                    Math.max(...corners.map(point => point.y))
-                );
+                const visualBounds = this._boundsFromBBox(bbox, matrix);
+                return this._unionBounds([visualBounds, this._fallbackBoundsRelativeToNode(target)]);
             }
         } catch (_) {
             // Fall through to structural fallback below.
         }
 
         return this._fallbackBoundsRelativeToNode(target);
-    }
-
-    _measureBoundsInRoot(target = this._getLayoutTarget()) {
-        if (!target?.svgObject) {
-            return this._normalizeBounds(0, 0, 0, 0);
-        }
-
-        try {
-            const bbox = target.svgObject.getBBox?.();
-            const ctm = target.svgObject.getCTM?.();
-            if (!bbox || !ctm) {
-                return this._normalizeBounds(bbox?.x || 0, bbox?.y || 0, (bbox?.x || 0) + (bbox?.width || 0), (bbox?.y || 0) + (bbox?.height || 0));
-            }
-
-            const corners = [
-                this._transformPoint(ctm, bbox.x, bbox.y),
-                this._transformPoint(ctm, bbox.x + bbox.width, bbox.y),
-                this._transformPoint(ctm, bbox.x, bbox.y + bbox.height),
-                this._transformPoint(ctm, bbox.x + bbox.width, bbox.y + bbox.height)
-            ];
-
-            return this._normalizeBounds(
-                Math.min(...corners.map(point => point.x)),
-                Math.min(...corners.map(point => point.y)),
-                Math.max(...corners.map(point => point.x)),
-                Math.max(...corners.map(point => point.y))
-            );
-        } catch (_) {
-            return this._normalizeBounds(0, 0, 0, 0);
-        }
     }
 
     _fallbackBoundsRelativeToNode(target) {
@@ -584,27 +772,36 @@ export class omdDisplay {
         return this._transformPoint(matrix, alignmentNode.alignPointX, 0).x;
     }
 
-    _computeAutoScale(bounds) {
+    _computeAutoScale(bounds, { preserveAxes = this._getPreserveContainerAxes() } = {}) {
         const baseScale = this._getBaseNodeScale();
         if (!this.options.autoScale || !bounds.width || !bounds.height) {
+            return baseScale;
+        }
+
+        const constrainToCanvas = this.options.expandViewboxToFitContent === false;
+        const constrainWidth = preserveAxes.width || constrainToCanvas;
+        const constrainHeight = preserveAxes.height || constrainToCanvas;
+
+        if (!constrainWidth && !constrainHeight) {
             return baseScale;
         }
 
         const overlay = this._getOverlayMetrics();
         const naturalWidth = Math.max(bounds.width * baseScale, overlay.width);
         const naturalHeight = Math.max(1, bounds.height * baseScale + overlay.totalHeight);
+        const padding = this._getLayoutPadding({ preserveAxes });
 
-        const containerWidth = this.container.offsetWidth || naturalWidth;
-        const containerHeight = this.container.offsetHeight || naturalHeight;
-        const availWidth = Math.max(1, containerWidth - (this.options.edgePadding || 0) * 2);
-        const availHeight = Math.max(1, containerHeight - (this.options.topMargin || 0) - (this.options.bottomMargin || 0));
+        const containerWidth = this.container.offsetWidth || naturalWidth + padding.left + padding.right;
+        const containerHeight = this.container.offsetHeight || naturalHeight + padding.top + padding.bottom;
+        const availWidth = Math.max(1, containerWidth - padding.left - padding.right);
+        const availHeight = Math.max(1, containerHeight - padding.top - padding.bottom);
         const maxScale = typeof this.options.maxScale === 'number' && this.options.maxScale > 0
             ? this.options.maxScale
             : Infinity;
 
         const scaleFactor = Math.min(
-            availWidth / Math.max(1, naturalWidth),
-            availHeight / Math.max(1, naturalHeight),
+            constrainWidth ? availWidth / Math.max(1, naturalWidth) : Infinity,
+            constrainHeight ? availHeight / Math.max(1, naturalHeight) : Infinity,
             maxScale / baseScale
         );
 
@@ -615,68 +812,140 @@ export class omdDisplay {
         return baseScale * scaleFactor;
     }
 
+    _createLayoutContext({ centered }) {
+        const bounds = this._measureBoundsRelativeToNode();
+        const overlay = this._getOverlayMetrics();
+        const preserveAxes = this._getPreserveContainerAxes();
+        const scale = this._computeAutoScale(bounds, { preserveAxes });
+
+        return {
+            centered,
+            bounds,
+            overlay,
+            preserveAxes,
+            scale,
+            padding: this._getLayoutPadding({ preserveAxes }),
+            containerWidth: this.container.offsetWidth || 0,
+            containerHeight: this.container.offsetHeight || 0,
+            allowOverflow: this.options.expandViewboxToFitContent !== false,
+            scaledWidth: bounds.width * scale,
+            scaledHeight: bounds.height * scale,
+            anchorX: centered ? this._getAlignmentAnchorX() : null
+        };
+    }
+
+    _computeRequiredCanvasSize(layout) {
+        let requiredWidth = layout.padding.left + layout.padding.right + layout.scaledWidth;
+        if (layout.anchorX !== null) {
+            const leftExtent = (layout.anchorX - layout.bounds.minX) * layout.scale;
+            const rightExtent = (layout.bounds.maxX - layout.anchorX) * layout.scale;
+            requiredWidth = layout.padding.left + layout.padding.right + Math.max(leftExtent, rightExtent) * 2;
+        }
+        requiredWidth = Math.max(requiredWidth, layout.padding.left + layout.padding.right + layout.overlay.width);
+
+        const requiredHeight = layout.padding.top + layout.padding.bottom + layout.overlay.totalHeight + layout.scaledHeight;
+        return { width: requiredWidth, height: requiredHeight };
+    }
+
+    _resolveCanvasSize(layout, requiredSize) {
+        const width = layout.allowOverflow
+            ? (
+                layout.preserveAxes.width
+                    ? Math.max(layout.containerWidth, Math.ceil(requiredSize.width))
+                    : Math.max(1, Math.ceil(requiredSize.width))
+            )
+            : Math.max(1, layout.containerWidth || Math.ceil(requiredSize.width));
+
+        const height = layout.allowOverflow
+            ? (
+                layout.preserveAxes.height
+                    ? Math.max(layout.containerHeight, Math.ceil(requiredSize.height))
+                    : Math.max(1, Math.ceil(requiredSize.height))
+            )
+            : Math.max(1, layout.containerHeight || Math.ceil(requiredSize.height));
+
+        return { width, height };
+    }
+
+    _computeNodePosition(layout, canvasSize) {
+        let x;
+        if (layout.anchorX !== null) {
+            const availableWidth = Math.max(0, canvasSize.width - layout.padding.left - layout.padding.right);
+            x = layout.padding.left + availableWidth / 2 - layout.anchorX * layout.scale;
+        } else {
+            const availableWidth = Math.max(0, canvasSize.width - layout.padding.left - layout.padding.right);
+            const desiredMinX = layout.centered
+                ? layout.padding.left + Math.max(0, (availableWidth - layout.scaledWidth) / 2)
+                : layout.padding.left;
+            x = desiredMinX - layout.bounds.minX * layout.scale;
+        }
+
+        const availableHeight = Math.max(0, canvasSize.height - layout.padding.top - layout.padding.bottom - layout.overlay.totalHeight);
+        const desiredMinY = layout.centered
+            ? layout.padding.top + Math.max(0, (availableHeight - layout.scaledHeight) / 2)
+            : layout.padding.top;
+
+        return {
+            x,
+            y: desiredMinY - layout.bounds.minY * layout.scale
+        };
+    }
+
+    _applyNodeTransform({ scale, x, y }) {
+        if (typeof this.node.setScale === 'function') {
+            this.node.setScale(scale);
+        }
+        if (typeof this.node.setPosition === 'function') {
+            this.node.setPosition(x, y);
+        }
+    }
+
     _layoutToPosition({ centered }) {
         if (!this.node) return;
 
         this._closeTransientUi();
 
-        const bounds = this._measureBoundsRelativeToNode();
-        const overlay = this._getOverlayMetrics();
-        const scale = this._computeAutoScale(bounds);
-        const edgePadding = this.options.edgePadding || 0;
-        const topMargin = this.options.topMargin || 0;
-        const bottomMargin = this.options.bottomMargin || 0;
-        const containerWidth = this.container.offsetWidth || 0;
-        const containerHeight = this.container.offsetHeight || 0;
-        const allowOverflow = this.options.expandViewboxToFitContent !== false;
+        const layout = this._createLayoutContext({ centered });
+        const requiredSize = this._computeRequiredCanvasSize(layout);
+        const canvasSize = this._resolveCanvasSize(layout, requiredSize);
+        const position = this._computeNodePosition(layout, canvasSize);
 
-        if (typeof this.node.setScale === 'function') {
-            this.node.setScale(scale);
-        }
-
-        const scaledWidth = bounds.width * scale;
-        const scaledHeight = bounds.height * scale;
-        const anchorX = centered ? this._getAlignmentAnchorX() : null;
-
-        let requiredWidth = edgePadding * 2 + scaledWidth;
-        if (anchorX !== null) {
-            const leftExtent = (anchorX - bounds.minX) * scale;
-            const rightExtent = (bounds.maxX - anchorX) * scale;
-            requiredWidth = edgePadding * 2 + Math.max(leftExtent, rightExtent) * 2;
-        }
-        requiredWidth = Math.max(requiredWidth, edgePadding * 2 + overlay.width);
-
-        const requiredHeight = topMargin + bottomMargin + overlay.totalHeight + scaledHeight;
-        const canvasWidth = allowOverflow ? Math.max(containerWidth, Math.ceil(requiredWidth)) : Math.max(1, containerWidth);
-        const canvasHeight = allowOverflow ? Math.max(containerHeight, Math.ceil(requiredHeight)) : Math.max(1, containerHeight);
-
-        this._setCanvasSize(canvasWidth, canvasHeight);
-        this._applyContainerOverflow(canvasWidth, canvasHeight);
-
-        let x;
-        if (anchorX !== null) {
-            x = canvasWidth / 2 - anchorX * scale;
-        } else {
-            const availableWidth = Math.max(0, canvasWidth - edgePadding * 2);
-            const desiredMinX = centered
-                ? edgePadding + Math.max(0, (availableWidth - scaledWidth) / 2)
-                : edgePadding;
-            x = desiredMinX - bounds.minX * scale;
-        }
-
-        const availableHeight = Math.max(0, canvasHeight - topMargin - bottomMargin - overlay.totalHeight);
-        const desiredMinY = centered
-            ? topMargin + Math.max(0, (availableHeight - scaledHeight) / 2)
-            : topMargin;
-        const y = desiredMinY - bounds.minY * scale;
-
-        if (typeof this.node.setPosition === 'function') {
-            this.node.setPosition(x, y);
-        }
-
+        this._applyNodeTransform({ scale: layout.scale, ...position });
+        this._setCanvasSize(canvasSize.width, canvasSize.height);
+        this._applyContainerOverflow(canvasSize.width, canvasSize.height);
         this._repositionOverlayToolbar();
         if (this.options.debugExtents) this._drawDebugOverlays();
         else this._clearDebugOverlays();
+    }
+
+    _getPreserveContainerAxes() {
+        const mode = this.options.preserveContainerSize;
+        if (mode === true) return { width: true, height: true };
+        if (mode === false) return { width: false, height: false };
+        if (mode === 'width') return { width: true, height: false };
+        if (mode === 'height') return { width: false, height: true };
+        if (mode && typeof mode === 'object') {
+            return {
+                width: mode.width !== false,
+                height: mode.height !== false
+            };
+        }
+
+        // Keep the historical full-pane behavior for equation-style layouts,
+        // but allow compact content-sized SVGs for standalone visuals.
+        const type = this.node?.type || '';
+        const hasSequenceApi = !!(this.node && typeof this.node.getSequence === 'function');
+        const isEquationLike =
+            hasSequenceApi ||
+            type.includes('Equation') ||
+            type.includes('equation') ||
+            type.includes('Stack') ||
+            type.includes('stack');
+
+        return {
+            width: isEquationLike,
+            height: isEquationLike
+        };
     }
 
     _applyLayoutOptions() {
@@ -694,105 +963,6 @@ export class omdDisplay {
         } else {
             this._layoutToPosition({ centered: false });
         }
-    }
-
-    /**
-     * Ensure the internal SVG canvas is large enough to contain the current content.
-     * This preserves visual scale by expanding the canvas, not by changing centering math.
-     * @param {number} _contentWidth
-     * @param {number} _contentHeight
-     */
-    _ensureViewboxFits(_contentWidth, _contentHeight) {
-        if (!this.node) return;
-
-        const pad = 10;
-        let rootBounds = this._measureBoundsInRoot();
-        if (!rootBounds.width && !rootBounds.height) return;
-
-        let dx = 0;
-        let dy = 0;
-        if (rootBounds.minX < pad) dx = pad - rootBounds.minX;
-        if (rootBounds.minY < pad) dy = pad - rootBounds.minY;
-
-        if ((dx || dy) && typeof this.node.setPosition === 'function') {
-            this.node.setPosition((this.node.xpos || 0) + dx, (this.node.ypos || 0) + dy);
-            rootBounds = this._measureBoundsInRoot();
-        }
-
-        const containerWidth = this.container.offsetWidth || 0;
-        const containerHeight = this.container.offsetHeight || 0;
-        const canvasWidth = Math.max(containerWidth, Math.ceil(rootBounds.maxX + pad));
-        const canvasHeight = Math.max(containerHeight, Math.ceil(rootBounds.maxY + pad));
-
-        this._setCanvasSize(canvasWidth, canvasHeight);
-        this._applyContainerOverflow(canvasWidth, canvasHeight);
-    }
-
-    /**
-     * Walk the node tree and compute absolute extents in SVG coordinates.
-     * Uses `xpos`/`ypos` and `width`/`height` properties; falls back to 0 when missing.
-     * @param {omdNode} root
-     * @returns {{minX:number,minY:number,maxX:number,maxY:number}}
-     */
-    _computeNodeExtents(root) {
-        if (!root) return null;
-        const visited = new Set();
-        const stack = [{ node: root, absX: root.xpos || 0, absY: root.ypos || 0 }];
-        let minX = Infinity;
-        let minY = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
-
-        while (stack.length) {
-            const { node, absX, absY } = stack.pop();
-            if (!node || visited.has(node)) continue;
-            visited.add(node);
-
-            const w = node.width || 0;
-            const h = node.height || 0;
-            const nx = absX;
-            const ny = absY;
-
-            minX = Math.min(minX, nx);
-            minY = Math.min(minY, ny);
-            maxX = Math.max(maxX, nx + w);
-            maxY = Math.max(maxY, ny + h);
-
-            if (Array.isArray(node.childList)) {
-                for (const child of node.childList) {
-                    if (!child) continue;
-                    stack.push({
-                        node: child,
-                        absX: nx + (child.xpos || 0),
-                        absY: ny + (child.ypos || 0)
-                    });
-                }
-            }
-
-            if (node.argumentNodeList) {
-                for (const value of Object.values(node.argumentNodeList)) {
-                    if (Array.isArray(value)) {
-                        value.forEach(child => {
-                            if (!child) return;
-                            stack.push({
-                                node: child,
-                                absX: nx + (child.xpos || 0),
-                                absY: ny + (child.ypos || 0)
-                            });
-                        });
-                    } else if (value) {
-                        stack.push({
-                            node: value,
-                            absX: nx + (value.xpos || 0),
-                            absY: ny + (value.ypos || 0)
-                        });
-                    }
-                }
-            }
-        }
-
-        if (minX === Infinity) return null;
-        return { minX, minY, maxX, maxY };
     }
 
     /**
@@ -823,18 +993,12 @@ export class omdDisplay {
 
             try {
                 if (node.svgObject && typeof node.svgObject.getBBox === 'function' && typeof node.svgObject.getCTM === 'function') {
-                    const bbox = node.svgObject.getBBox();
                     const ctm = node.svgObject.getCTM();
-                    const corners = [
-                        this._transformPoint(ctm, bbox.x, bbox.y),
-                        this._transformPoint(ctm, bbox.x + bbox.width, bbox.y),
-                        this._transformPoint(ctm, bbox.x, bbox.y + bbox.height),
-                        this._transformPoint(ctm, bbox.x + bbox.width, bbox.y + bbox.height)
-                    ];
-                    nminX = Math.min(...corners.map(point => point.x));
-                    nminY = Math.min(...corners.map(point => point.y));
-                    nmaxX = Math.max(...corners.map(point => point.x));
-                    nmaxY = Math.max(...corners.map(point => point.y));
+                    const bounds = this._boundsFromBBox(this._getSvgBBox(node.svgObject), ctm);
+                    nminX = bounds.minX;
+                    nminY = bounds.minY;
+                    nmaxX = bounds.maxX;
+                    nmaxY = bounds.maxY;
                 } else {
                     nmaxX = absX + (node.width || 0);
                     nmaxY = absY + (node.height || 0);
@@ -902,8 +1066,7 @@ export class omdDisplay {
 
         this._clearDebugOverlays();
 
-        const ns = 'http://www.w3.org/2000/svg';
-        const group = document.createElementNS(ns, 'g');
+        const group = document.createElementNS(SVG_NS, 'g');
         group.setAttribute('id', 'omd-debug-overlays');
         group.setAttribute('pointer-events', 'none');
 
@@ -912,7 +1075,7 @@ export class omdDisplay {
 
         const { nodes, minX, minY, maxX, maxY } = collected;
 
-        const contentRect = document.createElementNS(ns, 'rect');
+        const contentRect = document.createElementNS(SVG_NS, 'rect');
         contentRect.setAttribute('x', String(minX));
         contentRect.setAttribute('y', String(minY));
         contentRect.setAttribute('width', String(maxX - minX));
@@ -928,7 +1091,7 @@ export class omdDisplay {
             const parts = curView.split(/\s+/).map(Number).filter(n => !Number.isNaN(n));
             if (parts.length === 4) {
                 const [vx, vy, vw, vh] = parts;
-                const vbRect = document.createElementNS(ns, 'rect');
+                const vbRect = document.createElementNS(SVG_NS, 'rect');
                 vbRect.setAttribute('x', String(vx));
                 vbRect.setAttribute('y', String(vy));
                 vbRect.setAttribute('width', String(vw));
@@ -943,7 +1106,7 @@ export class omdDisplay {
 
         const overflowing = [];
         for (const item of nodes) {
-            const rect = document.createElementNS(ns, 'rect');
+            const rect = document.createElementNS(SVG_NS, 'rect');
             rect.setAttribute('x', String(item.minX));
             rect.setAttribute('y', String(item.minY));
             rect.setAttribute('width', String(Math.max(0, item.maxX - item.minX)));
@@ -1061,8 +1224,7 @@ export class omdDisplay {
         const bounds = this._measureBoundsRelativeToNode();
         const overlay = this._getOverlayMetrics();
         const scale = this._getBaseNodeScale();
-        const paddingX = Math.max(10, this.options.edgePadding || 0);
-        const paddingY = 10;
+        const padding = this._getCompactLayoutPadding();
 
         if (typeof this.node.setScale === 'function') {
             this.node.setScale(scale);
@@ -1070,10 +1232,10 @@ export class omdDisplay {
 
         const contentWidth = bounds.width * scale;
         const contentHeight = bounds.height * scale;
-        const canvasWidth = Math.ceil(Math.max(contentWidth + paddingX * 2, overlay.width + paddingX * 2, 1));
-        const canvasHeight = Math.ceil(Math.max(contentHeight + overlay.totalHeight + paddingY * 2, 1));
-        const x = paddingX - bounds.minX * scale;
-        const y = paddingY - bounds.minY * scale;
+        const canvasWidth = Math.ceil(Math.max(contentWidth + padding.left + padding.right, overlay.width + padding.left + padding.right, 1));
+        const canvasHeight = Math.ceil(Math.max(contentHeight + overlay.totalHeight + padding.top + padding.bottom, 1));
+        const x = padding.left - bounds.minX * scale;
+        const y = padding.top - bounds.minY * scale;
 
         if (typeof this.node.setPosition === 'function') {
             this.node.setPosition(x, y);
@@ -1095,34 +1257,22 @@ export class omdDisplay {
      * @returns {omdNode} The rendered node
      */
     render(expression) {
-        if (this.node) {
-            this._removeNodeFromDom(this.node);
-        }
+        this._resetRenderedContent();
 
+        let nextNode;
         if (typeof expression === 'string') {
             const steps = this._createNodesFromString(expression);
-            this.node = this._createStackFromSteps(steps);
+            nextNode = this._createStackFromSteps(steps);
         } else if (Array.isArray(expression)) {
             const steps = expression
                 .flatMap(item => (typeof item === 'string' ? this._createNodesFromString(item) : item))
                 .filter(Boolean);
-            this.node = this._createStackFromSteps(steps);
+            nextNode = this._createStackFromSteps(steps);
         } else {
-            this.node = expression;
+            nextNode = expression;
         }
 
-        if (!this.node) {
-            throw new Error('omdDisplay.render() was unable to create a node from the provided expression.');
-        }
-
-        this._captureBaseNodeScale(this.node);
-        this._appendNode(this.node);
-        this._prepareNodeForLayout(this.node);
-        this._applyFontStylesToSvg();
-        this._applyLayoutOptions();
-        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
-
-        return this.node;
+        return this._mountRootNode(nextNode);
     }
 
     /**
@@ -1133,18 +1283,15 @@ export class omdDisplay {
     addChild(child) {
         if (!child) return child;
 
-        if (this._contentGroup && child.svgObject) {
-            try {
-                this._contentGroup.appendChild(child.svgObject);
-            } catch (_) {
-                this.svg.addChild(child);
-            }
-        } else {
-            this.svg.addChild(child);
+        const shouldBecomeRoot = !this.node;
+
+        this._appendNode(child);
+
+        if (shouldBecomeRoot) {
+            return this._mountRootNode(child, { append: false });
         }
 
-        this._applyLayoutOptions();
-        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
+        this._layoutCurrentNode();
         return child;
     }
 
@@ -1164,8 +1311,7 @@ export class omdDisplay {
             this._syncViewboxToContainer();
             this._clearDebugOverlays();
         } else if (this.node) {
-            this._applyLayoutOptions();
-            if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
+            this._layoutCurrentNode();
         }
     }
 
@@ -1179,17 +1325,8 @@ export class omdDisplay {
             return;
         }
 
-        if (this.node) {
-            this._removeNodeFromDom(this.node);
-        }
-
-        this.node = newNode;
-        this._captureBaseNodeScale(this.node);
-        this._appendNode(this.node);
-        this._prepareNodeForLayout(this.node);
-        this._applyFontStylesToSvg();
-        this._applyLayoutOptions();
-        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
+        this._resetRenderedContent();
+        this._mountRootNode(newNode);
     }
 
     /**
@@ -1200,9 +1337,7 @@ export class omdDisplay {
         this.options.fontSize = size;
         if (!this.node) return;
 
-        this._prepareNodeForLayout(this.node);
-        this._applyLayoutOptions();
-        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
+        this._refreshCurrentNodeLayout();
     }
 
     /**
@@ -1219,23 +1354,14 @@ export class omdDisplay {
             return;
         }
 
-        this._prepareNodeForLayout(this.node);
-        this._applyLayoutOptions();
-        if (this._needsDeferredLayout()) this._scheduleDeferredLayout();
+        this._refreshCurrentNodeLayout();
     }
 
     /**
      * Clears the display
      */
     clear() {
-        this._cancelDeferredLayout();
-
-        if (this.node) {
-            this._removeNodeFromDom(this.node);
-            this.node = null;
-        }
-
-        this._removeAllContentChildren();
+        this._resetRenderedContent();
         this._restoreContainerSize();
         this._restoreContainerOverflow();
         this._syncViewboxToContainer();
@@ -1246,6 +1372,7 @@ export class omdDisplay {
      * Destroys the renderer and cleans up resources
      */
     destroy() {
+        this._destroyed = true;
         this.clear();
         this._unregisterGlobalRefreshHook();
         this._cancelDeferredLayout();
@@ -1270,8 +1397,7 @@ export class omdDisplay {
             && typeof node.positionToolbarOverlay === 'function';
 
         if (hasOverlayApi && node.isToolbarOverlay()) {
-            const containerWidth = this.container.offsetWidth || 0;
-            const containerHeight = this.container.offsetHeight || 0;
+            const { width: containerWidth, height: containerHeight } = this._getCanvasDimensions();
             const padding = typeof node.getOverlayPadding === 'function'
                 ? node.getOverlayPadding()
                 : 16;
