@@ -7,6 +7,7 @@ import {
     omdRectangle,
     omdEllipse,
     omdCircle,
+    omdAngle,
     omdRegularPolygon
 } from "./omdShapes.js";
 
@@ -598,6 +599,7 @@ export class omdCoordinatePlane extends jsvgGroup {
             rectangle: omdRectangle,
             ellipse: omdEllipse,
             circle: omdCircle,
+            angle: omdAngle,
             regularPolygon: omdRegularPolygon
         };
 

@@ -321,8 +321,36 @@ Geometric shapes for visualization.
 ```json
 {
   "omdType": "circle",
-  "radius": 10,
-  "color": "#FF0000"
+  "radius": 4,
+  "unitScale": 40,
+  "points": [
+    { "name": "A", "type": "center" },
+    { "name": "B", "angle": 0 },
+    { "name": "C", "angle": 115 },
+    { "name": "D", "angle": 230 },
+    { "name": "E", "angle": 180 }
+  ],
+  "segments": [
+    { "from": "E", "to": "B" },
+    { "from": "A", "to": "C", "label": "4 cm", "labelOffset": 30 },
+    { "from": "A", "to": "D" }
+  ]
+}
+```
+
+**Angle:**
+```json
+{
+  "omdType": "angle",
+  "rays": [
+    { "angle": 0 },
+    { "angle": 50 }
+  ],
+  "angles": [
+    { "from": 0, "to": 1, "label": "a°" }
+  ],
+  "strokeColor": "#0796C8",
+  "strokeWidth": 3
 }
 ```
 

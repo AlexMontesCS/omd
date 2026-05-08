@@ -1904,6 +1904,37 @@
                 {
                   "name": "omdType",
                   "type": "string",
+                  "default": "angle",
+                  "optional": false,
+                  "enum": [
+                    "angle"
+                  ]
+                },
+                {
+                  "name": "rays",
+                  "type": "array",
+                  "default": [
+                    { "angle": 0 },
+                    { "angle": 55 }
+                  ],
+                  "optional": false
+                },
+                {
+                  "name": "angles",
+                  "type": "array",
+                  "default": [
+                    { "from": 0, "to": 1, "label": "a°" }
+                  ],
+                  "optional": true
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "fields": [
+                {
+                  "name": "omdType",
+                  "type": "string",
                   "default": "regularPolygon",
                   "optional": false,
                   "enum": [
@@ -3662,7 +3693,7 @@
     ]
   },
   "circle": {
-    "notes": "Do NOT use 'color'. Use radius and unitScale.",
+    "notes": "Do NOT use top-level 'color'. Use radius and unitScale. Nested point and segment color fields are supported.",
     "fields": [
       {
         "name": "radius",
@@ -3674,7 +3705,7 @@
       {
         "name": "unitScale",
         "type": "number",
-        "default": 15,
+        "default": 10,
         "optional": true,
         "description": "Pixels per unit"
       },
@@ -3684,6 +3715,275 @@
         "default": false,
         "optional": true,
         "description": "Show center radius label"
+      },
+      {
+        "name": "points",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Named circle points to render. Use { name, label, type: 'center' } for the center, or { name, label, angle } for circumference points. Angles are degrees with 0 at the right and 90 at the top.",
+        "itemSchema": {
+          "type": "object",
+          "description": "A named point on the circle or at its center",
+          "fields": [
+            {
+              "name": "name",
+              "type": "string",
+              "default": "A",
+              "optional": false,
+              "description": "Point identifier used by segments.from/to"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "default": "",
+              "optional": true,
+              "description": "Displayed point label. Defaults to name when omitted"
+            },
+            {
+              "name": "type",
+              "type": "string",
+              "default": "",
+              "optional": true,
+              "description": "Use 'center' to place the point at the circle center; omit for circumference points",
+              "enum": [
+                "",
+                "center"
+              ]
+            },
+            {
+              "name": "angle",
+              "type": "number",
+              "default": 0,
+              "optional": true,
+              "description": "Circumference angle in degrees. 0 is right, 90 is top"
+            },
+            {
+              "name": "distance",
+              "type": "number",
+              "default": 1,
+              "optional": true,
+              "description": "Radial distance as a multiple of radius. 1 places the point on the circumference"
+            },
+            {
+              "name": "labelOffset",
+              "type": "number",
+              "default": 13,
+              "optional": true,
+              "description": "Point label offset in pixels. May also be an object { x, y } for absolute pixel offset"
+            },
+            {
+              "name": "pointRadius",
+              "type": "number",
+              "default": 4,
+              "optional": true,
+              "description": "Point dot radius in pixels"
+            },
+            {
+              "name": "showDot",
+              "type": "boolean",
+              "default": true,
+              "optional": true,
+              "description": "Whether to render the point dot"
+            },
+            {
+              "name": "dotColor",
+              "type": "string",
+              "default": "black",
+              "optional": true,
+              "description": "Point dot color"
+            },
+            {
+              "name": "color",
+              "type": "string",
+              "default": "black",
+              "optional": true,
+              "description": "Point label text color"
+            },
+            {
+              "name": "fontSize",
+              "type": "number",
+              "default": 16,
+              "optional": true,
+              "description": "Point label font size in pixels"
+            },
+            {
+              "name": "align",
+              "type": "string",
+              "default": "center",
+              "optional": true,
+              "description": "Point label alignment",
+              "enum": [
+                "left",
+                "center",
+                "right"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "segments",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Line segments between named points. Each item supports { from, to, label, labelOffset, labelPosition, color, labelColor, strokeWidth, fontSize }.",
+        "itemSchema": {
+          "type": "object",
+          "description": "A line segment between two named circle points",
+          "fields": [
+            {
+              "name": "from",
+              "type": "string",
+              "default": "A",
+              "optional": false,
+              "description": "Start point name. Must match a point name or label"
+            },
+            {
+              "name": "to",
+              "type": "string",
+              "default": "B",
+              "optional": false,
+              "description": "End point name. Must match a point name or label"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "default": "",
+              "optional": true,
+              "description": "Optional segment label text"
+            },
+            {
+              "name": "labelOffset",
+              "type": "number",
+              "default": 22,
+              "optional": true,
+              "description": "Perpendicular label offset in pixels. May also be an object { x, y } for absolute pixel offset"
+            },
+            {
+              "name": "labelPosition",
+              "type": "number",
+              "default": 0.5,
+              "optional": true,
+              "description": "Position of label along the segment, from 0 at from-point to 1 at to-point"
+            },
+            {
+              "name": "color",
+              "type": "string",
+              "default": "black",
+              "optional": true,
+              "description": "Segment stroke color"
+            },
+            {
+              "name": "labelColor",
+              "type": "string",
+              "default": "black",
+              "optional": true,
+              "description": "Segment label text color"
+            },
+            {
+              "name": "strokeWidth",
+              "type": "number",
+              "default": 2,
+              "optional": true,
+              "description": "Segment stroke width in pixels"
+            },
+            {
+              "name": "fontSize",
+              "type": "number",
+              "default": 16,
+              "optional": true,
+              "description": "Segment label font size in pixels"
+            }
+          ]
+        }
+      },
+      {
+        "name": "pointRadius",
+        "type": "number",
+        "default": 4,
+        "optional": true,
+        "description": "Radius in pixels for labeled point dots"
+      },
+      {
+        "name": "annotationFontSize",
+        "type": "number",
+        "default": 16,
+        "optional": true,
+        "description": "Font size in pixels for point and segment labels"
+      }
+    ]
+  },
+  "angle": {
+    "notes": "Use rays plus angles to create textbook angle diagrams. Angles use degrees with 0 pointing right and 90 pointing up.",
+    "fields": [
+      {
+        "name": "rays",
+        "type": "array",
+        "default": [
+          { "angle": 0 },
+          { "angle": 55 }
+        ],
+        "optional": false,
+        "description": "Rays from the shared vertex. Each ray supports { angle, length, label, labelDistance, color, strokeWidth }."
+      },
+      {
+        "name": "angles",
+        "type": "array",
+        "default": [
+          { "from": 0, "to": 1, "label": "a°" }
+        ],
+        "optional": true,
+        "description": "Angle markers between rays. Each marker supports { from, to, label, marker: 'arc'|'right'|'full', arcRadius, labelRadius, labelPosition, labelMode: 'auto'|'inline'|'callout' }."
+      },
+      {
+        "name": "vertexLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Optional label near the shared vertex"
+      },
+      {
+        "name": "rayLength",
+        "type": "number",
+        "default": 160,
+        "optional": true,
+        "description": "Default ray length in pixels"
+      },
+      {
+        "name": "strokeColor",
+        "type": "string",
+        "default": "black",
+        "optional": true,
+        "description": "Default line and marker color"
+      },
+      {
+        "name": "strokeWidth",
+        "type": "number",
+        "default": 2,
+        "optional": true,
+        "description": "Default line and marker stroke width"
+      },
+      {
+        "name": "arcRadius",
+        "type": "number",
+        "default": 42,
+        "optional": true,
+        "description": "Default radius for arc or full-circle angle markers"
+      },
+      {
+        "name": "dotRadius",
+        "type": "number",
+        "default": 4,
+        "optional": true,
+        "description": "Vertex dot radius in pixels"
+      },
+      {
+        "name": "fontSize",
+        "type": "number",
+        "default": 28,
+        "optional": true,
+        "description": "Default label font size in pixels"
       }
     ]
   },

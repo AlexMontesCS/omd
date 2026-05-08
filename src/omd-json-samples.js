@@ -420,6 +420,50 @@ export const omdSampleCatalog = {
             omdType: 'circle',
             radius: 9,
             unitScale: 12
+        },
+        {
+            omdType: 'circle',
+            radius: 4,
+            unitScale: 34,
+            points: [
+                { name: 'A', type: 'center' },
+                { name: 'B', angle: 0 },
+                { name: 'C', angle: 115 },
+                { name: 'D', angle: 230 },
+                { name: 'E', angle: 180 }
+            ],
+            segments: [
+                { from: 'E', to: 'B' },
+                { from: 'A', to: 'C', label: '4 cm', labelOffset: 28 },
+                { from: 'A', to: 'D' }
+            ]
+        }
+    ],
+
+    angle: [
+        {
+            omdType: 'angle',
+            rays: [
+                { angle: 0 },
+                { angle: 50 }
+            ],
+            angles: [
+                { from: 0, to: 1, label: 'a°' }
+            ],
+            strokeColor: '#0796C8',
+            strokeWidth: 3
+        },
+        {
+            omdType: 'angle',
+            rays: [
+                { angle: 180 },
+                { angle: 0 }
+            ],
+            angles: [
+                { from: 0, to: 1, label: 'straight angle', arcRadius: 54, labelRadius: 82 }
+            ],
+            rayLength: 135,
+            fontSize: 20
         }
     ],
 

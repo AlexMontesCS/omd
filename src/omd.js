@@ -29,6 +29,7 @@ import { omdRectangle } from "./omdShapes.js";
 import { omdRectangularPrism } from "./omdShapes.js";
 import { omdEllipse } from "./omdShapes.js";
 import { omdCircle } from "./omdShapes.js";
+import { omdAngle } from "./omdShapes.js";
 import { omdRegularPolygon } from "./omdShapes.js";
 import { omdLabel } from "./omdLabel.js";
 import { jsvgContainer } from "@teachinglab/jsvg";
@@ -183,6 +184,9 @@ export class omd extends jsvgContainer
             case "circle":
                 N = new omdCircle();
                 break;
+            case "angle":
+                N = new omdAngle();
+                break;
             case "regularPolygon":
                 N = new omdRegularPolygon();
                 break;
@@ -190,7 +194,7 @@ export class omd extends jsvgContainer
                 N = new omdLabel();
                 break;
             default:
-                console.error(`Unsupported OMD type: ${omdType}. Available types: number, variable, operator, term, expression, powerExpression, rationalExpression, function, equation, equationWork, numberLine, doubleNumberLine, balanceHanger, tapeDiagram, doubleTapeDiagram, numberTile, ratioChart, coordinatePlane, spinner, table, tileEquation, rightTriangle, isoscelesTriangle, rectangle, rectangularPrism, ellipse, circle, regularPolygon, label`);
+                console.error(`Unsupported OMD type: ${omdType}. Available types: number, variable, operator, term, expression, powerExpression, rationalExpression, function, equation, equationWork, numberLine, doubleNumberLine, balanceHanger, tapeDiagram, doubleTapeDiagram, numberTile, ratioChart, coordinatePlane, spinner, table, tileEquation, rightTriangle, isoscelesTriangle, rectangle, rectangularPrism, ellipse, circle, angle, regularPolygon, label`);
                 return;
         }
 
@@ -234,4 +238,3 @@ export class omd extends jsvgContainer
         return newDiv;
     }
 }
-

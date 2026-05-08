@@ -42,6 +42,7 @@ import {
     omdRectangularPrism,
     omdEllipse,
     omdCircle,
+    omdAngle,
     omdRegularPolygon
 } from './omdShapes.js';
 import { omdLabel } from './omdLabel.js';
@@ -79,6 +80,7 @@ const OMD_TYPE_MAP = {
     'rectangularPrism': omdRectangularPrism,
     'ellipse': omdEllipse,
     'circle': omdCircle,
+    'angle': omdAngle,
     'regularPolygon': omdRegularPolygon,
     'label': omdLabel,
 };

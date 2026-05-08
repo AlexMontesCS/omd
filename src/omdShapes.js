@@ -46,6 +46,87 @@ function estimateLabelHeight(fontSize = 12) {
     return fontSize * 1.2;
 }
 
+function degreesToRadians(degrees) {
+    return degrees * Math.PI / 180.0;
+}
+
+function getEstimatedLabelBox(text, x, y, options = {}) {
+    const fontSize = typeof options.fontSize === "number" ? options.fontSize : 12;
+    const padding = typeof options.padding === "number" ? options.padding : 4;
+    const width = estimateLabelWidth(text, fontSize) + padding * 2;
+    const height = estimateLabelHeight(fontSize) + padding * 2;
+    const align = options.align || "center";
+
+    let left = x - width * 0.5;
+    if ( align === "left" ) left = x - padding;
+    if ( align === "right" ) left = x - width + padding;
+
+    return {
+        left,
+        right: left + width,
+        top: y - height * 0.5,
+        bottom: y + height * 0.5,
+        width,
+        height
+    };
+}
+
+function boxesOverlap(a, b, gap = 0) {
+    return !(
+        a.right + gap < b.left ||
+        a.left - gap > b.right ||
+        a.bottom + gap < b.top ||
+        a.top - gap > b.bottom
+    );
+}
+
+function pointInsideBox(point, box) {
+    return point.x >= box.left && point.x <= box.right && point.y >= box.top && point.y <= box.bottom;
+}
+
+function orientation(a, b, c) {
+    return (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
+}
+
+function segmentsIntersect(a, b, c, d) {
+    const o1 = orientation(a, b, c);
+    const o2 = orientation(a, b, d);
+    const o3 = orientation(c, d, a);
+    const o4 = orientation(c, d, b);
+
+    return o1 * o2 < 0 && o3 * o4 < 0;
+}
+
+function segmentIntersectsBox(segment, box) {
+    const a = { x: segment.x1, y: segment.y1 };
+    const b = { x: segment.x2, y: segment.y2 };
+
+    if ( pointInsideBox(a, box) || pointInsideBox(b, box) ) return true;
+
+    const topLeft = { x: box.left, y: box.top };
+    const topRight = { x: box.right, y: box.top };
+    const bottomRight = { x: box.right, y: box.bottom };
+    const bottomLeft = { x: box.left, y: box.bottom };
+
+    return (
+        segmentsIntersect(a, b, topLeft, topRight) ||
+        segmentsIntersect(a, b, topRight, bottomRight) ||
+        segmentsIntersect(a, b, bottomRight, bottomLeft) ||
+        segmentsIntersect(a, b, bottomLeft, topLeft)
+    );
+}
+
+function expandBox(box, amount) {
+    return {
+        left: box.left - amount,
+        right: box.right + amount,
+        top: box.top - amount,
+        bottom: box.bottom + amount,
+        width: box.width + amount * 2,
+        height: box.height + amount * 2
+    };
+}
+
 function getClosedPolygonVertices(shapePath) {
     const points = Array.isArray(shapePath?.points) ? shapePath.points : [];
     if (points.length <= 1) return points.slice();
@@ -749,11 +830,61 @@ export class omdRectangularPrism extends jsvgGroup
             labelHasText(this.outsideTopLabel)
         );
 
-        let padding = 16;
-        if ( hasLabels ) padding = Math.max(padding, 36);
-        if ( labelHasText(this.outsideTopLabel) ) padding = Math.max(padding, 56);
+        const basePadding = 16;
+        const fontSize = this.labelFontSize;
+        const textHeight = estimateLabelHeight(fontSize);
+        const dimensionOffset = Math.max(18, textHeight * 1.25);
+        const extensionOverhang = 5;
+        const labelGap = Math.max(9, textHeight * 0.55);
 
-        const frontTL = { x: padding, y: padding + depthDy };
+        const lengthTextWidth = estimateLabelWidth(labels.length, fontSize);
+        const widthTextWidth = estimateLabelWidth(labels.width, fontSize);
+        const heightTextWidth = estimateLabelWidth(labels.height, fontSize);
+        const insideTextWidth = estimateLabelWidth(this.insideLabel, fontSize);
+        const topTextWidth = estimateLabelWidth(this.outsideTopLabel, fontSize);
+
+        let leftPad = basePadding;
+        let rightPad = basePadding;
+        let topPad = basePadding;
+        let bottomPad = basePadding;
+
+        if ( hasLabels )
+        {
+            if ( labelHasText(labels.height) )
+            {
+                leftPad = Math.max(leftPad, dimensionOffset + heightTextWidth + labelGap + 8);
+            }
+
+            if ( labelHasText(labels.width) )
+            {
+                rightPad = Math.max(rightPad, dimensionOffset + widthTextWidth * 0.5 + labelGap + 10);
+                bottomPad = Math.max(bottomPad, dimensionOffset * 0.75 + textHeight + 8);
+            }
+
+            if ( labelHasText(labels.length) )
+            {
+                bottomPad = Math.max(bottomPad, dimensionOffset + textHeight + 12);
+                leftPad = Math.max(leftPad, Math.max(0, lengthTextWidth * 0.5 - lengthPx * 0.5) + basePadding);
+                rightPad = Math.max(rightPad, Math.max(0, lengthTextWidth * 0.5 - lengthPx * 0.5) + basePadding);
+            }
+
+            if ( labelHasText(this.insideLabel) )
+            {
+                const volumeStack = labelHasText(labels.length) ? (textHeight + 10) : 0;
+                bottomPad = Math.max(bottomPad, dimensionOffset + volumeStack + textHeight + 12);
+                leftPad = Math.max(leftPad, Math.max(0, insideTextWidth * 0.5 - lengthPx * 0.5) + basePadding);
+                rightPad = Math.max(rightPad, Math.max(0, insideTextWidth * 0.5 - lengthPx * 0.5) + basePadding);
+            }
+
+            if ( labelHasText(this.outsideTopLabel) )
+            {
+                topPad = Math.max(topPad, labelGap + textHeight * 2 + 10);
+                leftPad = Math.max(leftPad, Math.max(0, topTextWidth * 0.5 - lengthPx * 0.5) + basePadding);
+                rightPad = Math.max(rightPad, Math.max(0, topTextWidth * 0.5 - lengthPx * 0.5) + basePadding);
+            }
+        }
+
+        const frontTL = { x: leftPad, y: topPad + depthDy };
         const frontTR = { x: frontTL.x + lengthPx, y: frontTL.y };
         const frontBR = { x: frontTR.x, y: frontTL.y + heightPx };
         const frontBL = { x: frontTL.x, y: frontTL.y + heightPx };
@@ -810,71 +941,102 @@ export class omdRectangularPrism extends jsvgGroup
         this.labelsHolder.removeAllChildren();
         if ( hasLabels )
         {
-            const lengthLabelX = (frontBL.x + frontBR.x) * 0.5;
-            const lengthLabelY = frontBL.y + 12;
+            const addLine = (x0, y0, x1, y1) => {
+                const line = new jsvgLine();
+                line.setStrokeColor("black");
+                line.setStrokeWidth(1);
+                line.setEndpoints(x0, y0, x1, y1);
+                this.labelsHolder.addChild(line);
+            };
 
-            const heightLabelX = frontBR.x + 12;
-            const heightLabelY = (frontTR.y + frontBR.y) * 0.5;
+            const addTextbookLabel = (text, x, y, options = {}) => {
+                this.labelsHolder.addChild(createShapeTextLabel(text, x, y, { fontSize, ...options }));
+            };
 
-            const widthAngleRadians = Math.atan2(backTR.y - frontTR.y, backTR.x - frontTR.x);
-            const widthNormalX = -Math.sin(widthAngleRadians);
-            const widthNormalY = Math.cos(widthAngleRadians);
-            const widthLabelX = (frontTR.x + backTR.x) * 0.5 + widthNormalX * 16;
-            const widthLabelY = (frontTR.y + backTR.y) * 0.5 + widthNormalY * 16;
+            const addDimensionLineWithGap = (p0, p1, text, options = {}) => {
+                const dx = p1.x - p0.x;
+                const dy = p1.y - p0.y;
+                const len = Math.hypot(dx, dy) || 1;
+                const ux = dx / len;
+                const uy = dy / len;
+                const labelWidth = Math.max(fontSize * 1.6, estimateLabelWidth(text, fontSize) + fontSize * 0.8);
+                const halfGap = Math.min(Math.max(0, len * 0.5 - 2), labelWidth * 0.5);
+                const midX = (p0.x + p1.x) * 0.5;
+                const midY = (p0.y + p1.y) * 0.5;
+
+                if ( halfGap > 1 )
+                {
+                    addLine(p0.x, p0.y, midX - ux * halfGap, midY - uy * halfGap);
+                    addLine(midX + ux * halfGap, midY + uy * halfGap, p1.x, p1.y);
+                }
+                else
+                {
+                    addLine(p0.x, p0.y, p1.x, p1.y);
+                }
+
+                let rotation = Math.atan2(dy, dx) * 180 / Math.PI;
+                if ( rotation > 90 || rotation < -90 ) rotation += 180;
+                addTextbookLabel(text, midX, midY, options.rotate === false ? {} : { rotation });
+            };
 
             if ( labelHasText(labels.length) )
             {
-                this.labelsHolder.addChild(createShapeTextLabel(
+                const y = frontBL.y + dimensionOffset;
+                addLine(frontBL.x, frontBL.y, frontBL.x, y + extensionOverhang);
+                addLine(frontBR.x, frontBR.y, frontBR.x, y + extensionOverhang);
+                addDimensionLineWithGap(
+                    { x: frontBL.x, y },
+                    { x: frontBR.x, y },
                     labels.length,
-                    lengthLabelX,
-                    lengthLabelY,
-                    { fontSize: this.labelFontSize }
-                ));
+                    { rotate: false }
+                );
             }
 
             if ( labelHasText(labels.height) )
             {
-                this.labelsHolder.addChild(createShapeTextLabel(
-                    labels.height,
-                    heightLabelX,
-                    heightLabelY,
-                    { fontSize: this.labelFontSize }
-                ));
+                const x = frontTL.x - dimensionOffset;
+                addLine(frontTL.x, frontTL.y, x - extensionOverhang, frontTL.y);
+                addLine(frontBL.x, frontBL.y, x - extensionOverhang, frontBL.y);
+                addDimensionLineWithGap(
+                    { x, y: frontTL.y },
+                    { x, y: frontBL.y },
+                    labels.height
+                );
             }
 
             if ( labelHasText(labels.width) )
             {
-                this.labelsHolder.addChild(createShapeTextLabel(
-                    labels.width,
-                    widthLabelX,
-                    widthLabelY,
-                    { fontSize: this.labelFontSize }
-                ));
+                const dx = backBR.x - frontBR.x;
+                const dy = backBR.y - frontBR.y;
+                const len = Math.hypot(dx, dy) || 1;
+                const nx = -dy / len;
+                const ny = dx / len;
+                const offsetX = nx * dimensionOffset;
+                const offsetY = ny * dimensionOffset;
+                const dim0 = { x: frontBR.x + offsetX, y: frontBR.y + offsetY };
+                const dim1 = { x: backBR.x + offsetX, y: backBR.y + offsetY };
+                addLine(frontBR.x, frontBR.y, dim0.x + nx * extensionOverhang, dim0.y + ny * extensionOverhang);
+                addLine(backBR.x, backBR.y, dim1.x + nx * extensionOverhang, dim1.y + ny * extensionOverhang);
+                addDimensionLineWithGap(dim0, dim1, labels.width);
             }
 
             if ( labelHasText(this.insideLabel) )
             {
-                this.labelsHolder.addChild(createShapeTextLabel(
-                    this.insideLabel,
-                    (frontTL.x + frontBR.x) * 0.5,
-                    frontBL.y + 30,
-                    { fontSize: this.labelFontSize }
-                ));
+                const lengthDimY = frontBL.y + dimensionOffset;
+                const volumeY = labelHasText(labels.length)
+                    ? lengthDimY + textHeight + 10
+                    : frontBL.y + dimensionOffset + labelGap;
+                addTextbookLabel(this.insideLabel, (frontBL.x + frontBR.x) * 0.5, volumeY);
             }
 
             if ( labelHasText(this.outsideTopLabel) )
             {
-                this.labelsHolder.addChild(createShapeTextLabel(
-                    this.outsideTopLabel,
-                    (backTL.x + backTR.x) * 0.5,
-                    backTL.y - 20,
-                    { fontSize: this.labelFontSize }
-                ));
+                addTextbookLabel(this.outsideTopLabel, (backTL.x + backTR.x) * 0.5, backTL.y - labelGap - textHeight);
             }
         }
 
-        this.width = Math.max(frontBR.x, backBR.x) + padding;
-        this.height = Math.max(frontBR.y, backBR.y) + padding;
+        this.width = Math.max(frontBR.x, backBR.x) + rightPad;
+        this.height = Math.max(frontBR.y, backBR.y) + bottomPad;
         this.svgObject.setAttribute("viewBox", `0 0 ${this.width} ${this.height}`);
     }
 }
@@ -964,6 +1126,13 @@ export class omdCircle extends jsvgGroup
         this.radius = 5;
         this.unitScale = 10;
         this.showLabels = false;
+        this.points = [];
+        this.segments = [];
+        this.pointRadius = 4;
+        this.annotationFontSize = 16;
+        this.circleLabelBoxes = [];
+        this.circlePointBoxes = [];
+        this.circleSegmentGeometries = [];
 
         this.shapePath = new jsvgEllipse();
         this.shapePath.setWidthAndHeight( this.radius*this.unitScale, this.radius*this.unitScale );
@@ -971,6 +1140,12 @@ export class omdCircle extends jsvgGroup
         this.shapePath.setStrokeWidth( 2 );
         this.shapePath.setFillColor( omdColor.lightGray );
         this.addChild( this.shapePath );
+
+        this.segmentHolder = new jsvgGroup();
+        this.addChild( this.segmentHolder );
+
+        this.pointHolder = new jsvgGroup();
+        this.addChild( this.pointHolder );
 
         this.labelsHolder = new jsvgGroup();
         this.addChild( this.labelsHolder );
@@ -989,21 +1164,347 @@ export class omdCircle extends jsvgGroup
         if ( typeof data.showLabels != "undefined" )
             this.showLabels = data.showLabels;
 
+        if ( Array.isArray(data.points) )
+            this.points = data.points;
+
+        if ( Array.isArray(data.segments) )
+            this.segments = data.segments;
+
+        if ( typeof data.pointRadius != "undefined" )
+            this.pointRadius = data.pointRadius;
+
+        if ( typeof data.annotationFontSize != "undefined" )
+            this.annotationFontSize = data.annotationFontSize;
+
         this.updateLayout();
+    }
+
+    getCircleHasAnnotations()
+    {
+        return this.points.length > 0 || this.segments.length > 0;
+    }
+
+    getCirclePadding()
+    {
+        return this.getCircleHasAnnotations() || this.showLabels ? 34 : 10;
+    }
+
+    getCirclePointPosition( point, centerX, centerY, radiusPx )
+    {
+        if ( point.type === "center" )
+            return { x: centerX, y: centerY };
+
+        const angle = typeof point.angle === "number" ? point.angle : 0;
+        const distance = typeof point.distance === "number" ? point.distance : 1;
+        const angleRadians = degreesToRadians( angle );
+
+        return {
+            x: centerX + Math.cos( angleRadians ) * radiusPx * distance,
+            y: centerY - Math.sin( angleRadians ) * radiusPx * distance
+        };
+    }
+
+    getCircleLabelPosition( point, pointPosition, centerX, centerY )
+    {
+        if ( point.labelOffset && typeof point.labelOffset === "object" )
+        {
+            return {
+                x: pointPosition.x + (Number(point.labelOffset.x) || 0),
+                y: pointPosition.y + (Number(point.labelOffset.y) || 0)
+            };
+        }
+
+        if ( point.type === "center" )
+        {
+            const offset = typeof point.labelOffset === "number" ? point.labelOffset : 14;
+            return {
+                x: pointPosition.x + offset * 0.7,
+                y: pointPosition.y + offset * 0.9
+            };
+        }
+
+        const dx = pointPosition.x - centerX;
+        const dy = pointPosition.y - centerY;
+        const length = Math.sqrt(dx * dx + dy * dy) || 1;
+        const outwardOffset = typeof point.labelOffset === "number" ? point.labelOffset : 13;
+
+        return {
+            x: pointPosition.x + dx / length * outwardOffset,
+            y: pointPosition.y + dy / length * outwardOffset
+        };
+    }
+
+    createCirclePointMap( centerX, centerY, radiusPx )
+    {
+        const pointMap = new Map();
+
+        for ( const point of this.points )
+        {
+            const name = normalizeLabelValue(point.name || point.label);
+            if ( !name ) continue;
+
+            const position = this.getCirclePointPosition( point, centerX, centerY, radiusPx );
+            pointMap.set( name, { ...point, name, position } );
+        }
+
+        return pointMap;
+    }
+
+    getCircleLabelCollisionScore( box )
+    {
+        const expandedBox = expandBox( box, 2 );
+        let score = 0;
+
+        for ( const existingBox of this.circleLabelBoxes )
+        {
+            if ( boxesOverlap(expandedBox, existingBox, 2) )
+                score += 1000;
+        }
+
+        for ( const pointBox of this.circlePointBoxes )
+        {
+            if ( boxesOverlap(expandedBox, pointBox, 2) )
+                score += 500;
+        }
+
+        for ( const segment of this.circleSegmentGeometries )
+        {
+            if ( segmentIntersectsBox(segment, expandBox(box, 3)) )
+                score += 250;
+        }
+
+        return score;
+    }
+
+    getBestCircleLabelCandidate( candidates, text, options = {} )
+    {
+        let bestCandidate = candidates[0];
+        let bestScore = Infinity;
+
+        for ( const candidate of candidates )
+        {
+            const box = getEstimatedLabelBox( text, candidate.x, candidate.y, options );
+            const score = this.getCircleLabelCollisionScore( box );
+            if ( score < bestScore )
+            {
+                bestCandidate = { ...candidate, box };
+                bestScore = score;
+            }
+
+            if ( score === 0 ) return { ...candidate, box };
+        }
+
+        return bestCandidate;
+    }
+
+    getCirclePointLabelCandidates( point, pointPosition, centerX, centerY )
+    {
+        const primary = this.getCircleLabelPosition( point, pointPosition, centerX, centerY );
+        const candidates = [ primary ];
+
+        if ( point.type === "center" )
+        {
+            const distance = typeof point.labelOffset === "number" ? Math.max(point.labelOffset, 18) : 18;
+            const directions = [
+                { x: 1, y: 1 },
+                { x: -1, y: 1 },
+                { x: 1, y: -1 },
+                { x: -1, y: -1 },
+                { x: 0, y: 1 },
+                { x: 1, y: 0 },
+                { x: 0, y: -1 },
+                { x: -1, y: 0 }
+            ];
+
+            return directions.map(direction => ({
+                x: pointPosition.x + direction.x * distance,
+                y: pointPosition.y + direction.y * distance
+            }));
+        }
+
+        const dx = pointPosition.x - centerX;
+        const dy = pointPosition.y - centerY;
+        const length = Math.sqrt(dx * dx + dy * dy) || 1;
+        const outwardX = dx / length;
+        const outwardY = dy / length;
+        const tangentX = -outwardY;
+        const tangentY = outwardX;
+        const outwardOffset = typeof point.labelOffset === "number" ? point.labelOffset : 15;
+
+        candidates.push(
+            {
+                x: pointPosition.x + outwardX * outwardOffset + tangentX * 10,
+                y: pointPosition.y + outwardY * outwardOffset + tangentY * 10
+            },
+            {
+                x: pointPosition.x + outwardX * outwardOffset - tangentX * 10,
+                y: pointPosition.y + outwardY * outwardOffset - tangentY * 10
+            },
+            {
+                x: pointPosition.x + outwardX * (outwardOffset + 10),
+                y: pointPosition.y + outwardY * (outwardOffset + 10)
+            }
+        );
+
+        return candidates;
+    }
+
+    getCircleSegmentLabelCandidates( segment, start, end )
+    {
+        const defaultLabelPosition = typeof segment.labelPosition === "number" ? segment.labelPosition : 0.5;
+        const labelPositions = [
+            defaultLabelPosition,
+            Math.max(0.18, defaultLabelPosition - 0.18),
+            Math.min(0.82, defaultLabelPosition + 0.18),
+            0.35,
+            0.65
+        ];
+        const dx = end.position.x - start.position.x;
+        const dy = end.position.y - start.position.y;
+        const length = Math.sqrt(dx * dx + dy * dy) || 1;
+        const perpendicularX = -dy / length;
+        const perpendicularY = dx / length;
+        const defaultOffset = typeof segment.labelOffset === "number" ? segment.labelOffset : 22;
+        const offsets = [ defaultOffset, -defaultOffset, defaultOffset + 12, -(defaultOffset + 12) ];
+
+        if ( segment.labelOffset && typeof segment.labelOffset === "object" )
+        {
+            return labelPositions.map(labelPosition => ({
+                x: start.position.x + dx * labelPosition + (Number(segment.labelOffset.x) || 0),
+                y: start.position.y + dy * labelPosition + (Number(segment.labelOffset.y) || 0)
+            }));
+        }
+
+        const candidates = [];
+        for ( const labelPosition of labelPositions )
+        {
+            for ( const offset of offsets )
+            {
+                candidates.push({
+                    x: start.position.x + dx * labelPosition + perpendicularX * offset,
+                    y: start.position.y + dy * labelPosition + perpendicularY * offset
+                });
+            }
+        }
+
+        return candidates;
+    }
+
+    addCirclePoint( point, centerX, centerY )
+    {
+        const labelText = normalizeLabelValue(point.label || point.name);
+        const dotRadius = typeof point.pointRadius === "number" ? point.pointRadius : this.pointRadius;
+
+        if ( point.showDot !== false )
+        {
+            const dot = new jsvgEllipse();
+            dot.setWidthAndHeight( dotRadius * 2, dotRadius * 2 );
+            dot.setPosition( point.position.x, point.position.y );
+            dot.setFillColor( point.dotColor || "black" );
+            dot.setStrokeColor( point.dotColor || "black" );
+            dot.setStrokeWidth( 0 );
+            this.pointHolder.addChild( dot );
+            this.circlePointBoxes.push({
+                left: point.position.x - dotRadius,
+                right: point.position.x + dotRadius,
+                top: point.position.y - dotRadius,
+                bottom: point.position.y + dotRadius,
+                width: dotRadius * 2,
+                height: dotRadius * 2
+            });
+        }
+
+        if ( labelHasText(labelText) )
+        {
+            const fontSize = typeof point.fontSize === "number" ? point.fontSize : this.annotationFontSize;
+            const align = point.align || "center";
+            const labelPosition = this.getBestCircleLabelCandidate(
+                this.getCirclePointLabelCandidates( point, point.position, centerX, centerY ),
+                labelText,
+                { fontSize, align }
+            );
+            const label = createShapeTextLabel( labelText, labelPosition.x, labelPosition.y, {
+                fontSize,
+                align,
+                color: point.color || "black"
+            });
+            this.labelsHolder.addChild( label );
+            this.circleLabelBoxes.push( labelPosition.box );
+        }
+    }
+
+    addCircleSegmentLine( segment, pointMap )
+    {
+        const start = pointMap.get( normalizeLabelValue(segment.from) );
+        const end = pointMap.get( normalizeLabelValue(segment.to) );
+        if ( !start || !end ) return;
+
+        const line = new jsvgLine();
+        line.setStrokeColor( segment.color || "black" );
+        line.setStrokeWidth( typeof segment.strokeWidth === "number" ? segment.strokeWidth : 2 );
+        line.setEndpoints( start.position.x, start.position.y, end.position.x, end.position.y );
+        this.segmentHolder.addChild( line );
+        this.circleSegmentGeometries.push({
+            x1: start.position.x,
+            y1: start.position.y,
+            x2: end.position.x,
+            y2: end.position.y
+        });
+    }
+
+    addCircleSegmentLabel( segment, pointMap )
+    {
+        if ( !labelHasText(segment.label) ) return;
+
+        const start = pointMap.get( normalizeLabelValue(segment.from) );
+        const end = pointMap.get( normalizeLabelValue(segment.to) );
+        if ( !start || !end ) return;
+
+        const fontSize = typeof segment.fontSize === "number" ? segment.fontSize : this.annotationFontSize;
+        const labelPosition = this.getBestCircleLabelCandidate(
+            this.getCircleSegmentLabelCandidates( segment, start, end ),
+            segment.label,
+            { fontSize, align: "center" }
+        );
+        const label = createShapeTextLabel( segment.label, labelPosition.x, labelPosition.y, {
+            fontSize,
+            align: "center",
+            color: segment.labelColor || "black"
+        });
+        this.labelsHolder.addChild( label );
+        this.circleLabelBoxes.push( labelPosition.box );
     }
 
     updateLayout()
     {
         const diameter = 2.0 * this.radius * this.unitScale;
         const radiusPx = this.radius * this.unitScale;
-        const centerX = radiusPx + 10;
-        const centerY = radiusPx + 10;
+        const padding = this.getCirclePadding();
+        const centerX = radiusPx + padding;
+        const centerY = radiusPx + padding;
 
         this.shapePath.setWidthAndHeight( diameter, diameter );
         this.shapePath.setPosition( centerX, centerY );
 
+        this.segmentHolder.removeAllChildren();
+        this.pointHolder.removeAllChildren();
         this.labelsHolder.removeAllChildren();
-        if ( this.showLabels )
+        this.circleLabelBoxes = [];
+        this.circlePointBoxes = [];
+        this.circleSegmentGeometries = [];
+
+        const pointMap = this.createCirclePointMap( centerX, centerY, radiusPx );
+
+        for ( const segment of this.segments )
+            this.addCircleSegmentLine( segment, pointMap );
+
+        for ( const point of pointMap.values() )
+            this.addCirclePoint( point, centerX, centerY );
+
+        for ( const segment of this.segments )
+            this.addCircleSegmentLabel( segment, pointMap );
+
+        if ( this.showLabels && !this.getCircleHasAnnotations() )
         {
             const angleRadians = -Math.PI / 6;
             const endX = centerX + Math.cos(angleRadians) * radiusPx * 0.82;
@@ -1031,8 +1532,573 @@ export class omdCircle extends jsvgGroup
         }
 
         // Set dimensions and viewBox for API compatibility
-        this.width = 2.0 * this.radius * this.unitScale + 20;
-        this.height = 2.0 * this.radius * this.unitScale + 20;
+        this.width = diameter + padding * 2;
+        this.height = diameter + padding * 2;
+        this.svgObject.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
+    }
+}
+
+export class omdAngle extends jsvgGroup
+{
+    constructor()
+    {
+        super();
+
+        this.type = "omdAngle";
+        this.rayLength = 160;
+        this.strokeColor = "black";
+        this.strokeWidth = 2;
+        this.dotRadius = 4;
+        this.fontSize = 28;
+        this.arcRadius = 42;
+        this.padding = 32;
+        this.vertexLabel = "";
+        this.rays = [
+            { angle: 0 },
+            { angle: 55 }
+        ];
+        this.angles = [
+            { from: 0, to: 1, label: "a°" }
+        ];
+
+        this.contentHolder = new jsvgGroup();
+        this.addChild( this.contentHolder );
+
+        this.updateLayout();
+    }
+
+    loadFromJSON( data )
+    {
+        if ( typeof data.rayLength !== "undefined" )
+            this.rayLength = data.rayLength;
+
+        if ( typeof data.strokeColor !== "undefined" )
+            this.strokeColor = data.strokeColor;
+
+        if ( typeof data.strokeWidth !== "undefined" )
+            this.strokeWidth = data.strokeWidth;
+
+        if ( typeof data.dotRadius !== "undefined" )
+            this.dotRadius = data.dotRadius;
+
+        if ( typeof data.fontSize !== "undefined" )
+            this.fontSize = data.fontSize;
+
+        if ( typeof data.arcRadius !== "undefined" )
+            this.arcRadius = data.arcRadius;
+
+        if ( typeof data.padding !== "undefined" )
+            this.padding = data.padding;
+
+        if ( typeof data.vertexLabel !== "undefined" )
+            this.vertexLabel = data.vertexLabel;
+
+        if ( Array.isArray(data.rays) )
+            this.rays = data.rays;
+        else if ( typeof data.startAngle === "number" && typeof data.endAngle === "number" )
+            this.rays = [{ angle: data.startAngle }, { angle: data.endAngle }];
+
+        if ( Array.isArray(data.angles) )
+            this.angles = data.angles;
+        else if ( typeof data.label !== "undefined" )
+            this.angles = [{ from: 0, to: 1, label: data.label }];
+
+        this.updateLayout();
+    }
+
+    getAngleRay( ray, index )
+    {
+        const angle = typeof ray.angle === "number" ? ray.angle : 0;
+        const length = typeof ray.length === "number" ? ray.length : this.rayLength;
+        const radians = degreesToRadians( angle );
+
+        return {
+            ...ray,
+            index,
+            angle,
+            length,
+            x: Math.cos(radians) * length,
+            y: -Math.sin(radians) * length,
+            unitX: Math.cos(radians),
+            unitY: -Math.sin(radians)
+        };
+    }
+
+    getAngleByIndexOrName( value, computedRays )
+    {
+        if ( typeof value === "number" )
+            return computedRays[value] || null;
+
+        const name = normalizeLabelValue(value);
+        return computedRays.find(ray => normalizeLabelValue(ray.name || ray.label) === name) || null;
+    }
+
+    getAngleDelta( startAngle, endAngle )
+    {
+        return ((endAngle - startAngle) % 360 + 360) % 360;
+    }
+
+    getAngleRayLabelPosition( ray )
+    {
+        const labelDistance = typeof ray.labelDistance === "number" ? ray.labelDistance : 12;
+        return {
+            x: ray.x + ray.unitX * labelDistance,
+            y: ray.y + ray.unitY * labelDistance,
+            fontSize: typeof ray.fontSize === "number" ? ray.fontSize : this.fontSize
+        };
+    }
+
+    getAngleLabelCandidates( angleData, startRay, endRay, radius )
+    {
+        if ( angleData.labelPosition && typeof angleData.labelPosition === "object" )
+        {
+            const x = Number(angleData.labelPosition.x) || 0;
+            const y = Number(angleData.labelPosition.y) || 0;
+            return [
+                { x, y, preferencePenalty: 0 },
+                { x: x + 14, y, preferencePenalty: 24 },
+                { x: x - 14, y, preferencePenalty: 24 },
+                { x, y: y + 14, preferencePenalty: 24 },
+                { x, y: y - 14, preferencePenalty: 24 }
+            ];
+        }
+
+        const delta = this.getAngleDelta( startRay.angle, endRay.angle );
+        const midAngle = startRay.angle + delta * 0.5;
+        const baseRadius = typeof angleData.labelRadius === "number" ? angleData.labelRadius : radius + 28;
+        const angleOffsets = [0, 12, -12, 22, -22, 34, -34];
+        const radiusOffsets = [0, 12, 24, -8, 36];
+        const candidates = [];
+
+        for ( const radiusOffset of radiusOffsets )
+        {
+            const candidateRadius = Math.max(radius + 20, baseRadius + radiusOffset);
+            for ( const angleOffset of angleOffsets )
+            {
+                const candidateAngle = midAngle + angleOffset;
+                const radians = degreesToRadians( candidateAngle );
+                candidates.push({
+                    x: Math.cos(radians) * candidateRadius,
+                    y: -Math.sin(radians) * candidateRadius,
+                    radius: candidateRadius,
+                    preferencePenalty: Math.abs(angleOffset) * 2 + Math.abs(radiusOffset)
+                });
+            }
+        }
+
+        return candidates;
+    }
+
+    getAngleLabelCollisionScore( candidate, box, context, markerRadius )
+    {
+        let score = candidate.preferencePenalty || 0;
+        const expandedBox = expandBox(box, 2);
+
+        for ( const existingBox of context.labelBoxes )
+        {
+            if ( boxesOverlap(expandedBox, existingBox, 2) )
+                score += 1200;
+        }
+
+        for ( const pointBox of context.pointBoxes )
+        {
+            if ( boxesOverlap(expandedBox, pointBox, 2) )
+                score += 600;
+        }
+
+        for ( const raySegment of context.raySegments )
+        {
+            if ( segmentIntersectsBox(raySegment, expandBox(box, 3)) )
+                score += 900;
+        }
+
+        if ( typeof candidate.radius === "number" && Math.abs(candidate.radius - markerRadius) < 16 )
+            score += 200;
+
+        return score;
+    }
+
+    getAngleArcAnchor( startRay, endRay, radius )
+    {
+        const delta = this.getAngleDelta( startRay.angle, endRay.angle );
+        const midAngle = startRay.angle + delta * 0.5;
+        const radians = degreesToRadians( midAngle );
+
+        return {
+            x: Math.cos(radians) * radius,
+            y: -Math.sin(radians) * radius,
+            angle: midAngle
+        };
+    }
+
+    getBestAngleLabelCandidate( angleData, startRay, endRay, radius, context )
+    {
+        const text = normalizeLabelValue(angleData.label);
+        const fontSize = typeof angleData.fontSize === "number" ? angleData.fontSize : this.fontSize;
+        let bestCandidate = null;
+        let bestScore = Infinity;
+
+        for ( const candidate of this.getAngleLabelCandidates(angleData, startRay, endRay, radius) )
+        {
+            const box = getEstimatedLabelBox(text, candidate.x, candidate.y, { fontSize });
+            const score = this.getAngleLabelCollisionScore(candidate, box, context, radius);
+            if ( score < bestScore )
+            {
+                bestScore = score;
+                bestCandidate = { ...candidate, box, fontSize, score, mode: "inline" };
+            }
+        }
+
+        return bestCandidate;
+    }
+
+    shouldUseAngleCallout( angleData, layout, radius, labeledAngleCount )
+    {
+        if ( angleData.labelMode === "inline" ) return false;
+        if ( angleData.labelMode === "callout" ) return true;
+        if ( angleData.labelPosition && typeof angleData.labelPosition === "object" ) return false;
+
+        if ( layout.score >= 700 ) return true;
+        if ( labeledAngleCount >= 3 && radius >= this.arcRadius + 20 ) return true;
+        if ( labeledAngleCount >= 3 && layout.score >= 200 ) return true;
+
+        return false;
+    }
+
+    getAngleCalloutCandidates( angleData, startRay, endRay, radius, bounds )
+    {
+        const anchor = this.getAngleArcAnchor( startRay, endRay, radius );
+        const fontSize = typeof angleData.fontSize === "number" ? angleData.fontSize : this.fontSize;
+        const labelY = bounds.minY - Math.max(22, fontSize * 1.15);
+        const xOffsets = [0, -26, 26, -52, 52, -78, 78];
+        const yOffsets = [0, -16, 16, -32];
+
+        const candidates = [];
+        for ( const yOffset of yOffsets )
+        {
+            for ( const xOffset of xOffsets )
+            {
+                candidates.push({
+                    x: anchor.x + xOffset,
+                    y: labelY + yOffset,
+                    anchor,
+                    fontSize,
+                    mode: "callout",
+                    preferencePenalty: Math.abs(xOffset) * 0.25 + Math.abs(yOffset) * 0.5
+                });
+            }
+        }
+
+        return candidates;
+    }
+
+    getBestAngleCalloutCandidate( angleData, startRay, endRay, radius, context, bounds )
+    {
+        const text = normalizeLabelValue(angleData.label);
+        let bestCandidate = null;
+        let bestScore = Infinity;
+
+        for ( const candidate of this.getAngleCalloutCandidates(angleData, startRay, endRay, radius, bounds) )
+        {
+            const box = getEstimatedLabelBox(text, candidate.x, candidate.y, { fontSize: candidate.fontSize });
+            let score = candidate.preferencePenalty || 0;
+
+            for ( const existingBox of context.labelBoxes )
+            {
+                if ( boxesOverlap(expandBox(box, 2), existingBox, 2) )
+                    score += 1200;
+            }
+
+            if ( score < bestScore )
+            {
+                const leaderEndY = candidate.y + Math.sign(candidate.anchor.y - candidate.y) * candidate.fontSize * 0.65;
+                bestScore = score;
+                bestCandidate = {
+                    ...candidate,
+                    box,
+                    score,
+                    leaderEnd: { x: candidate.x, y: leaderEndY }
+                };
+            }
+        }
+
+        return bestCandidate;
+    }
+
+    getAngleLabelLayouts( computedRays, context, bounds )
+    {
+        const labeledAngleCount = this.angles.filter(angleData => labelHasText(angleData.label)).length;
+        const sortedAngles = this.angles
+            .map((angleData, index) => ({ angleData, index }))
+            .sort((a, b) => {
+                const radiusA = typeof a.angleData.arcRadius === "number" ? a.angleData.arcRadius : this.arcRadius;
+                const radiusB = typeof b.angleData.arcRadius === "number" ? b.angleData.arcRadius : this.arcRadius;
+                return radiusA - radiusB || a.index - b.index;
+            });
+        const layouts = [];
+
+        for ( const { angleData } of sortedAngles )
+        {
+            if ( !labelHasText(angleData.label) ) continue;
+
+            const startRay = this.getAngleByIndexOrName(angleData.from, computedRays) || computedRays[0];
+            const endRay = this.getAngleByIndexOrName(angleData.to, computedRays) || computedRays[1];
+            if ( !startRay || !endRay ) continue;
+
+            const radius = typeof angleData.arcRadius === "number" ? angleData.arcRadius : this.arcRadius;
+            let layout = this.getBestAngleLabelCandidate(angleData, startRay, endRay, radius, context);
+            if ( !layout ) continue;
+
+            if ( this.shouldUseAngleCallout(angleData, layout, radius, labeledAngleCount) )
+            {
+                const calloutLayout = this.getBestAngleCalloutCandidate(angleData, startRay, endRay, radius, context, bounds);
+                if ( calloutLayout )
+                    layout = calloutLayout;
+            }
+
+            context.labelBoxes.push(layout.box);
+            layouts.push({ angleData, layout });
+        }
+
+        return layouts;
+    }
+
+    createRawPath( d, options = {} )
+    {
+        const path = new jsvgPath();
+        path.svgObject.setAttribute("d", d);
+        path.setStrokeColor( options.strokeColor || this.strokeColor );
+        path.setStrokeWidth( typeof options.strokeWidth === "number" ? options.strokeWidth : this.strokeWidth );
+        path.setFillColor( options.fillColor || "none" );
+        return path;
+    }
+
+    addBoundsPoint( bounds, x, y )
+    {
+        bounds.minX = Math.min(bounds.minX, x);
+        bounds.maxX = Math.max(bounds.maxX, x);
+        bounds.minY = Math.min(bounds.minY, y);
+        bounds.maxY = Math.max(bounds.maxY, y);
+    }
+
+    addBoundsBox( bounds, box )
+    {
+        this.addBoundsPoint( bounds, box.left, box.top );
+        this.addBoundsPoint( bounds, box.right, box.bottom );
+    }
+
+    addTranslatedText( text, x, y, shiftX, shiftY, options = {} )
+    {
+        const label = createShapeTextLabel( text, x + shiftX, y + shiftY, {
+            fontSize: typeof options.fontSize === "number" ? options.fontSize : this.fontSize,
+            align: options.align || "center",
+            color: options.color || "black"
+        });
+        if ( options.italic )
+            label.svgObject.style.fontStyle = "italic";
+        this.contentHolder.addChild( label );
+    }
+
+    getArcPathData( startRay, endRay, radius, shiftX, shiftY )
+    {
+        const delta = this.getAngleDelta( startRay.angle, endRay.angle );
+        const startX = Math.cos(degreesToRadians(startRay.angle)) * radius + shiftX;
+        const startY = -Math.sin(degreesToRadians(startRay.angle)) * radius + shiftY;
+        const endX = Math.cos(degreesToRadians(endRay.angle)) * radius + shiftX;
+        const endY = -Math.sin(degreesToRadians(endRay.angle)) * radius + shiftY;
+        const largeArcFlag = delta > 180 ? 1 : 0;
+
+        return `M ${startX},${startY} A ${radius},${radius} 0 ${largeArcFlag} 0 ${endX},${endY}`;
+    }
+
+    addAngleMarker( angleData, startRay, endRay, shiftX, shiftY )
+    {
+        const radius = typeof angleData.arcRadius === "number" ? angleData.arcRadius : this.arcRadius;
+        const markerType = angleData.marker || angleData.type || "arc";
+
+        if ( markerType === "right" )
+        {
+            const size = typeof angleData.size === "number" ? angleData.size : radius * 0.72;
+            const cornerX = (startRay.unitX + endRay.unitX) * size + shiftX;
+            const cornerY = (startRay.unitY + endRay.unitY) * size + shiftY;
+            const d = [
+                `M ${startRay.unitX * size + shiftX},${startRay.unitY * size + shiftY}`,
+                `L ${cornerX},${cornerY}`,
+                `L ${endRay.unitX * size + shiftX},${endRay.unitY * size + shiftY}`
+            ].join(" ");
+            this.contentHolder.addChild( this.createRawPath( d, {
+                strokeColor: angleData.color || this.strokeColor,
+                strokeWidth: typeof angleData.strokeWidth === "number" ? angleData.strokeWidth : this.strokeWidth,
+                fillColor: "none"
+            }));
+            return;
+        }
+
+        if ( markerType === "full" || markerType === "circle" )
+        {
+            const fullCircle = new jsvgEllipse();
+            fullCircle.setWidthAndHeight( radius * 2, radius * 2 );
+            fullCircle.setPosition( shiftX, shiftY );
+            fullCircle.setFillColor( "none" );
+            fullCircle.setStrokeColor( angleData.color || this.strokeColor );
+            fullCircle.setStrokeWidth( typeof angleData.strokeWidth === "number" ? angleData.strokeWidth : this.strokeWidth );
+            this.contentHolder.addChild( fullCircle );
+            return;
+        }
+
+        this.contentHolder.addChild( this.createRawPath(
+            this.getArcPathData( startRay, endRay, radius, shiftX, shiftY ),
+            {
+                strokeColor: angleData.color || this.strokeColor,
+                strokeWidth: typeof angleData.strokeWidth === "number" ? angleData.strokeWidth : this.strokeWidth,
+                fillColor: "none"
+            }
+        ));
+    }
+
+    updateLayout()
+    {
+        this.contentHolder.removeAllChildren();
+
+        const computedRays = this.rays.map((ray, index) => this.getAngleRay(ray, index));
+        const bounds = {
+            minX: 0,
+            maxX: 0,
+            minY: 0,
+            maxY: 0
+        };
+        const labelContext = {
+            labelBoxes: [],
+            pointBoxes: [
+                {
+                    left: -this.dotRadius,
+                    right: this.dotRadius,
+                    top: -this.dotRadius,
+                    bottom: this.dotRadius,
+                    width: this.dotRadius * 2,
+                    height: this.dotRadius * 2
+                }
+            ],
+            raySegments: computedRays.map(ray => ({
+                x1: 0,
+                y1: 0,
+                x2: ray.x,
+                y2: ray.y
+            }))
+        };
+
+        for ( const ray of computedRays )
+        {
+            this.addBoundsPoint( bounds, ray.x, ray.y );
+            if ( labelHasText(ray.label) )
+            {
+                const labelPosition = this.getAngleRayLabelPosition(ray);
+                const labelBox = getEstimatedLabelBox(ray.label, labelPosition.x, labelPosition.y, {
+                    fontSize: labelPosition.fontSize
+                });
+                labelContext.labelBoxes.push(labelBox);
+                this.addBoundsBox( bounds, labelBox );
+            }
+        }
+
+        if ( labelHasText(this.vertexLabel) )
+        {
+            const vertexLabelBox = getEstimatedLabelBox(this.vertexLabel, -18, 22, { fontSize: this.fontSize });
+            labelContext.labelBoxes.push(vertexLabelBox);
+            this.addBoundsBox( bounds, vertexLabelBox );
+        }
+
+        for ( const angleData of this.angles )
+        {
+            const startRay = this.getAngleByIndexOrName(angleData.from, computedRays) || computedRays[0];
+            const endRay = this.getAngleByIndexOrName(angleData.to, computedRays) || computedRays[1];
+            if ( !startRay || !endRay ) continue;
+
+            const radius = typeof angleData.arcRadius === "number" ? angleData.arcRadius : this.arcRadius;
+            this.addBoundsPoint( bounds, -radius, -radius );
+            this.addBoundsPoint( bounds, radius, radius );
+        }
+
+        const angleLabelLayouts = this.getAngleLabelLayouts(computedRays, labelContext, bounds);
+        for ( const { layout } of angleLabelLayouts )
+            this.addBoundsBox( bounds, layout.box );
+
+        const shiftX = this.padding - bounds.minX;
+        const shiftY = this.padding - bounds.minY;
+
+        for ( const ray of computedRays )
+        {
+            const line = new jsvgLine();
+            line.setStrokeColor( ray.color || this.strokeColor );
+            line.setStrokeWidth( typeof ray.strokeWidth === "number" ? ray.strokeWidth : this.strokeWidth );
+            line.setEndpoints( shiftX, shiftY, ray.x + shiftX, ray.y + shiftY );
+            this.contentHolder.addChild( line );
+        }
+
+        for ( const angleData of this.angles )
+        {
+            const startRay = this.getAngleByIndexOrName(angleData.from, computedRays) || computedRays[0];
+            const endRay = this.getAngleByIndexOrName(angleData.to, computedRays) || computedRays[1];
+            if ( !startRay || !endRay ) continue;
+
+            this.addAngleMarker( angleData, startRay, endRay, shiftX, shiftY );
+        }
+
+        const dot = new jsvgEllipse();
+        dot.setWidthAndHeight( this.dotRadius * 2, this.dotRadius * 2 );
+        dot.setPosition( shiftX, shiftY );
+        dot.setFillColor( "black" );
+        dot.setStrokeColor( "black" );
+        dot.setStrokeWidth( 0 );
+        this.contentHolder.addChild( dot );
+
+        if ( labelHasText(this.vertexLabel) )
+            this.addTranslatedText( this.vertexLabel, -18, 22, shiftX, shiftY, { italic: true } );
+
+        for ( const ray of computedRays )
+        {
+            if ( !labelHasText(ray.label) ) continue;
+
+            const labelPosition = this.getAngleRayLabelPosition(ray);
+            this.addTranslatedText(
+                ray.label,
+                labelPosition.x,
+                labelPosition.y,
+                shiftX,
+                shiftY,
+                {
+                    fontSize: labelPosition.fontSize,
+                    italic: ray.italic !== false
+                }
+            );
+        }
+
+        for ( const { layout } of angleLabelLayouts )
+        {
+            if ( layout.mode !== "callout" ) continue;
+
+            const leader = new jsvgLine();
+            leader.setStrokeColor( "rgba(0, 0, 0, 0.55)" );
+            leader.setStrokeWidth( 1 );
+            leader.setEndpoints(
+                layout.anchor.x + shiftX,
+                layout.anchor.y + shiftY,
+                layout.leaderEnd.x + shiftX,
+                layout.leaderEnd.y + shiftY
+            );
+            this.contentHolder.addChild( leader );
+        }
+
+        for ( const { angleData, layout } of angleLabelLayouts )
+        {
+            this.addTranslatedText( angleData.label, layout.x, layout.y, shiftX, shiftY, {
+                fontSize: layout.fontSize,
+                italic: angleData.italic === true
+            });
+        }
+
+        this.width = bounds.maxX - bounds.minX + this.padding * 2;
+        this.height = bounds.maxY - bounds.minY + this.padding * 2;
         this.svgObject.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
     }
 }

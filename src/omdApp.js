@@ -21,6 +21,7 @@ import { omdIsoscelesTriangle } from "./omdShapes.js";
 import { omdRectangle } from "./omdShapes.js";
 import { omdEllipse } from "./omdShapes.js";
 import { omdCircle } from "./omdShapes.js";
+import { omdAngle } from "./omdShapes.js";
 import { omdRegularPolygon } from "./omdShapes.js";
 import { jsvgGroup } from "@teachinglab/jsvg";
 
@@ -330,6 +331,8 @@ export class omdApp extends jsvgGroup
 
         if ( jsonData.omdType == "circle" ) { var N = new omdCircle(); } 
 
+        if ( jsonData.omdType == "angle" ) { var N = new omdAngle(); } 
+
         if ( jsonData.omdType == "regularPolygon" ) { var N = new omdRegularPolygon(); } 
 
         // load from json
@@ -388,4 +391,3 @@ export class omdApp extends jsvgGroup
     }
 
 }
-

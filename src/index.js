@@ -47,6 +47,7 @@ export {
     omdRectangularPrism,
     omdEllipse,
     omdCircle,
+    omdAngle,
     omdRegularPolygon,
     omdShapeLabelSet 
 } from './omdShapes.js';
