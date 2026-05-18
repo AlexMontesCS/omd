@@ -1,6 +1,0 @@
-{
-  "name": "omd-simplification",
-  "version": "1.0.0",
-  "description": "Simplification engine for OMD",
-  "type": "module"
-}

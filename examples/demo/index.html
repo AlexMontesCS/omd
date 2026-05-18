@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Albert Sans', sans-serif;
+            background: #f5f5f5;
+            color: #222;
+        }
+
+        header {
+            padding: 24px 32px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        header h1 { font-size: 20px; font-weight: 600; }
+        header p  { font-size: 14px; color: #666; margin-top: 4px; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            padding: 24px 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        section {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        section h2 {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666;
+            padding: 14px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .display-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .display-cell {
+            padding: 8px;
+            border-right: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .display-cell label {
+            display: block;
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 4px;
+            padding-left: 4px;
+        }
+
+        .display-cell:nth-child(2n) { border-right: none; }
+
+        .expr-container {
+            height: 80px;
+            position: relative;
+        }
+
+        #viz-section,
+        #canvas-section {
+            grid-column: 1 / -1;
+        }
+
+        .viz-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .viz-container {
+            height: 300px;
+        }
+
+        #omd-canvas-container {
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>OMD Visual Library</h1>
+        <p>omdDisplay · omdCanvas</p>
+    </header>
+
+    <div class="layout">
+
+        <section>
+            <h2>omdDisplay — Expressions</h2>
+            <div class="display-grid">
+                <div class="display-cell">
+                    <label>3x + 2</label>
+                    <div class="expr-container" id="expr-linear"></div>
+                </div>
+                <div class="display-cell">
+                    <label>x² + 2x + 1</label>
+                    <div class="expr-container" id="expr-power"></div>
+                </div>
+                <div class="display-cell">
+                    <label>3/2 · x + 3</label>
+                    <div class="expr-container" id="expr-fraction"></div>
+                </div>
+                <div class="display-cell">
+                    <label>sqrt(x + 4)</label>
+                    <div class="expr-container" id="expr-sqrt"></div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>omdDisplay — Equations</h2>
+            <div class="display-grid">
+                <div class="display-cell">
+                    <label>2x + 3 = 7</label>
+                    <div class="expr-container" id="eq-simple"></div>
+                </div>
+                <div class="display-cell">
+                    <label>x² - 4 = 0</label>
+                    <div class="expr-container" id="eq-quadratic"></div>
+                </div>
+                <div class="display-cell">
+                    <label>(3/4)x = 12</label>
+                    <div class="expr-container" id="eq-fraction"></div>
+                </div>
+                <div class="display-cell">
+                    <label>sqrt(x) + 1 = 4</label>
+                    <div class="expr-container" id="eq-sqrt"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="viz-section">
+            <h2>omdDisplay — Visualizations</h2>
+            <div class="viz-grid">
+                <div class="display-cell">
+                    <label>Coordinate Plane</label>
+                    <div class="viz-container" id="viz-plane"></div>
+                </div>
+                <div class="display-cell">
+                    <label>Number Line (0–10, value 6)</label>
+                    <div class="viz-container" id="viz-numberline"></div>
+                </div>
+                <div class="display-cell">
+                    <label>Number Line (−5–5, value 2)</label>
+                    <div class="viz-container" id="viz-numberline2"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="canvas-section">
+            <h2>omdCanvas</h2>
+            <div id="omd-canvas-container"></div>
+        </section>
+
+    </div>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

@@ -15,26 +15,22 @@
  * svg.appendChild(omdObject.svgObject);
  */
 
-import { omdBalanceHanger } from './omdBalanceHanger.js';
-import { omdTable } from './omdTable.js';
-import { omdTapeDiagram } from './omdTapeDiagram.js';
-import { omdDoubleTapeDiagram } from './omdDoubleTapeDiagram.js';
-import { omdCoordinatePlane } from './omdCoordinatePlane.js';
-import { omdNumberLine } from './omdNumberLine.js';
-import { omdDoubleNumberLine } from './omdDoubleNumberLine.js';
-import { omdNumberTile } from './omdNumberTile.js';
-import { omdRatioChart } from './omdRatioChart.js';
-import { omdTileEquation } from './omdTileEquation.js';
-import { omdSpinner } from './omdSpinner.js';
-import { omdEquation } from './omdEquation.js';
-import { omdEquationWork } from './omdEquationWork.js';
-import { omdExpression } from './omdExpression.js';
-import { omdTerm } from './omdTerm.js';
-import { omdNumber } from './omdNumber.js';
-import { omdVariable } from './omdVariable.js';
-import { omdPowerExpression } from './omdPowerExpression.js';
-import { omdRationalExpression } from './omdRationalExpression.js';
-import { omdFunction } from './omdFunction.js';
+import { omdBalanceHanger } from './visualizations/omdBalanceHanger.js';
+import { omdTable } from './visualizations/omdTable.js';
+import { omdTapeDiagram } from './visualizations/omdTapeDiagram.js';
+import { omdDoubleTapeDiagram } from './visualizations/omdDoubleTapeDiagram.js';
+import { omdCoordinatePlane } from './visualizations/omdCoordinatePlane.js';
+import { omdDoubleNumberLine } from './visualizations/omdDoubleNumberLine.js';
+import { omdRatioChart } from './visualizations/omdRatioChart.js';
+import { omdTileEquation } from './visualizations/omdTileEquation.js';
+import { omdSpinner } from './visualizations/omdSpinner.js';
+import { omdEquation } from './equations/omdEquation.js';
+import { omdEquationWork } from './visualizations/omdEquationWork.js';
+import { omdExpression } from './equations/omdExpression.js';
+import { omdTerm } from './equations/omdTerm.js';
+import { omdPowerExpression } from './equations/omdPowerExpression.js';
+import { omdRationalExpression } from './equations/omdRationalExpression.js';
+import { omdFunction } from './equations/omdFunction.js';
 import { 
     omdRightTriangle,
     omdIsoscelesTriangle,
@@ -44,10 +40,10 @@ import {
     omdCircle,
     omdAngle,
     omdRegularPolygon
-} from './omdShapes.js';
-import { omdLabel } from './omdLabel.js';
-import { omdEquationStack } from '../omd/core/omdEquationStack.js';
-import { omdEquationNode } from '../omd/nodes/omdEquationNode.js';
+} from './visualizations/omdShapes.js';
+import { omdLabel } from './config/omdLabel.js';
+import { omdEquationStack } from './equations/omdEquationStack.js';
+import { omdEquationNode } from './equations/omdEquationNode.js';
 
 /**
  * Map of omdType strings to their corresponding class constructors

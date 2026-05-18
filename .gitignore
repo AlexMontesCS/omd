@@ -1,23 +1,4 @@
-.netlify
-*.bundle
-wip/
-*.github
-netlify/functions/node_modules
-node_modules/*
-# Environment variables
-.env
-react-demo/
-dist/
-docs-built/
-tldraw-canvas/
-ai-tutor/
-ai-tutor-omd/
-mathly_prod/
-mathly_prod
+.claude
+dist
+.vscode
 node_modules
-distribute-lesson/
-drawing-to-omd/
-src/omdTermAnnotationLayer.js
-z_demo_labels/
-mathly_admin/
-matly_prod/

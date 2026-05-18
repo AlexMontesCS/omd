@@ -4,38 +4,17 @@ import { resolve } from 'path'
 export default defineConfig({
   build: {
     outDir: 'dist',
-    emptyOutDir: false, // Don't empty since we're adding docs
+    emptyOutDir: false,
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        ai: resolve(__dirname, 'index-ai.html'),
-        simpleApi: resolve(__dirname, 'simple-api-example.html'),
-        buildTools: resolve(__dirname, 'build-tools.html'),
-        htmlExampleGuide: resolve(__dirname, 'html-example-guide.html'),
-        commonUseCases: resolve(__dirname, 'common-use-cases.html'),
-        reactDemoGuide: resolve(__dirname, 'react-demo-guide.html'),
-        omdCanvas: resolve(__dirname, 'omd-canvas.html'),
-        omdDisplay: resolve(__dirname, 'omd-display.html'),
-        readme: resolve(__dirname, 'readme.html'),
-        docs: resolve(__dirname, 'docs.html'),
-        npmDocs: resolve(__dirname, 'npm-docs.html')
+        demo: resolve(__dirname, 'examples/demo/index.html'),
       }
     }
   },
-  resolve: {
-    alias: {
-      '@teachinglab/jsvg': resolve(__dirname, 'jsvg/jsvgComponents.js')
-    }
-  },
-  // Copy static assets - includes dist/ directory for npm-docs
-  publicDir: false, // We'll handle this manually
-  // Configure dev server to serve the built npm-docs from dist
   server: {
+    open: '/examples/demo/index.html',
     fs: {
-      // Allow serving files from parent directory and dist
-      allow: ['..', '.', './dist']
-    },
-    // Middleware to serve dist/npm-docs at /npm-docs
-    middlewareMode: false
+      allow: ['..', '.']
+    }
   }
 })
