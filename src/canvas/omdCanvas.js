@@ -9,7 +9,6 @@ export class omdCanvas {
         this.container = container;
         this.width  = options.width  || container.offsetWidth  || 800;
         this.height = options.height || container.offsetHeight || 600;
-        this._items = [];
 
         this.svg = new jsvgContainer();
         this.svg.setWidthAndHeight(this.width, this.height);
@@ -23,7 +22,6 @@ export class omdCanvas {
         component.setPosition(x, y);
         if (scale != null) component.setScale(scale);
         this.svg.addChild(component);
-        this._items.push(component);
         return component;
     }
 
@@ -42,13 +40,11 @@ export class omdCanvas {
     // Remove a specific component.
     remove(component) {
         this.svg.removeChild(component);
-        this._items = this._items.filter(i => i !== component);
     }
 
     // Remove all components.
     clear() {
-        for (const item of [...this._items]) this.svg.removeChild(item);
-        this._items = [];
+        this.svg.removeAllChildren();
     }
 
     // Resize the canvas.
@@ -59,6 +55,6 @@ export class omdCanvas {
     }
 
     get items() {
-        return [...this._items];
+        return [...this.svg.childList];
     }
 }

@@ -1,6 +1,6 @@
 import { omdLeafNode } from "./omdLeafNode.js";
-import { omdColor } from "../config/omdColor.js";
-import { getMultiplicationSymbol } from "../config/omdConfigManager.js";
+import { omdColor } from "../omdConstants.js";
+import { MULTIPLICATION_SYMBOL } from "../omdConstants.js";
 
 /**
  * Leaf node that represents an operator symbol.
@@ -18,7 +18,7 @@ export class omdOperatorNode extends omdLeafNode {
         this.opName = this.parseOpName(nodeData);
 
         // Use configured multiplication symbol for display while keeping internal opName as '*'
-        const displaySymbol = this.opName === '*' ? getMultiplicationSymbol() : this.opName;
+        const displaySymbol = this.opName === '*' ? MULTIPLICATION_SYMBOL : this.opName;
         this.textElement = super.createTextElement(displaySymbol);
     }
 
@@ -28,7 +28,7 @@ export class omdOperatorNode extends omdLeafNode {
 
         // Use a map for user-friendly display of operators
         const operatorMap = {
-            'multiply': getMultiplicationSymbol(),
+            'multiply': MULTIPLICATION_SYMBOL,
             'divide': '÷',
             'add': '+',
             'subtract': '−',

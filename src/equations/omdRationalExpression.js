@@ -1,5 +1,5 @@
 
-import { omdColor } from "../config/omdColor.js";
+import { omdColor } from "../omdConstants.js";
 import { omdMetaExpression } from "./omdMetaExpression.js"
 import { omdExpression } from "./omdExpression.js"
 import { omdTerm } from "./omdTerm.js"

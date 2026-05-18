@@ -1,5 +1,5 @@
 
-import { omdColor } from "../config/omdColor.js";
+import { omdColor } from "../omdConstants.js";
 import { jsvgGroup, jsvgRect, jsvgLine, jsvgTextBox, jsvgEllipse, jsvgPath } from "@teachinglab/jsvg";
 
 export class omdNumberLine extends jsvgGroup

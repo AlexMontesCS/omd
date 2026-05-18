@@ -1,5 +1,5 @@
 import { omdLeafNode } from "./omdLeafNode.js";
-import { omdColor } from "../config/omdColor.js";
+import { omdColor } from "../omdConstants.js";
 
 /**
  * Leaf node that represents a numerical constant.

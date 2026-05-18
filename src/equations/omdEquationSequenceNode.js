@@ -3,7 +3,6 @@ import { omdEquationNode } from "./omdEquationNode.js";
 import { getNodeForAST } from "./omdUtilities.js";
 import { omdMetaExpression } from "./omdMetaExpression.js";
 import { omdOperationDisplayNode } from "./omdOperationDisplayNode.js";
-import { getFontWeight } from "../config/omdConfigManager.js";
 import { jsvgLayoutGroup } from '@teachinglab/jsvg';
 /**
  * Represents a sequence of equations for a step-by-step calculation.
@@ -514,7 +513,7 @@ export class omdEquationSequenceNode extends omdNode {
     refresh(renderer, center=true) {
         this.computeDimensions();
         this.updateLayout();
-        renderer.render(this);
+        renderer.load(this);
 
         if (center) {
             renderer.centerNode();
@@ -1151,7 +1150,7 @@ export class omdEquationSequenceNode extends omdNode {
             }
 
             // Apply font weight based on stepMark
-            const weight = getFontWeight(step.stepMark ?? 0);
+            const weight = 400;
             if (step.svgObject) {
                 step.svgObject.style.fontWeight = weight.toString();
             }

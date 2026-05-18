@@ -8,7 +8,7 @@ import { omdNumberLine, omdDisplay } from '@teachinglab/omd';
 const display = new omdDisplay(document.getElementById('container'));
 const line = new omdNumberLine();
 line.loadFromJSON({ min: 0, max: 10, increment: 1, dotValues: [3, 7] });
-display.render(line);
+display.load(line);
 ```
 
 ---
@@ -16,6 +16,11 @@ display.render(line);
 ## numberLine
 
 Renders a horizontal number line with optional dots, labels, and arrows.
+
+**Example JSON**
+```json
+{ "omdType": "numberLine", "min": 0, "max": 20, "increment": 2, "dotValues": [6, 14], "title": "Miles walked" }
+```
 
 ### Fields
 
@@ -47,7 +52,7 @@ line.loadFromJSON({
   title: 'Temperature (°C)',
   specialNumbers: [{ value: 6, label: 'low' }, { value: 14, label: 'high' }]
 });
-display.render(line);
+display.load(line);
 ```
 
 ---
@@ -55,6 +60,11 @@ display.render(line);
 ## doubleNumberLine
 
 Renders two aligned number lines stacked vertically, useful for ratio and rate comparisons.
+
+**Example JSON**
+```json
+{ "omdType": "doubleNumberLine", "topNumberLine": { "min": 0, "max": 5, "increment": 1, "title": "Hours" }, "bottomNumberLine": { "min": 0, "max": 60, "increment": 12, "title": "Minutes" } }
+```
 
 ### Fields
 
@@ -73,7 +83,7 @@ dbl.loadFromJSON({
   bottomNumberLine: { min: 0, max: 60, increment: 12, title: 'Minutes' },
   spacing: 20
 });
-display.render(dbl);
+display.load(dbl);
 ```
 
 ---
@@ -81,6 +91,11 @@ display.render(dbl);
 ## balanceHanger
 
 Renders a balance scale hanger. Variables (e.g. `'x'`) are drawn as pill shapes; numbers as rectangles.
+
+**Example JSON**
+```json
+{ "omdType": "balanceHanger", "leftValues": ["x", "x", "x"], "rightValues": ["1", "1", "1", "1", "1", "1"], "tilt": "none" }
+```
 
 ### Fields
 
@@ -105,7 +120,7 @@ hanger.loadFromJSON({
   rightValues: ['1', '1', '1', '1', '1', '1'],
   tilt: 'none'
 });
-display.render(hanger);
+display.load(hanger);
 ```
 
 ---
@@ -113,6 +128,11 @@ display.render(hanger);
 ## tapeDiagram
 
 Renders a horizontal segmented tape diagram. Each segment can be a plain value or a full object controlling color, label, and weight.
+
+**Example JSON**
+```json
+{ "omdType": "tapeDiagram", "title": "Parts of 24", "values": [{ "value": 8, "color": "#4A90D9", "label": "A" }, { "value": 8, "color": "#7ED321", "label": "B" }, { "value": 8, "color": "#F5A623", "label": "C" }], "labelSet": { "braces": [{ "startIndex": 0, "endIndex": 2, "label": "24", "showBelow": true }] } }
+```
 
 ### Fields
 
@@ -148,7 +168,7 @@ tape.loadFromJSON({
     braces: [{ startIndex: 0, endIndex: 2, label: '24', showBelow: true }]
   }
 });
-display.render(tape);
+display.load(tape);
 ```
 
 ---
@@ -156,6 +176,11 @@ display.render(tape);
 ## doubleTapeDiagram
 
 Renders two tape diagrams stacked vertically, useful for part-to-part or part-to-whole comparisons.
+
+**Example JSON**
+```json
+{ "omdType": "doubleTapeDiagram", "topTapeDiagram": { "values": [{ "value": 3, "color": "#4A90D9" }, { "value": 3, "color": "#4A90D9" }, { "value": 3, "color": "#4A90D9" }], "title": "Miles" }, "bottomTapeDiagram": { "values": [{ "value": 15, "color": "#F5A623" }], "title": "Total" } }
+```
 
 ### Fields
 
@@ -180,7 +205,7 @@ dbl.loadFromJSON({
   },
   spacing: 16
 });
-display.render(dbl);
+display.load(dbl);
 ```
 
 ---
@@ -188,6 +213,11 @@ display.render(dbl);
 ## coordinatePlane
 
 Renders a Cartesian coordinate plane. Supports graphing equations, line segments, points, and interactive sliders.
+
+**Example JSON**
+```json
+{ "omdType": "coordinatePlane", "xMin": -5, "xMax": 5, "yMin": -5, "yMax": 5, "graphEquations": [{ "equation": "y = 2x + 1", "color": "#E74C3C", "strokeWidth": 2 }], "dotValues": [[0, 1, "#E74C3C"]] }
+```
 
 ### Fields
 
@@ -227,7 +257,7 @@ plane.loadFromJSON({
   dotValues: [[0, 1, '#E74C3C'], [2, 5, '#3498DB']],
   size: 'medium'
 });
-display.render(plane);
+display.load(plane);
 ```
 
 **Interactive example (with sliders):**
@@ -247,6 +277,11 @@ plane.loadFromJSON({
 ## tileEquation
 
 Renders an algebra tile equation. Token values: `'x'`, `'-x'`, `'y'`, `'-y'`, `'1'`, `'-1'`.
+
+**Example JSON**
+```json
+{ "omdType": "tileEquation", "left": ["x", "x", "1", "1", "1"], "right": ["1", "1", "1", "1", "1", "1", "1"], "tileSize": 40 }
+```
 
 ### Fields
 
@@ -275,7 +310,7 @@ tiles.loadFromJSON({
   right: ['1', '1', '1', '1', '1', '1', '1'],
   tileSize: 40
 });
-display.render(tiles);
+display.load(tiles);
 ```
 
 ---
@@ -283,6 +318,11 @@ display.render(tiles);
 ## table
 
 Renders a value table. Can auto-generate rows from an equation or use manually provided data.
+
+**Example JSON**
+```json
+{ "omdType": "table", "equation": "y=3x+2", "xMin": 0, "xMax": 5, "stepSize": 1, "headers": ["x", "y"], "alternatingRowColors": true }
+```
 
 ### Fields
 
@@ -324,7 +364,7 @@ table.loadFromJSON({
   headers: ['x', 'y'],
   alternatingRowColors: true
 });
-display.render(table);
+display.load(table);
 ```
 
 ---
@@ -332,6 +372,11 @@ display.render(table);
 ## ratioChart
 
 Renders a ratio or fraction visualization in one of several styles.
+
+**Example JSON**
+```json
+{ "omdType": "ratioChart", "valueA": 3, "valueB": 5, "renderType": "tile", "size": "medium" }
+```
 
 ### Fields
 
@@ -356,7 +401,7 @@ chart.loadFromJSON({
   renderType: 'tile',
   size: 'medium'
 });
-display.render(chart);
+display.load(chart);
 ```
 
 ---
@@ -364,6 +409,11 @@ display.render(chart);
 ## spinner
 
 Renders a circular spinner divided into equal sections with an arrow.
+
+**Example JSON**
+```json
+{ "omdType": "spinner", "divisions": 6, "arrowPosition": 90, "size": "large" }
+```
 
 ### Fields
 
@@ -382,5 +432,5 @@ spinner.loadFromJSON({
   arrowPosition: 90,
   size: 'large'
 });
-display.render(spinner);
+display.load(spinner);
 ```

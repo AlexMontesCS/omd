@@ -1,23 +1,39 @@
 {
   "name": "@teachinglab/omd",
-  "version": "0.9.83m",
+  "version": "0.9.85-beta.2",
   "description": "omd",
   "main": "./index.js",
   "module": "./index.js",
+  "types": "./index.d.ts",
   "unpkg": "./dist/omd.global.js",
   "jsdelivr": "./dist/omd.global.js",
   "type": "module",
   "exports": {
-    ".": "./index.js",
-    "./browser": "./dist/omd.browser.js",
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    },
+    "./browser": {
+      "types": "./index.d.ts",
+      "default": "./dist/omd.browser.js"
+    },
     "./global": "./dist/omd.global.js",
-    "./schemas": "./src/omdSchemas.js",
-    "./schemas.json": "./src/omd-schemas.json",
-    "./register-math": "./omd/utils/registerMathGlobal.js",
+    "./schemas": {
+      "types": "./schemas.d.ts",
+      "import": "./src/omdSchemas.js",
+      "default": "./src/omdSchemas.js"
+    },
+    "./schemas.json": {
+      "types": "./schemas.d.ts",
+      "default": "./src/data/omd-schemas.json"
+    },
     "./package.json": "./package.json"
   },
   "files": [
     "index.js",
+    "index.d.ts",
+    "schemas.d.ts",
     "dist/",
     "src/",
     "omd/",

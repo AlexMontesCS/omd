@@ -33,17 +33,17 @@ for (const { id, expr } of [...expressions, ...equations]) {
 const vizPlane = new omdCoordinatePlane();
 vizPlane.loadFromJSON({ width: 260, height: 260, xMin: -5, xMax: 5, yMin: -5, yMax: 5 });
 new omdDisplay(document.getElementById('viz-plane'), { centerContent: true, maxScale: 1 })
-    .render(vizPlane);
+    .load(vizPlane);
 
 const vizLine1 = new omdNumberLine();
 vizLine1.loadFromJSON({ min: 0, max: 10, dotValues: [6] });
 new omdDisplay(document.getElementById('viz-numberline'), { centerContent: true, maxScale: 1 })
-    .render(vizLine1);
+    .load(vizLine1);
 
 const vizLine2 = new omdBalanceHanger();
 vizLine2.loadFromJSON({ leftValues: [3], rightValues: [5, 'x'] });
 new omdDisplay(document.getElementById('viz-numberline2'), { centerContent: true, maxScale: 1 })
-    .render(vizLine2);
+    .load(vizLine2);
 
 // --- omdCanvas: multi-object stage with explicit positioning ---
 

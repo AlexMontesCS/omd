@@ -2,7 +2,7 @@
 import { jsvgLayoutGroup } from "@teachinglab/jsvg";
 import { omdMetaExpression } from "./omdMetaExpression.js";
 import { getNodeForAST } from "./omdUtilities.js";
-import { math } from "../config/math.js";
+import { math } from "../math.js";
 
 export class omdExpression extends omdMetaExpression
 {

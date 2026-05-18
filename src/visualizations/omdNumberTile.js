@@ -1,6 +1,6 @@
 import {
     omdColor
-} from "../config/omdColor.js";
+} from "../omdConstants.js";
 import { jsvgGroup, jsvgRect, jsvgEllipse } from "@teachinglab/jsvg";
 
 export class omdNumberTile extends jsvgGroup {

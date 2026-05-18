@@ -45,7 +45,7 @@ const stack = new omdEquationStack([
     omdEquationNode.fromString('2*x = 8'),
     omdEquationNode.fromString('x = 4'),
 ]);
-D('eq-stack').render(stack);
+D('eq-stack').load(stack);
 
 const work = new omdEquationWork();
 work.loadFromJSON({
@@ -60,13 +60,13 @@ work.loadFromJSON({
     ],
     fontSize: 32,
 });
-D('eq-work').render(work);
+D('eq-work').load(work);
 
 // ── Number Visualizations ─────────────────────────────────────────────────────
 
 const line = new omdNumberLine();
 line.loadFromJSON({ min: 0, max: 20, increment: 2, dotValues: [6, 14], title: 'Miles walked' });
-D('number-line').render(line);
+D('number-line').load(line);
 
 const doubleLine = new omdDoubleNumberLine();
 doubleLine.loadFromJSON({
@@ -74,19 +74,19 @@ doubleLine.loadFromJSON({
     bottomNumberLine: { min: 0, max: 6,  increment: 1,  title: 'Miles',   units: 'mi' },
     spacing: 40,
 });
-D('double-number-line').render(doubleLine);
+D('double-number-line').load(doubleLine);
 
 const hanger = new omdBalanceHanger();
 hanger.loadFromJSON({ leftValues: ['x', 'x', '3'], rightValues: ['9'] });
-D('balance-hanger').render(hanger);
+D('balance-hanger').load(hanger);
 
 const ratioP = new omdRatioChart();
 ratioP.loadFromJSON({ valueA: 3, valueB: 5, renderType: 'pie', size: 'medium' });
-D('ratio-pie').render(ratioP);
+D('ratio-pie').load(ratioP);
 
 const spinnerV = new omdSpinner();
 spinnerV.loadFromJSON({ divisions: 6, arrowPosition: 45, size: 'medium' });
-D('spinner').render(spinnerV);
+D('spinner').load(spinnerV);
 
 // ── Tape Diagrams ─────────────────────────────────────────────────────────────
 
@@ -101,7 +101,7 @@ tape.loadFromJSON({
     labelSet: [{ startIndex: 0, endIndex: 2, label: '48', showBelow: true }],
     totalWidth: 420,
 });
-D('tape').render(tape);
+D('tape').load(tape);
 
 const doubleTape = new omdDoubleTapeDiagram();
 doubleTape.loadFromJSON({
@@ -117,7 +117,7 @@ doubleTape.loadFromJSON({
     },
     spacing: 24,
 });
-D('double-tape').render(doubleTape);
+D('double-tape').load(doubleTape);
 
 // ── Coordinate Plane & Data ───────────────────────────────────────────────────
 
@@ -131,7 +131,7 @@ plane.loadFromJSON({
     dotValues: [[2, 3, '#7c3aed']],
     showBackground: true,
 });
-D('coord-plane', { maxScale: 1.2 }).render(plane);
+D('coord-plane', { maxScale: 1.2 }).load(plane);
 
 const tableV = new omdTable();
 tableV.loadFromJSON({
@@ -141,29 +141,29 @@ tableV.loadFromJSON({
     alternatingRowColors: ['#f8fafc', '#e2e8f0'],
     fontSize: 18,
 });
-D('table').render(tableV);
+D('table').load(tableV);
 
 const tileEq = new omdTileEquation();
 tileEq.loadFromJSON({ equation: '2*x + 3 = 7', tileSize: 48 });
-D('tile-eq').render(tileEq);
+D('tile-eq').load(tileEq);
 
 const ratioBar = new omdRatioChart();
 ratioBar.loadFromJSON({ valueA: 2, valueB: 3, renderType: 'bar', size: 'medium' });
-D('ratio-bar').render(ratioBar);
+D('ratio-bar').load(ratioBar);
 
 // ── Shapes ────────────────────────────────────────────────────────────────────
 
 const rect = new omdRectangle();
 rect.loadFromJSON({ width: 8, height: 5, unitScale: 28, showLabels: true, centerLabel: '40 sq units' });
-D('shape-rect').render(rect);
+D('shape-rect').load(rect);
 
 const prism = new omdRectangularPrism();
 prism.loadFromJSON({ length: 6, width: 4, height: 3, unitScale: 28, showLabels: true });
-D('shape-prism').render(prism);
+D('shape-prism').load(prism);
 
 const tri = new omdRightTriangle();
 tri.loadFromJSON({ horizontalLeg: 6, verticalLeg: 4, unitScale: 32, showLabels: true });
-D('shape-triangle').render(tri);
+D('shape-triangle').load(tri);
 
 const circle = new omdCircle();
 circle.loadFromJSON({
@@ -174,7 +174,7 @@ circle.loadFromJSON({
     ],
     segments: [{ from: 'O', to: 'A', label: 'r = 5' }],
 });
-D('shape-circle').render(circle);
+D('shape-circle').load(circle);
 
 const angle = new omdAngle();
 angle.loadFromJSON({
@@ -191,16 +191,16 @@ angle.loadFromJSON({
     strokeColor: '#334155',
     fontSize: 14,
 });
-D('shape-angle').render(angle);
+D('shape-angle').load(angle);
 
 const hex = new omdRegularPolygon();
 hex.loadFromJSON({ numberOfSides: 6, radius: 5, unitScale: 20, showLabels: true });
-D('shape-polygon').render(hex);
+D('shape-polygon').load(hex);
 
 const ellipse = new omdEllipse();
 ellipse.loadFromJSON({ width: 7, height: 4, unitScale: 24, showLabels: true });
-D('shape-ellipse').render(ellipse);
+D('shape-ellipse').load(ellipse);
 
 const iso = new omdIsoscelesTriangle();
 iso.loadFromJSON({ base: 8, height: 6, unitScale: 28, showLabels: true });
-D('shape-iso').render(iso);
+D('shape-iso').load(iso);

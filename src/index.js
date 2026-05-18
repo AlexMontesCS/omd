@@ -23,7 +23,6 @@ export { omdFunction } from './equations/omdFunction.js';
 
 // OMD Core Components
 export { omdCanvas } from './canvas/omdCanvas.js';
-export { omdAppCanvas } from './canvas/omdAppCanvas.js';
 export { omd } from './omd.js';
 export { omdDisplay } from './canvas/omdDisplay.js';
 export { omdEquationNode } from './equations/omdEquationNode.js';
@@ -32,9 +31,9 @@ export { omdEquationSequenceNode } from './equations/omdEquationSequenceNode.js'
 export { omdConstantNode } from './equations/omdConstantNode.js';
 
 // OMD Utilities and Helpers
-export { omdColor } from './config/omdColor.js';
+export { omdColor } from './omdConstants.js';
 export { createFromJSON, getSupportedTypes, isTypeSupported } from './omdFactory.js';
-export { default as omdSchemas, omdSchemas as omdSchemasObject, omdSchemaTypes, getOmdSchema, getOmdSchemaTypes } from './config/omdSchemas.js';
+export { default as omdSchemas } from './data/omd-schemas.json';
 
 // OMD Shape Classes
 export {
@@ -49,5 +48,5 @@ export {
     omdShapeLabelSet
 } from './visualizations/omdShapes.js';
 export { omdSpinner } from './visualizations/omdSpinner.js';
-export { omdLabel } from './config/omdLabel.js';
+export { omdLabel } from './visualizations/omdLabel.js';
 export { omdProblem } from './visualizations/omdProblem.js';

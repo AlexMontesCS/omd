@@ -1,6 +1,6 @@
 
 
-import { omdColor } from "./config/omdColor.js";
+import { omdColor } from "./omdConstants.js";
 import { omdTerm } from "./equations/omdTerm.js";
 import { omdExpression } from "./equations/omdExpression.js";
 import { omdPowerExpression } from "./equations/omdPowerExpression.js";
@@ -28,7 +28,7 @@ import { omdEllipse } from "./visualizations/omdShapes.js";
 import { omdCircle } from "./visualizations/omdShapes.js";
 import { omdAngle } from "./visualizations/omdShapes.js";
 import { omdRegularPolygon } from "./visualizations/omdShapes.js";
-import { omdLabel } from "./config/omdLabel.js";
+import { omdLabel } from "./visualizations/omdLabel.js";
 import { jsvgContainer } from "@teachinglab/jsvg";
 
 export class omd extends jsvgContainer

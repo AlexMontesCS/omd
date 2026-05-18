@@ -5,7 +5,7 @@ import { omdConstantNode } from "./omdConstantNode.js";
 import { omdVariableNode } from "./omdVariableNode.js";
 import { omdPowerNode } from "./omdPowerNode.js";
 import { omdParenthesisNode } from "./omdParenthesisNode.js";
-import { useImplicitMultiplication } from "../config/omdConfigManager.js";
+import { IMPLICIT_MULTIPLICATION } from "../omdConstants.js";
 
 /**
  * Represents a binary expression node in the mathematical expression tree
@@ -196,7 +196,7 @@ export class omdBinaryExpressionNode extends omdNode {
      */
     _shouldUseImplicitMultiplication(left, right) {
         // If global implicit multiplication is disabled, use traditional logic
-        if (!useImplicitMultiplication()) {
+        if (!IMPLICIT_MULTIPLICATION.forceImplicit) {
             return this._isCoefficientMultiplication(left, right);
         }
 
@@ -228,7 +228,7 @@ export class omdBinaryExpressionNode extends omdNode {
         // Convert kebab-case to camelCase (e.g., 'constant-variable' -> 'constantVariable')
         const camelCaseKey = normalizedKey.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
         
-        return useImplicitMultiplication(camelCaseKey);
+        return IMPLICIT_MULTIPLICATION[camelCaseKey] ?? false;
     }
 
     /**

@@ -7,7 +7,7 @@ import { omdParenthesisNode } from "./omdParenthesisNode.js";
 import { omdRationalNode } from "./omdRationalNode.js";
 import { omdFunctionNode } from "./omdFunctionNode.js";
 import { omdUnaryExpressionNode } from './omdUnaryExpressionNode.js';
-import { math } from '../config/math.js';
+import { math } from '../math.js';
 
 /**
  * Uses the shared math.js instance.

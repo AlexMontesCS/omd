@@ -1,4 +1,4 @@
-import { omdColor } from "../config/omdColor.js";
+import { omdColor } from "../omdConstants.js";
 import { jsvgGroup } from "@teachinglab/jsvg";
 import { omdNumberLine } from "./omdNumberLine.js";
 

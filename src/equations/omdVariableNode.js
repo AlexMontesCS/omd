@@ -1,5 +1,5 @@
 import { omdLeafNode } from "./omdLeafNode.js";
-import { omdColor } from "../config/omdColor.js";
+import { omdColor } from "../omdConstants.js";
 import { jsvgTextLine } from '@teachinglab/jsvg';
 /**
  * Leaf node that represents a variable.

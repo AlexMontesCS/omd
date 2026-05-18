@@ -20,7 +20,9 @@ import { omdTable } from './visualizations/omdTable.js';
 import { omdTapeDiagram } from './visualizations/omdTapeDiagram.js';
 import { omdDoubleTapeDiagram } from './visualizations/omdDoubleTapeDiagram.js';
 import { omdCoordinatePlane } from './visualizations/omdCoordinatePlane.js';
+import { omdNumberLine } from './visualizations/omdNumberLine.js';
 import { omdDoubleNumberLine } from './visualizations/omdDoubleNumberLine.js';
+import { omdNumberTile } from './visualizations/omdNumberTile.js';
 import { omdRatioChart } from './visualizations/omdRatioChart.js';
 import { omdTileEquation } from './visualizations/omdTileEquation.js';
 import { omdSpinner } from './visualizations/omdSpinner.js';
@@ -41,9 +43,11 @@ import {
     omdAngle,
     omdRegularPolygon
 } from './visualizations/omdShapes.js';
-import { omdLabel } from './config/omdLabel.js';
+import { omdLabel } from './visualizations/omdLabel.js';
 import { omdEquationStack } from './equations/omdEquationStack.js';
 import { omdEquationNode } from './equations/omdEquationNode.js';
+import { omdConstantNode } from './equations/omdConstantNode.js';
+import { omdVariableNode } from './equations/omdVariableNode.js';
 
 /**
  * Map of omdType strings to their corresponding class constructors
@@ -65,8 +69,6 @@ const OMD_TYPE_MAP = {
     'equationStack': omdEquationStack,
     'expression': omdExpression,
     'term': omdTerm,
-    'number': omdNumber,
-    'variable': omdVariable,
     'powerExpression': omdPowerExpression,
     'rationalExpression': omdRationalExpression,
     'function': omdFunction,
@@ -130,6 +132,14 @@ export function createFromJSON(jsonData) {
 
     if (omdType === 'equationStack') {
         return createEquationStackFromJSON(jsonData);
+    }
+
+    if (omdType === 'number') {
+        return omdConstantNode.fromValue(jsonData.value);
+    }
+
+    if (omdType === 'variable') {
+        return omdVariableNode.fromName(jsonData.name);
     }
     
     const Constructor = OMD_TYPE_MAP[omdType];

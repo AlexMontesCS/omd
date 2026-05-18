@@ -1,6 +1,6 @@
 import { jsvgGroup, jsvgLine, jsvgTextBox } from "@teachinglab/jsvg";
 import { getNodeForAST } from "../equations/omdUtilities.js";
-import { math } from "../config/math.js";
+import { math } from "../math.js";
 
 let sharedMeasureContext = null;
 

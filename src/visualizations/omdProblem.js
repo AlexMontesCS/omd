@@ -1,5 +1,5 @@
 
-import { omdColor } from "../config/omdColor.js";
+import { omdColor } from "../omdConstants.js";
 import { jsvgGroup, jsvgTextBox } from "@teachinglab/jsvg";
 
 export class omdProblem extends jsvgGroup

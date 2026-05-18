@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD Minimal Browser Example</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            background:
+                radial-gradient(circle at top, #fff7ed 0%, #f8fafc 45%, #eef2ff 100%);
+            color: #1f2937;
+        }
+
+        main {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 48px 20px 64px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(2rem, 5vw, 3.4rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+        }
+
+        p {
+            margin: 0;
+            max-width: 46rem;
+            font-size: 1.05rem;
+            line-height: 1.55;
+            color: #4b5563;
+        }
+
+        .stack {
+            display: grid;
+            gap: 18px;
+            margin-top: 28px;
+        }
+
+        .card {
+            padding: 18px 18px 22px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.82);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.07);
+            backdrop-filter: blur(10px);
+        }
+
+        .eyebrow {
+            margin-bottom: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #9a3412;
+        }
+
+        .render-target {
+            min-height: 110px;
+        }
+
+        #number-line {
+            min-height: 180px;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>OMD in one page.</h1>
+        <p>
+            This example imports the built browser bundle from <code>dist/omd.browser.js</code>
+            and renders one equation plus one number line.
+        </p>
+
+        <div class="stack">
+            <section class="card">
+                <div class="eyebrow">Equation</div>
+                <div class="render-target" id="equation"></div>
+            </section>
+
+            <section class="card">
+                <div class="eyebrow">Number Line</div>
+                <div class="render-target" id="number-line"></div>
+            </section>
+        </div>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

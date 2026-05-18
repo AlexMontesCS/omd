@@ -1,4 +1,4 @@
-import { omdColor } from "../config/omdColor.js";
+import { omdColor } from "../omdConstants.js";
 import { jsvgGroup, jsvgRect } from "@teachinglab/jsvg";
 
 export class omdMetaExpression extends jsvgGroup

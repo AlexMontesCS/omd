@@ -1,6 +1,7 @@
 import { jsvgContainer } from '@teachinglab/jsvg';
 import { omdExpression } from '../equations/omdExpression.js';
 import { omdEquation } from '../equations/omdEquation.js';
+import { createFromJSON } from '../omdFactory.js';
 
 export class omdDisplay {
     constructor(container, options = {}) {
@@ -10,7 +11,7 @@ export class omdDisplay {
 
         this.container = container;
         this.options = {
-            centerContent: true,
+            alignment: 'center',
             autoScale: true,
             maxScale: 1,
             padding: 8,
@@ -20,10 +21,13 @@ export class omdDisplay {
         this._component = null;
         this._destroyed = false;
 
-        if (this.options.centerContent) {
+        const alignment = this.options.alignment;
+        if (alignment === 'center' || alignment === 'left' || alignment === 'right') {
             container.style.display = 'flex';
             container.style.alignItems = 'center';
-            container.style.justifyContent = 'center';
+            container.style.justifyContent =
+                alignment === 'left'  ? 'flex-start' :
+                alignment === 'right' ? 'flex-end'   : 'center';
         }
 
         this.svg = new jsvgContainer();
@@ -73,24 +77,40 @@ export class omdDisplay {
         this.svg.svgObject.style.height = `${svgH}px`;
     }
 
-    render(input) {
-        this._clearComponent();
-
+    render(string) {
         let component;
-        if (typeof input === 'string') {
-            if (input.includes('=')) {
-                component = new omdEquation();
-                component.loadFromJSON(input);
-            } else {
-                component = new omdExpression();
-                component.loadFromJSON(input);
-            }
-        } else if (input && typeof input === 'object' && input.svgObject) {
-            component = input;
+        if (typeof string !== 'string') {
+            throw new Error('omdDisplay.render() expects a string. Use load() for components or loadFromJSON() for JSON configs.');
         }
 
-        if (!component) return;
+        const text = string.trim();
+        if (!text) {
+            throw new Error('omdDisplay.render() received an empty expression string.');
+        }
 
+        if (text.includes('=')) {
+            component = new omdEquation();
+            component.loadFromJSON(text);
+        } else {
+            component = new omdExpression();
+            component.loadFromJSON(text);
+        }
+
+        this._setComponent(component);
+    }
+
+    load(component) {
+        if (!component || !component.svgObject) return;
+        this._setComponent(component);
+    }
+
+    loadFromJSON(json) {
+        const component = createFromJSON(json);
+        this._setComponent(component);
+    }
+
+    _setComponent(component) {
+        this._clearComponent();
         this._component = component;
         this.svg.addChild(component);
         this._layout();
@@ -105,10 +125,6 @@ export class omdDisplay {
 
     clear() {
         this._clearComponent();
-    }
-
-    update(expressionString) {
-        this.render(expressionString);
     }
 
     destroy() {

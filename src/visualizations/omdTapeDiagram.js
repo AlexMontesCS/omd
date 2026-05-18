@@ -1,4 +1,4 @@
-import { omdColor } from "../config/omdColor.js";
+import { omdColor } from "../omdConstants.js";
 import { jsvgGroup, jsvgRect, jsvgTextBox, jsvgLine} from "@teachinglab/jsvg";
 
 function getDisplayText(value)

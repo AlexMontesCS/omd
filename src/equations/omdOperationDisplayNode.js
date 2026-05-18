@@ -1,7 +1,6 @@
 import { omdNode } from "./omdNode.js";
 import { omdVariableNode } from "./omdVariableNode.js";
 import { getNodeForAST } from "./omdUtilities.js";
-import { getMultiplicationSymbol } from "../config/omdConfigManager.js";
 
 /**
  * Represents a visual node for displaying an operation applied to both sides of an equation.

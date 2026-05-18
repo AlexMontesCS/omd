@@ -1,9 +1,7 @@
 
-import { omdColor } from "../config/omdColor.js";
 import { jsvgLayoutGroup, jsvgGroup } from "@teachinglab/jsvg";
 import { omdExpression } from "./omdExpression.js";
-import { omdString } from "../config/omdString.js";
-import { omdMetaExpression } from "./omdMetaExpression.js"
+import { omdMetaExpression } from "./omdMetaExpression.js";
 
 export class omdFunction extends omdMetaExpression
 {

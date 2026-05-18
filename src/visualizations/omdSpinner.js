@@ -1,4 +1,4 @@
-import { omdColor } from "../config/omdColor.js";
+import { omdColor } from "../omdConstants.js";
 import { jsvgGroup, jsvgEllipse, jsvgPath, jsvgLine, jsvgTextBox } from "@teachinglab/jsvg";
 
 export class omdSpinner extends jsvgGroup

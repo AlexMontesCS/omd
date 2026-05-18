@@ -1,6 +1,6 @@
-import { omdColor } from "../config/omdColor.js";
+import { omdColor } from "../omdConstants.js";
 import { jsvgGroup, jsvgRect, jsvgClipMask, jsvgLine, jsvgEllipse, jsvgTextBox, jsvgTextLine, jsvgPath } from "@teachinglab/jsvg";
-import { math } from "../config/math.js";
+import { math } from "../math.js";
 import {
     omdRightTriangle,
     omdIsoscelesTriangle,

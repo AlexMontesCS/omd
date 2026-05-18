@@ -8,38 +8,56 @@ A JavaScript library for rendering mathematical visualizations and expressions a
 npm install @teachinglab/omd
 ```
 
+## Getting Started
+
+```js
+import { omdDisplay } from '@teachinglab/omd';
+
+const display = new omdDisplay(document.getElementById('container'));
+
+// Render a math string
+display.render('3*x + 2');
+
+// Render any visualization from JSON — one line
+display.loadFromJSON({ omdType: 'numberLine', min: 0, max: 10, dotValues: [3, 7] });
+```
+
 ## Quick Start
 
 ```js
 import { omdDisplay, omdNumberLine } from '@teachinglab/omd';
 
-// Render an expression into a div
+// Render an expression
 const display = new omdDisplay(document.getElementById('container'));
 display.render('3*x + 2');          // expression
 display.render('2*x + 3 = 7');      // equation (auto-detected by =)
 
-// Render a visualization
+// Render a visualization from JSON
+display.loadFromJSON({ omdType: 'numberLine', min: 0, max: 10, dotValues: [3, 7] });
+
+// Or build a component and load it
 const line = new omdNumberLine();
 line.loadFromJSON({ min: 0, max: 10, dotValues: [3, 7] });
-display.render(line);
+display.load(line);
 ```
 
 ## Core Concepts
 
 ### omdDisplay
 
-Renders a single component into a DOM container. The SVG sizes to fit the content and is centered within the container.
+Renders a single component into a DOM container. The SVG sizes to fit the content and is aligned within the container.
 
 ```js
 const display = new omdDisplay(container, {
-    centerContent: true,   // center the SVG in the container (default: true)
+    alignment: 'center',   // 'center' | 'left' | 'right' (default: 'center')
     autoScale: true,       // shrink to fit if too large (default: true)
     maxScale: 1,           // never upscale past natural size (default: 1)
     padding: 8,            // padding around content in px (default: 8)
 });
 
-display.render('sqrt(x + 4)');       // string → omdExpression or omdEquation
-display.render(myVisual);            // pre-built component
+display.render('sqrt(x + 4)');                                      // string → auto-detected
+display.loadFromJSON({ omdType: 'numberLine', min: 0, max: 10 });   // from JSON
+display.load(myVisual);                                             // pre-built component
 display.clear();
 display.destroy();
 ```
@@ -56,7 +74,13 @@ const canvas = new omdCanvas(document.getElementById('stage'), {
 
 const plane = new omdCoordinatePlane();
 plane.loadFromJSON({ xMin: -5, xMax: 5, yMin: -5, yMax: 5 });
+
+// Position via add options
 canvas.add(plane, { x: 30, y: 40 });
+
+// Or position beforehand — equivalent
+plane.setPosition(30, 40);
+canvas.add(plane);
 
 const eq = new omdEquation();
 eq.loadFromJSON('2*x + 3 = 7');
@@ -148,7 +172,7 @@ line.loadFromJSON({
     title: 'Miles walked',
 });
 
-new omdDisplay(document.getElementById('line-container')).render(line);
+new omdDisplay(document.getElementById('line-container')).load(line);
 ```
 
 ### Coordinate Plane
@@ -216,17 +240,25 @@ work.loadFromJSON({
 
 ### Factory Function
 
-All components can be created from a JSON object using `createFromJSON`:
+All components can be created from a JSON object using `createFromJSON`. The JSON structure is flat — the same object you pass to the factory is what `loadFromJSON` expects on each class directly.
 
 ```js
 import { createFromJSON } from '@teachinglab/omd';
 
+// All fields are at the top level alongside omdType
 const visual = createFromJSON({
     omdType: 'numberLine',
     min: 0,
     max: 10,
     dotValues: [3, 7],
 });
+
+// This is equivalent to:
+const line = new omdNumberLine();
+line.loadFromJSON({ omdType: 'numberLine', min: 0, max: 10, dotValues: [3, 7] });
+
+// Or render directly via omdDisplay.loadFromJSON — one line:
+display.loadFromJSON({ omdType: 'numberLine', min: 0, max: 10, dotValues: [3, 7] });
 ```
 
 ## Documentation

@@ -2,7 +2,7 @@
 
 ## omdDisplay
 
-Renders a single OMD component into a DOM container. The SVG is sized to fit the content — not the container — and the container centers it via flexbox when `centerContent` is enabled.
+Renders a single OMD component into a DOM container. The SVG is sized to fit the content — not the container — and the container aligns it via flexbox.
 
 ### Constructor
 
@@ -19,36 +19,40 @@ new omdDisplay(container, options)
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `centerContent` | `boolean` | `true` | Centers the SVG inside the container using flexbox. |
+| `alignment` | `'center'`\|`'left'`\|`'right'` | `'center'` | Horizontal alignment of the SVG inside the container. Set to any other value to skip flex layout entirely. |
 | `autoScale` | `boolean` | `true` | Scales the component to fit within the container, respecting `maxScale`. |
 | `maxScale` | `number` | `1` | Upper bound on the scale factor. `1` means the content will never render larger than its natural size — only shrink to fit. Set higher (e.g. `2`) to allow upscaling. |
 | `padding` | `number` | `8` | Pixel padding added around the content inside the SVG. |
 
 ### Methods
 
-#### `render(input)`
+#### `render(string)`
 
-Renders content into the display. Clears any previously rendered content first.
-
-`input` can be:
-- A **string expression** — auto-constructs `omdExpression` (`'3*x + 2'`)
-- A **string equation** (contains `=`) — auto-constructs `omdEquation` (`'2*x + 3 = 7'`)
-- A **pre-loaded omd component** — any object with a `.svgObject` property (e.g. `omdCoordinatePlane`, `omdNumberLine`, `omdExpression`, `omdEquation`)
+Parses and renders a math string. Clears any previously rendered content first. Auto-detects equations (strings containing `=`) vs expressions.
 
 ```js
-// String — auto-parsed
-display.render('3*x + 2');
-display.render('2*x + 3 = 7');
-
-// Pre-loaded component
-const plane = new omdCoordinatePlane();
-plane.loadFromJSON({ width: 260, height: 260, xMin: -5, xMax: 5, yMin: -5, yMax: 5 });
-display.render(plane);
+display.render('3*x + 2');      // expression
+display.render('2*x + 3 = 7'); // equation (detected by =)
 ```
 
-#### `update(input)`
+#### `load(component)`
 
-Alias for `render()`.
+Renders a pre-built OMD component. Clears any previously rendered content first.
+
+```js
+const line = new omdNumberLine();
+line.loadFromJSON({ min: 0, max: 10, dotValues: [6] });
+display.load(line);
+```
+
+#### `loadFromJSON(json)`
+
+Creates a component from a JSON object (using the factory) and renders it in one step.
+
+```js
+display.loadFromJSON({ omdType: 'numberLine', min: 0, max: 10, dotValues: [6] });
+display.loadFromJSON({ omdType: 'coordinatePlane', xMin: -5, xMax: 5, yMin: -5, yMax: 5 });
+```
 
 #### `clear()`
 
@@ -68,21 +72,22 @@ Removes the SVG from the DOM, disconnects the resize observer, and marks the ins
 
 ```js
 const display = new omdDisplay(document.getElementById('my-cell'), {
-    centerContent: true,
+    alignment: 'center',
     autoScale: true,
     maxScale: 1,
     padding: 12,
 });
 
+// From a string
 display.render('sqrt(x + 4)');
 
-// Later, swap content:
-display.render('x^2 - 4 = 0');
+// From JSON — one line
+display.loadFromJSON({ omdType: 'numberLine', min: 0, max: 20, dotValues: [6, 14] });
 
-// Or pass a pre-built visual:
-const line = new omdNumberLine();
-line.loadFromJSON({ min: 0, max: 10, dotValues: [6] });
-display.render(line);
+// From a pre-built component
+const plane = new omdCoordinatePlane();
+plane.loadFromJSON({ xMin: -5, xMax: 5, yMin: -5, yMax: 5 });
+display.load(plane);
 ```
 
 ---
@@ -113,10 +118,15 @@ new omdCanvas(container, options)
 
 #### `add(component, options)`
 
-Adds a component to the canvas at a given position. Returns the component.
+Adds a component to the canvas. Accepts an optional position and scale — or you can position the component beforehand with `setPosition` and call `add` with no options.
 
 ```js
-canvas.add(component, { x: 30, y: 60, scale: 1.5 });
+// Position via add options
+canvas.add(plane, { x: 30, y: 60, scale: 1.5 });
+
+// Position beforehand — equivalent
+plane.setPosition(30, 60);
+canvas.add(plane);
 ```
 
 | Option | Type | Default | Description |
@@ -159,7 +169,7 @@ canvas.resize(1400, 600);
 
 #### `items` _(getter)_
 
-Returns a shallow copy of the array of all added components.
+Returns a shallow copy of all added components.
 
 ```js
 console.log(canvas.items.length);
@@ -179,7 +189,8 @@ canvas.add(plane, { x: 30, y: 60 });
 
 const line = new omdNumberLine();
 line.loadFromJSON({ min: 0, max: 10, dotValues: [6] });
-canvas.add(line, { x: 350, y: 120 });
+line.setPosition(350, 120);
+canvas.add(line);
 
 const eq = new omdEquation();
 eq.loadFromJSON('2*x + 3 = 7');
@@ -193,6 +204,6 @@ canvas.add(eq, { x: 380, y: 340 });
 | | `omdDisplay` | `omdCanvas` |
 |---|---|---|
 | Content | Single component | Multiple components |
-| Positioning | Automatic (centered / scaled to fit) | Explicit `(x, y)` per component |
+| Positioning | Automatic (aligned / scaled to fit) | Explicit `(x, y)` per component |
 | SVG size | Fits content | Fixed at construction |
 | Use case | Expression/equation cells, single visuals | Composed scenes, diagrams |

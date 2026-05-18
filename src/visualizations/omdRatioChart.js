@@ -1,5 +1,5 @@
 
-import { omdColor } from "../config/omdColor.js";
+import { omdColor } from "../omdConstants.js";
 import { jsvgGroup, jsvgEllipse, jsvgArc, jsvgLine, jsvgRect } from "@teachinglab/jsvg";
 
 export class omdRatioChart extends jsvgGroup
