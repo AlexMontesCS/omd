@@ -1,237 +1,139 @@
 # OMD
 
-> A JavaScript library for creating interactive mathematical interfaces in web applications
+A JavaScript library for rendering mathematical visualizations and expressions as SVG.
 
-[![npm version](https://img.shields.io/npm/v/@teachinglab/omd.svg)](https://www.npmjs.com/package/@teachinglab/omd)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-OMD is a comprehensive JavaScript library for building rich, interactive mathematical experiences in the browser. From simple equation displays to complex step-by-step solution systems with full visual feedback and user interaction.
-
-![OMD Demo](https://i.imgur.com/CdtEi33.png)
-
-## 📖 Full Documentation
-
-**[View the complete documentation →](https://your-site.netlify.app/npm-docs/)**
-
-The full documentation includes interactive examples, detailed API references, and comprehensive guides.
-
-## Quick Start
-
-### Installation
+## Installation
 
 ```bash
 npm install @teachinglab/omd
 ```
 
-### Basic Usage
+## Quick Start
 
-```javascript
-import { omdDisplay } from '@teachinglab/omd';
+```js
+import { omdDisplay, omdNumberLine } from '@teachinglab/omd';
 
-// Create a math display
-const container = document.getElementById('math-container');
-const display = new omdDisplay(container);
+// Render an expression into a div
+const display = new omdDisplay(document.getElementById('container'));
+display.render('3*x + 2');          // expression
+display.render('2*x + 3 = 7');      // equation (auto-detected by =)
 
-// Render an equation
-display.render('2x + 3 = 11');
+// Render a visualization
+const line = new omdNumberLine();
+line.loadFromJSON({ min: 0, max: 10, dotValues: [3, 7] });
+display.render(line);
 ```
 
-### No-Build Browser Usage
+## Core Concepts
 
-```html
-<script src="https://unpkg.com/@teachinglab/omd"></script>
-<script>
-  const { createFromJSON, omdDisplay } = window.OMD;
+### omdDisplay
 
-  const display = new omdDisplay(document.getElementById('math-container'));
-  const graph = createFromJSON({
-    omdType: 'coordinatePlane',
-    xMin: -5,
-    xMax: 5,
-    yMin: -5,
-    yMax: 5,
-    graphEquations: [{ equation: 'y=x+1', color: '#0f766e' }]
-  });
+Renders a single component into a DOM container. The SVG sizes to fit the content and is centered within the container.
 
-  display.render(graph);
-</script>
+```js
+const display = new omdDisplay(container, {
+    centerContent: true,   // center the SVG in the container (default: true)
+    autoScale: true,       // shrink to fit if too large (default: true)
+    maxScale: 1,           // never upscale past natural size (default: 1)
+    padding: 8,            // padding around content in px (default: 8)
+});
+
+display.render('sqrt(x + 4)');       // string → omdExpression or omdEquation
+display.render(myVisual);            // pre-built component
+display.clear();
+display.destroy();
 ```
 
-The browser bundle auto-registers `window.math`, so you do not need a separate math setup script.
+### omdCanvas
 
-## Documentation
+A multi-object stage. Add components at explicit positions.
 
-### Getting Started
-- **[Installation & Setup](npm-docs/guides/getting-started.md)** - Get up and running with OMD
-- **[Quick Examples](npm-docs/guides/quick-examples.md)** - Common use cases and code snippets
-- **[Factory Functions](npm-docs/guides/factory-functions.md)** - Creating objects from JSON (AI-friendly)
+```js
+const canvas = new omdCanvas(document.getElementById('stage'), {
+    width: 1100,
+    height: 500,
+});
 
-### Core Concepts
+const plane = new omdCoordinatePlane();
+plane.loadFromJSON({ xMin: -5, xMax: 5, yMin: -5, yMax: 5 });
+canvas.add(plane, { x: 30, y: 40 });
 
-#### 1. Global Context & Configuration
-Learn about the foundational systems that power OMD:
+const eq = new omdEquation();
+eq.loadFromJSON('2*x + 3 = 7');
+canvas.add(eq, { x: 400, y: 200, scale: 1.5 });
 
-- **[Configuration Manager](npm-docs/api/omdConfigManager.md)** - Library-wide settings and theming
-- **[Configuration Options](npm-docs/api/configuration-options.md)** - Complete list of available settings
-- **[Display System](npm-docs/api/omdDisplay.md)** - Main rendering engine
-- **[Canvas System](npm-docs/api/omdCanvas.md)** - Multi-expression layout manager
-- **[Event Manager](npm-docs/api/eventManager.md)** - Event handling and coordination
-- **[Helpers & Utilities](npm-docs/api/omdHelpers.md)** - Utility functions for common tasks
-
-#### 2. Visualizations
-Interactive visual components for teaching and learning:
-
-##### Number & Ratio Visualizations
-- **[Number Line](npm-docs/guides/visualizations.md#number-line)** - `omdNumberLine` - Interactive number lines with dots and labels
-- **[Number Tiles](npm-docs/guides/visualizations.md#number-tiles)** - `omdNumberTile` - Visual counting tiles with dots
-- **[Tape Diagrams](npm-docs/guides/visualizations.md#tape-diagrams)** - `omdTapeDiagram` - Part-whole relationship diagrams
-- **[Ratio Charts](npm-docs/guides/visualizations.md#ratio-charts)** - `omdRatioChart` - Pie and bar chart ratio visualizations
-- **[Balance Hanger](npm-docs/guides/visualizations.md#balance-hanger)** - `omdBalanceHanger` - Balance scale visualizations
-
-##### Graphing & Geometry
-- **[Coordinate Plane](npm-docs/guides/visualizations.md#coordinate-plane)** - `omdCoordinatePlane` - 2D graphing with functions and shapes
-- **[Shapes](npm-docs/guides/visualizations.md#shapes)** - `omdShapes` - Geometric shapes (circles, rectangles, polygons, triangles)
-- **[Spinner](npm-docs/guides/visualizations.md#spinner)** - `omdSpinner` - Interactive circular spinners
-
-##### Data Display
-- **[Tables](npm-docs/guides/visualizations.md#tables)** - `omdTable` - Data tables with customizable styling
-- **[Function Graphs](npm-docs/guides/visualizations.md#function-graphs)** - Plotting mathematical functions
-
-#### 3. Equations & Expressions
-The heart of mathematical notation and manipulation:
-
-##### Core Expression Components
-- **[Expression Nodes](npm-docs/api/expression-nodes.md)** - Understanding the node tree structure and omdEquationNode class
-- **[omdEquationNode](npm-docs/api/omdEquationNode.md)** - Complete equations with manipulation methods (e.g., `2x + 3 = 11`)
-- **[omdExpression](npm-docs/guides/equations.md#expressions)** - Mathematical expressions (e.g., `3x² + 5`)
-- **[omdTerm](npm-docs/guides/equations.md#terms)** - Individual terms (e.g., `3x²`)
-- **[omdNumber](npm-docs/guides/equations.md#numbers)** - Numeric constants
-- **[omdVariable](npm-docs/guides/equations.md#variables)** - Variables (e.g., `x`, `y`)
-- **[omdOperator](npm-docs/guides/equations.md#operators)** - Mathematical operators (+, -, ×, ÷)
-
-##### Advanced Expression Types
-- **[omdPowerExpression](npm-docs/guides/equations.md#power-expressions)** - Exponentiation (e.g., `(x+1)²`)
-- **[omdRationalExpression](npm-docs/guides/equations.md#rational-expressions)** - Fractions (e.g., `(x+1)/(x-1)`)
-- **[omdFunction](npm-docs/guides/equations.md#functions)** - Mathematical functions (e.g., `f(x) = 2x + 1`)
-- **[omdTileEquation](npm-docs/guides/equations.md#tile-equations)** - Visual tile-based equations
-
-##### Step-by-Step Solutions
-- **[Equation Stack](npm-docs/api/omdEquationStack.md)** - Sequenced solution steps
-- **[Step Visualizer](npm-docs/api/omdStepVisualizer.md)** - Interactive step visualization
-- **[Simplification Engine](npm-docs/api/omdSimplification.md)** - Rule-based expression simplification
-- **[Simplification Rules](npm-docs/api/simplificationRules.md)** - Available transformation rules
-
-### Complete API Reference
-- **[Full API Documentation](npm-docs/api/api-reference.md)** - Complete reference for all components
-- **[JSON Schemas](npm-docs/json-schemas.md)** - Detailed JSON structure for all components
-
-## Features
-
-### **Interactive Math Rendering**
-- High-quality SVG-based mathematical notation
-- Real-time expression manipulation and visualization
-- Automatic layout and alignment for complex equations
-
-### **Step-by-Step Solutions**
-- Visual step tracking with detailed explanations
-- Simplification engine with rule-based transformations
-- Provenance tracking for highlighting related elements
-
-### **Rich UI Components**
-- Built-in toolbar for common mathematical operations
-- Drag & drop interface for intuitive manipulation
-- Customizable canvas for multi-expression layouts
-
-### **Educational Features**
-- Interactive learning experiences
-- Progressive step revelation
-- Visual operation feedback and highlighting
-
-## Guides
-
-### By Use Case
-- **[Creating Equations](npm-docs/guides/equations.md)** - Work with equations and expressions
-- **[Visualizations Guide](npm-docs/guides/visualizations.md)** - All visualization components
-- **[Step-by-Step Solutions](npm-docs/guides/step-by-step.md)** - Building interactive solutions
-- **[Interactive Features](npm-docs/guides/interactive-features.md)** - Drag & drop, toolbars, and more
-
-### Advanced Topics
-- **[Expression Tree Structure](npm-docs/guides/expression-tree.md)** - Understanding the AST
-- **[Custom Simplification Rules](npm-docs/guides/custom-rules.md)** - Extending the simplification engine
-- **[Theming & Styling](npm-docs/guides/theming.md)** - Customizing appearance
-- **[Performance Optimization](npm-docs/guides/performance.md)** - Best practices for large applications
-
-## Architecture
-
+canvas.move(plane, 60, 40);
+canvas.remove(eq);
+canvas.clear();
 ```
-OMD Library Structure
-├── Core Systems
-│   ├── Configuration Manager (Global settings)
-│   ├── Display System (Rendering engine)
-│   └── Event Manager (Coordination)
-│
-├── Visualizations
-│   ├── Number Visualizations (Number line, tiles, tape diagrams)
-│   ├── Graphing (Coordinate plane, functions)
-│   └── Data Display (Tables, charts)
-│
-└── Equations & Expressions
-    ├── Node System (Expression tree)
-    ├── Equation Components (Equations, terms, operators)
-    ├── Advanced Expressions (Powers, rationals, functions)
-    └── Step-by-Step System (Simplification, visualization)
+
+## Components
+
+### Expressions & Equations
+
+| Class | Description | Example input |
+|---|---|---|
+| `omdExpression` | Math expression | `'3*x + 2'` or `{ expression: '3*x+2', fontSize: 24 }` |
+| `omdEquation` | Equation with `=` | `'2*x + 3 = 7'` or `{ equation: '...', fontSize: 24 }` |
+| `omdEquationStack` | Stacked equations aligned by `=` | `{ equations: ['2x+3=7', '2x=4', 'x=2'] }` |
+| `omdEquationWork` | Step-by-step worked solution | `{ rows: [{kind:'equation', left:'2x+3', right:'7'}, ...] }` |
+
+All expression/equation components support:
+```js
+expr.setBackgroundColor('#fff');      // set background color
+expr.hideBackgroundByDefault();       // transparent background
 ```
+
+### Visualizations
+
+| Class | Description |
+|---|---|
+| `omdNumberLine` | Number line with optional dot markers |
+| `omdDoubleNumberLine` | Two parallel number lines |
+| `omdBalanceHanger` | Balance scale with variables and numbers |
+| `omdTapeDiagram` | Part-whole tape diagram |
+| `omdDoubleTapeDiagram` | Two stacked tape diagrams |
+| `omdCoordinatePlane` | 2D graph — plot equations, points, segments |
+| `omdTable` | Data table from an equation or manual data |
+| `omdRatioChart` | Pie, dot, or bar ratio chart |
+| `omdTileEquation` | Algebra tile equation |
+| `omdSpinner` | Circular spinner with divisions |
+
+### Shapes
+
+| Class | Description |
+|---|---|
+| `omdRectangle` | Rectangle with dimension labels |
+| `omdRectangularPrism` | 3D rectangular prism |
+| `omdRightTriangle` | Right triangle |
+| `omdIsoscelesTriangle` | Isosceles triangle |
+| `omdCircle` | Circle with optional points and segments |
+| `omdEllipse` | Ellipse |
+| `omdAngle` | Angle diagram with rays and arc markers |
+| `omdRegularPolygon` | Regular polygon (triangle, hexagon, etc.) |
 
 ## Examples
 
-### Creating Objects from JSON (Factory Method)
+### Number Line
 
-```javascript
-import { createFromJSON } from '@teachinglab/omd';
+```js
+import { omdDisplay, omdNumberLine } from '@teachinglab/omd';
 
-// AI-generated or dynamic JSON data
-const jsonData = {
-    omdType: 'numberLine',
+const line = new omdNumberLine();
+line.loadFromJSON({
     min: 0,
-    max: 10,
-    dotValues: [2, 5, 8]
-};
-
-// Create the object - no switch statement needed!
-const numberLine = createFromJSON(jsonData);
-```
-
-### Basic Equation
-```javascript
-import { omdDisplay, omdEquationNode } from '@teachinglab/omd';
-
-const display = new omdDisplay(document.getElementById('container'));
-const equation = omdEquationNode.fromString('2x + 3 = 11');
-display.render(equation);
-```
-
-### Step-by-Step Solution
-```javascript
-import { omdEquationStack } from '@teachinglab/omd';
-
-const steps = [
-    '2x + 3 = 11',
-    '2x = 8',
-    'x = 4'
-];
-
-const stack = new omdEquationStack(steps.map(s => 
-    omdEquationNode.fromString(s)
-), {
-    toolbar: true,
-    stepVisualizer: true
+    max: 20,
+    increment: 2,
+    dotValues: [6, 14],
+    title: 'Miles walked',
 });
 
-display.render(stack);
+new omdDisplay(document.getElementById('line-container')).render(line);
 ```
 
-### Coordinate Plane with Function
-```javascript
+### Coordinate Plane
+
+```js
 import { omdCoordinatePlane } from '@teachinglab/omd';
 
 const plane = new omdCoordinatePlane();
@@ -239,42 +141,82 @@ plane.loadFromJSON({
     xMin: -10, xMax: 10,
     yMin: -10, yMax: 10,
     graphEquations: [
-        { equation: 'y = x^2 - 4', color: '#e11d48', strokeWidth: 2 }
-    ]
+        { equation: 'y = x^2 - 4', color: '#e11d48' },
+        { equation: 'y = 2*x + 1', color: '#0f766e' },
+    ],
+    dotValues: [[2, 0, '#e11d48']],
 });
-
-display.render(plane);
 ```
 
-### Number Line Visualization
-```javascript
-import { omdNumberLine } from '@teachinglab/omd';
+### Balance Hanger
 
-const numberLine = new omdNumberLine();
-numberLine.loadFromJSON({
+```js
+import { omdBalanceHanger } from '@teachinglab/omd';
+
+const hanger = new omdBalanceHanger();
+hanger.loadFromJSON({
+    leftValues: ['x', 'x', '3'],
+    rightValues: ['9'],
+});
+```
+
+### Rectangle with Labels
+
+```js
+import { omdRectangle } from '@teachinglab/omd';
+
+const rect = new omdRectangle();
+rect.loadFromJSON({
+    width: 8,
+    height: 5,
+    unitScale: 40,
+    showLabels: true,
+    centerLabel: '40 sq ft',
+});
+```
+
+### Equation Work
+
+```js
+import { omdEquationWork } from '@teachinglab/omd';
+
+const work = new omdEquationWork();
+work.loadFromJSON({
+    rows: [
+        { kind: 'equation', left: '2x + 3', right: '11' },
+        { kind: 'operation', left: '-3', right: '-3' },
+        { kind: 'line' },
+        { kind: 'equation', left: '2x', right: '8' },
+        { kind: 'operation', left: '÷2', right: '÷2' },
+        { kind: 'line' },
+        { kind: 'equation', left: 'x', right: '4' },
+    ],
+});
+```
+
+### Factory Function
+
+All components can be created from a JSON object using `createFromJSON`:
+
+```js
+import { createFromJSON } from '@teachinglab/omd';
+
+const visual = createFromJSON({
+    omdType: 'numberLine',
     min: 0,
     max: 10,
-    dotValues: [2, 5, 8],
-    label: 'Number Line Example'
+    dotValues: [3, 7],
 });
-
-display.render(numberLine);
 ```
+
+## Documentation
+
+- [Canvas classes (omdDisplay, omdCanvas)](docs/canvas.md)
+- [Expressions & equations](docs/expressions.md)
+- [Visualizations](docs/visualizations.md)
+- [Shapes](docs/shapes.md)
 
 ## Dependencies
 
-- **JSVG** (`@teachinglab/jsvg`) - High-performance SVG rendering
-- **math.js** - Mathematical expression parsing
-- **Modern Browser** - ES6 modules, SVG support required
-
-## License
-
-MIT License - see [LICENSE](../LICENSE) for details
-
-## Contributing
-
-We welcome contributions! See our [contributing guidelines](../CONTRIBUTING.md) for more information.
-
----
-
-**Ready to get started?** Check out the [Getting Started Guide](npm-docs/guides/getting-started.md) or explore the [JSON Schemas](npm-docs/json-schemas.md) for detailed component configurations.
+- [`@teachinglab/jsvg`](https://www.npmjs.com/package/@teachinglab/jsvg) — SVG rendering
+- [`mathjs`](https://mathjs.org) — Expression parsing
