@@ -71,6 +71,8 @@ canvas.clear();
 
 ### Expressions & Equations
 
+![Expressions & Equations](docs/screenshots/expressions.png)
+
 | Class | Description | Example input |
 |---|---|---|
 | `omdExpression` | Math expression | `'3*x + 2'` or `{ expression: '3*x+2', fontSize: 24 }` |
@@ -84,22 +86,40 @@ expr.setBackgroundColor('#fff');      // set background color
 expr.hideBackgroundByDefault();       // transparent background
 ```
 
-### Visualizations
+### Number Visualizations
+
+![Number Visualizations](docs/screenshots/numbers.png)
 
 | Class | Description |
 |---|---|
 | `omdNumberLine` | Number line with optional dot markers |
 | `omdDoubleNumberLine` | Two parallel number lines |
 | `omdBalanceHanger` | Balance scale with variables and numbers |
-| `omdTapeDiagram` | Part-whole tape diagram |
-| `omdDoubleTapeDiagram` | Two stacked tape diagrams |
-| `omdCoordinatePlane` | 2D graph — plot equations, points, segments |
-| `omdTable` | Data table from an equation or manual data |
 | `omdRatioChart` | Pie, dot, or bar ratio chart |
-| `omdTileEquation` | Algebra tile equation |
 | `omdSpinner` | Circular spinner with divisions |
 
+### Tape Diagrams
+
+![Tape Diagrams](docs/screenshots/tapes.png)
+
+| Class | Description |
+|---|---|
+| `omdTapeDiagram` | Part-whole tape diagram |
+| `omdDoubleTapeDiagram` | Two stacked tape diagrams |
+
+### Graphing & Data
+
+![Graphing & Data](docs/screenshots/graphs.png)
+
+| Class | Description |
+|---|---|
+| `omdCoordinatePlane` | 2D graph — plot equations, points, segments |
+| `omdTable` | Data table from an equation or manual data |
+| `omdTileEquation` | Algebra tile equation |
+
 ### Shapes
+
+![Shapes](docs/screenshots/shapes.png)
 
 | Class | Description |
 |---|---|

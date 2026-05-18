@@ -86,30 +86,28 @@ eq.loadFromJSON({
 
 ## omdEquationStack
 
-Stacks multiple equations vertically, optionally aligned on the equals sign.
-
-### loadFromJSON
+Stacks multiple equations vertically, aligned on the equals sign. Takes an array of `omdEquationNode` instances in the constructor — there is no `loadFromJSON`.
 
 ```js
-const stack = new omdEquationStack();
-stack.loadFromJSON({
-  equations: [
-    '2*x + 3 = 7',
-    '2*x = 4',
-    'x = 2'
-  ],
-  alignmentMode: 'equals',
-  fontSize: 22
-});
+import { omdEquationStack, omdEquationNode } from '@teachinglab/omd';
+
+const stack = new omdEquationStack([
+    omdEquationNode.fromString('2*x + 3 = 11'),
+    omdEquationNode.fromString('2*x = 8'),
+    omdEquationNode.fromString('x = 4'),
+]);
 ```
 
-### Fields
+### Constructor
 
-| Name | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `equations` | `string[]` | Yes | — | Ordered list of equation strings to render. |
-| `alignmentMode` | `'equals' \| 'center'` | No | `'equals'` | Aligns rows on the `=` sign or centers each row independently. |
-| `fontSize` | `number` | No | `20` | Font size in pixels. |
+```js
+new omdEquationStack(steps, options)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `steps` | `omdEquationNode[]` | Ordered equation nodes to display. Use `omdEquationNode.fromString('...')` to create each one. |
+| `options.styling.equationBackground` | `string` | Optional background color applied to each equation. |
 
 ---
 

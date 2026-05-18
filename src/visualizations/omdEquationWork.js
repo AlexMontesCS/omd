@@ -329,8 +329,8 @@ export class omdEquationWork extends jsvgGroup {
         this.paddingY = 26;
 
         this.lineGap = 12;
-        this.lineInset = 6;
-        this.lineStrokeWidth = 4;
+        this.lineInset = 0;
+        this.lineStrokeWidth = Math.max(1, Math.round(this.fontSize / 10));
 
         this.centerSymbol = '=';
 
@@ -341,10 +341,10 @@ export class omdEquationWork extends jsvgGroup {
         this.lineColor = '#111827';
 
         this.operationLineUp = 'equals';
-        this.operationLeftAlign = '';
-        this.operationRightAlign = '';
+        this.operationLeftAlign = 'end';
+        this.operationRightAlign = 'end';
         this.equationLeftAlign = 'end';
-        this.equationRightAlign = 'start';
+        this.equationRightAlign = 'end';
         this.expressionAlign = 'end';
 
         this.drawLineBeforeRows = new Set();

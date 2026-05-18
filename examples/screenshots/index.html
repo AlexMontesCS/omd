@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD Screenshot Sheet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f8f8f7;
+            --card: #ffffff;
+            --border: #e8e8e6;
+            --label: #999;
+            --heading: #111;
+            --section-gap: 64px;
+        }
+
+        body {
+            font-family: 'Albert Sans', sans-serif;
+            background: var(--bg);
+            color: var(--heading);
+            padding: 48px 56px;
+        }
+
+        .section {
+            margin-bottom: var(--section-gap);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-header h2 {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #444;
+        }
+
+        .section-header .subtitle {
+            font-size: 12px;
+            color: var(--label);
+            font-style: italic;
+        }
+
+        .grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-2-1 { grid-template-columns: 2fr 1fr; }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .card-label {
+            font-size: 11px;
+            color: var(--label);
+            padding: 10px 14px 6px;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+        }
+
+        .card-body {
+            padding: 8px 14px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-body.tall  { min-height: 280px; }
+        .card-body.med   { min-height: 180px; }
+        .card-body.short { min-height: 100px; }
+        .card-body.xl    { min-height: 360px; }
+
+        .render-target { width: 100%; }
+    </style>
+</head>
+<body>
+
+    <!-- EXPRESSIONS & EQUATIONS -->
+    <div class="section" id="section-expressions">
+        <div class="section-header">
+            <h2>Expressions &amp; Equations</h2>
+            <span class="subtitle">omdExpression · omdEquation · omdEquationStack · omdEquationWork</span>
+        </div>
+        <div class="grid grid-4" style="margin-bottom:16px">
+            <div class="card">
+                <div class="card-label">Expression</div>
+                <div class="card-body short render-target" id="expr-1"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Expression — fraction</div>
+                <div class="card-body short render-target" id="expr-2"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Expression — power</div>
+                <div class="card-body short render-target" id="expr-3"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Expression — sqrt</div>
+                <div class="card-body short render-target" id="expr-4"></div>
+            </div>
+        </div>
+        <div class="grid grid-4" style="margin-bottom:16px">
+            <div class="card">
+                <div class="card-label">Equation</div>
+                <div class="card-body short render-target" id="eq-1"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Equation — fraction</div>
+                <div class="card-body short render-target" id="eq-2"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Equation — quadratic</div>
+                <div class="card-body short render-target" id="eq-3"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Equation — sqrt</div>
+                <div class="card-body short render-target" id="eq-4"></div>
+            </div>
+        </div>
+        <div class="grid grid-2">
+            <div class="card">
+                <div class="card-label">Equation Stack</div>
+                <div class="card-body med render-target" id="eq-stack"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Equation Work</div>
+                <div class="card-body med render-target" id="eq-work"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUMBER VISUALIZATIONS -->
+    <div class="section" id="section-number">
+        <div class="section-header">
+            <h2>Number Visualizations</h2>
+            <span class="subtitle">omdNumberLine · omdDoubleNumberLine · omdBalanceHanger · omdRatioChart · omdSpinner</span>
+        </div>
+        <div class="grid grid-2" style="margin-bottom:16px">
+            <div class="card">
+                <div class="card-label">Number Line</div>
+                <div class="card-body med render-target" id="number-line"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Double Number Line</div>
+                <div class="card-body med render-target" id="double-number-line"></div>
+            </div>
+        </div>
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-label">Balance Hanger</div>
+                <div class="card-body tall render-target" id="balance-hanger"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Ratio Chart — pie</div>
+                <div class="card-body tall render-target" id="ratio-pie"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Spinner</div>
+                <div class="card-body tall render-target" id="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAPE DIAGRAMS -->
+    <div class="section" id="section-tape">
+        <div class="section-header">
+            <h2>Tape Diagrams</h2>
+            <span class="subtitle">omdTapeDiagram · omdDoubleTapeDiagram</span>
+        </div>
+        <div class="grid grid-2">
+            <div class="card">
+                <div class="card-label">Tape Diagram</div>
+                <div class="card-body med render-target" id="tape"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Double Tape Diagram</div>
+                <div class="card-body med render-target" id="double-tape"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COORDINATE PLANE & TABLE -->
+    <div class="section" id="section-graph">
+        <div class="section-header">
+            <h2>Graphing &amp; Data</h2>
+            <span class="subtitle">omdCoordinatePlane · omdTable · omdTileEquation</span>
+        </div>
+        <div class="grid grid-3">
+            <div class="card" style="grid-column: span 2">
+                <div class="card-label">Coordinate Plane</div>
+                <div class="card-body xl render-target" id="coord-plane"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Table — y = 2x + 1</div>
+                <div class="card-body xl render-target" id="table"></div>
+            </div>
+        </div>
+        <div class="grid grid-2" style="margin-top:16px">
+            <div class="card">
+                <div class="card-label">Tile Equation</div>
+                <div class="card-body med render-target" id="tile-eq"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Ratio Chart — bar</div>
+                <div class="card-body med render-target" id="ratio-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHAPES -->
+    <div class="section" id="section-shapes">
+        <div class="section-header">
+            <h2>Shapes</h2>
+            <span class="subtitle">omdRectangle · omdRectangularPrism · omdRightTriangle · omdCircle · omdAngle · omdRegularPolygon · omdEllipse</span>
+        </div>
+        <div class="grid grid-4">
+            <div class="card">
+                <div class="card-label">Rectangle</div>
+                <div class="card-body tall render-target" id="shape-rect"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Rectangular Prism</div>
+                <div class="card-body tall render-target" id="shape-prism"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Right Triangle</div>
+                <div class="card-body tall render-target" id="shape-triangle"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Circle</div>
+                <div class="card-body tall render-target" id="shape-circle"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Angle</div>
+                <div class="card-body tall render-target" id="shape-angle"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Regular Polygon — hexagon</div>
+                <div class="card-body tall render-target" id="shape-polygon"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Ellipse</div>
+                <div class="card-body tall render-target" id="shape-ellipse"></div>
+            </div>
+            <div class="card">
+                <div class="card-label">Isosceles Triangle</div>
+                <div class="card-body tall render-target" id="shape-iso"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>
