@@ -1053,6 +1053,339 @@ export class omdRectangularPrism extends jsvgGroup
 }
 
 
+export class omdCylinder extends jsvgGroup
+{
+    constructor()
+    {
+        super();
+
+        this.type = "omdCylinder";
+
+        this.cylinderRadius = 3;
+        this.cylinderHeight = 5;
+        this.unitScale = 18;
+
+        this.showLabels = false;
+        this.sideLabels = null;
+        this.radiusLabel = "";
+        this.heightLabel = "";
+        this.insideLabel = "";
+        this.outsideTopLabel = "";
+        this.showHiddenEdges = false;
+        this.labelFontSize = 12;
+
+        // Bottom face drawn first so the body covers its back arc
+        this.bottomFacePath = new jsvgEllipse();
+        this.bottomFacePath.setStrokeColor("black");
+        this.bottomFacePath.setStrokeWidth(2);
+        this.bottomFacePath.setFillColor(omdColor.lightGray);
+        this.addChild(this.bottomFacePath);
+
+        // Solid rectangle fill for the body — no stroke, covers the back arc of the bottom face
+        this.bodyFill = new jsvgPath();
+        this.bodyFill.setFillColor(omdColor.lightGray);
+        this.addChild(this.bodyFill);
+
+        // Side strokes as explicit lines
+        this.leftLine = new jsvgLine();
+        this.leftLine.setStrokeColor("black");
+        this.leftLine.setStrokeWidth(2);
+        this.addChild(this.leftLine);
+
+        this.rightLine = new jsvgLine();
+        this.rightLine.setStrokeColor("black");
+        this.rightLine.setStrokeWidth(2);
+        this.addChild(this.rightLine);
+
+        this.hiddenEdgeHolder = new jsvgGroup();
+        this.addChild(this.hiddenEdgeHolder);
+
+        // Top face drawn last so it sits on top of everything
+        this.topFacePath = new jsvgEllipse();
+        this.topFacePath.setStrokeColor("black");
+        this.topFacePath.setStrokeWidth(2);
+        this.topFacePath.setFillColor("#e6edf7");
+        this.addChild(this.topFacePath);
+
+        this.labelsHolder = new jsvgGroup();
+        this.addChild(this.labelsHolder);
+
+        this.updateLayout();
+    }
+
+    loadFromJSON(data)
+    {
+        if ( typeof data.radius != "undefined" )
+            this.cylinderRadius = data.radius;
+
+        if ( typeof data.height != "undefined" )
+            this.cylinderHeight = data.height;
+
+        if ( typeof data.unitScale != "undefined" )
+            this.unitScale = data.unitScale;
+
+        if ( typeof data.showLabels != "undefined" )
+            this.showLabels = data.showLabels;
+
+        if ( typeof data.sideLabels != "undefined" && data.sideLabels && typeof data.sideLabels === "object" )
+            this.sideLabels = { ...data.sideLabels };
+
+        if ( typeof data.radiusLabel != "undefined" )
+            this.radiusLabel = data.radiusLabel;
+
+        if ( typeof data.heightLabel != "undefined" )
+            this.heightLabel = data.heightLabel;
+
+        if ( typeof data.insideLabel != "undefined" )
+            this.insideLabel = data.insideLabel;
+
+        if ( typeof data.outsideTopLabel != "undefined" )
+            this.outsideTopLabel = data.outsideTopLabel;
+
+        if ( typeof data.showHiddenEdges != "undefined" )
+            this.showHiddenEdges = data.showHiddenEdges !== false;
+
+        if ( typeof data.labelFontSize === "number" )
+            this.labelFontSize = data.labelFontSize;
+
+        this.updateLayout();
+    }
+
+    getResolvedCylinderLabels()
+    {
+        const defaults = { radius: "", height: "" };
+
+        if ( this.showLabels )
+        {
+            defaults.radius = normalizeLabelValue(this.cylinderRadius);
+            defaults.height = normalizeLabelValue(this.cylinderHeight);
+        }
+
+        const sideLabels = (this.sideLabels && typeof this.sideLabels === "object") ? this.sideLabels : {};
+        const resolved = { radius: defaults.radius, height: defaults.height };
+
+        if ( typeof sideLabels.radius != "undefined" ) resolved.radius = normalizeLabelValue(sideLabels.radius);
+        if ( typeof sideLabels.r != "undefined" ) resolved.radius = normalizeLabelValue(sideLabels.r);
+        if ( typeof sideLabels.height != "undefined" ) resolved.height = normalizeLabelValue(sideLabels.height);
+        if ( typeof sideLabels.h != "undefined" ) resolved.height = normalizeLabelValue(sideLabels.h);
+
+        if ( labelHasText(this.radiusLabel) ) resolved.radius = normalizeLabelValue(this.radiusLabel);
+        if ( labelHasText(this.heightLabel) ) resolved.height = normalizeLabelValue(this.heightLabel);
+
+        return resolved;
+    }
+
+    updateLayout()
+    {
+        const radius = Math.max(1, Number(this.cylinderRadius) || 1);
+        const height = Math.max(1, Number(this.cylinderHeight) || 1);
+        const scale = Math.max(1, Number(this.unitScale) || 1);
+
+        const rx = radius * scale;
+        const ry = rx * 0.35;
+        const heightPx = height * scale;
+
+        const labels = this.getResolvedCylinderLabels();
+        const hasLabels = (
+            labelHasText(labels.radius) ||
+            labelHasText(labels.height) ||
+            labelHasText(this.insideLabel) ||
+            labelHasText(this.outsideTopLabel)
+        );
+
+        const basePadding = 16;
+        const fontSize = this.labelFontSize;
+        const textHeight = estimateLabelHeight(fontSize);
+        const endpointMarkerHalfLength = Math.max(4, textHeight * 0.35);
+        const shapeBarGap = Math.max(4, textHeight * 0.32);
+        const dimensionOffset = shapeBarGap + endpointMarkerHalfLength;
+        const labelGap = Math.max(9, textHeight * 0.55);
+        const radiusDimensionOffset = dimensionOffset;
+        const radiusLabelOffset = Math.max(labelGap, textHeight * 0.68);
+
+        const radiusTextWidth = estimateLabelWidth(labels.radius, fontSize);
+        const heightTextWidth = estimateLabelWidth(labels.height, fontSize);
+        const insideTextWidth = estimateLabelWidth(this.insideLabel, fontSize);
+        const topTextWidth = estimateLabelWidth(this.outsideTopLabel, fontSize);
+        const heightDimensionOffset = labelHasText(labels.height)
+            ? Math.max(dimensionOffset, heightTextWidth * 0.5 + labelGap * 0.5)
+            : dimensionOffset;
+
+        let leftPad = basePadding;
+        let rightPad = basePadding;
+        let topPad = basePadding;
+        let bottomPad = basePadding;
+
+        if ( hasLabels )
+        {
+            if ( labelHasText(labels.radius) )
+            {
+                topPad = Math.max(topPad, radiusDimensionOffset + textHeight * 1.2 + basePadding);
+                rightPad = Math.max(rightPad, Math.max(0, radiusTextWidth * 0.5 - rx * 0.5) + basePadding);
+                leftPad = Math.max(leftPad, Math.max(0, radiusTextWidth * 0.5 - rx * 1.5) + basePadding);
+            }
+
+            if ( labelHasText(labels.height) )
+            {
+                leftPad = Math.max(leftPad, heightDimensionOffset + heightTextWidth * 0.5 + basePadding);
+            }
+
+            if ( labelHasText(this.insideLabel) )
+            {
+                bottomPad = Math.max(bottomPad, labelGap + textHeight + basePadding);
+                leftPad = Math.max(leftPad, Math.max(0, insideTextWidth * 0.5 - rx) + basePadding);
+                rightPad = Math.max(rightPad, Math.max(0, insideTextWidth * 0.5 - rx) + basePadding);
+            }
+
+            if ( labelHasText(this.outsideTopLabel) )
+            {
+                const topLabelStackHeight = labelHasText(labels.radius)
+                    ? radiusDimensionOffset + textHeight * 2.18 + labelGap
+                    : labelGap + textHeight * 1.5;
+                topPad = Math.max(topPad, topLabelStackHeight + basePadding);
+                leftPad = Math.max(leftPad, Math.max(0, topTextWidth * 0.5 - rx) + basePadding);
+                rightPad = Math.max(rightPad, Math.max(0, topTextWidth * 0.5 - rx) + basePadding);
+            }
+        }
+
+        const cx = leftPad + rx;
+        const cy = topPad + ry;
+
+        // Bottom face: full ellipse at the base (drawn first, front arc sticks out below body)
+        this.bottomFacePath.setWidthAndHeight(2 * rx, 2 * ry);
+        this.bottomFacePath.setPosition(cx, cy + heightPx);
+
+        // Body fill: solid rectangle that covers the back arc of the bottom face — no stroke
+        this.bodyFill.clearPoints();
+        this.bodyFill.addPoint(cx - rx, cy);
+        this.bodyFill.addPoint(cx + rx, cy);
+        this.bodyFill.addPoint(cx + rx, cy + heightPx);
+        this.bodyFill.addPoint(cx - rx, cy + heightPx);
+        this.bodyFill.addPoint(cx - rx, cy);
+        this.bodyFill.updatePath();
+        this.bodyFill.svgObject.setAttribute("stroke", "none");
+
+        // Side strokes
+        this.leftLine.setEndpoints(cx - rx, cy, cx - rx, cy + heightPx);
+        this.rightLine.setEndpoints(cx + rx, cy, cx + rx, cy + heightPx);
+
+        // Hidden edge: back arc of bottom ellipse
+        this.hiddenEdgeHolder.removeAllChildren();
+        if ( this.showHiddenEdges )
+        {
+            const hiddenArc = new jsvgPath();
+            hiddenArc.setStrokeColor("black");
+            hiddenArc.setStrokeWidth(1);
+            hiddenArc.setFillColor("none");
+            hiddenArc.svgObject.setAttribute("stroke-dasharray", "3 2");
+            hiddenArc.svgObject.setAttribute("d",
+                `M ${cx - rx} ${cy + heightPx} A ${rx} ${ry} 0 0 1 ${cx + rx} ${cy + heightPx}`
+            );
+            this.hiddenEdgeHolder.addChild(hiddenArc);
+        }
+
+        // Top face: drawn after everything else so it caps the cylinder cleanly
+        this.topFacePath.setWidthAndHeight(2 * rx, 2 * ry);
+        this.topFacePath.setPosition(cx, cy);
+
+        this.labelsHolder.removeAllChildren();
+        if ( hasLabels )
+        {
+            const addLine = (x0, y0, x1, y1) => {
+                const line = new jsvgLine();
+                line.setStrokeColor("black");
+                line.setStrokeWidth(1);
+                line.setEndpoints(x0, y0, x1, y1);
+                this.labelsHolder.addChild(line);
+            };
+
+            const addTextbookLabel = (text, x, y, options = {}) => {
+                this.labelsHolder.addChild(createShapeTextLabel(text, x, y, { fontSize, ...options }));
+            };
+
+            const addEndpointMarker = (point, nx, ny) => {
+                addLine(
+                    point.x - nx * endpointMarkerHalfLength,
+                    point.y - ny * endpointMarkerHalfLength,
+                    point.x + nx * endpointMarkerHalfLength,
+                    point.y + ny * endpointMarkerHalfLength
+                );
+            };
+
+            const addDimensionLineWithGap = (p0, p1, text, options = {}) => {
+                const dx = p1.x - p0.x;
+                const dy = p1.y - p0.y;
+                const len = Math.hypot(dx, dy) || 1;
+                const ux = dx / len;
+                const uy = dy / len;
+                const labelWidth = Math.max(fontSize * 1.6, estimateLabelWidth(text, fontSize) + fontSize * 0.8);
+                const halfGap = Math.min(Math.max(0, len * 0.5 - 2), labelWidth * 0.5);
+                const midX = (p0.x + p1.x) * 0.5;
+                const midY = (p0.y + p1.y) * 0.5;
+
+                if ( halfGap > 1 )
+                {
+                    addLine(p0.x, p0.y, midX - ux * halfGap, midY - uy * halfGap);
+                    addLine(midX + ux * halfGap, midY + uy * halfGap, p1.x, p1.y);
+                }
+                else
+                {
+                    addLine(p0.x, p0.y, p1.x, p1.y);
+                }
+
+                let rotation = Math.atan2(dy, dx) * 180 / Math.PI;
+                if ( rotation > 90 || rotation < -90 ) rotation += 180;
+                addTextbookLabel(text, midX, midY, options.rotate === false ? {} : { rotation });
+            };
+
+            // Radius: keep the dimension just above the top face so text never collides with the ellipse.
+            if ( labelHasText(labels.radius) )
+            {
+                const radiusY = cy - ry - radiusDimensionOffset;
+                addLine(cx, radiusY, cx + rx, radiusY);
+                addEndpointMarker({ x: cx, y: radiusY }, 0, 1);
+                addEndpointMarker({ x: cx + rx, y: radiusY }, 0, 1);
+                addTextbookLabel(labels.radius, cx + rx * 0.5, radiusY - radiusLabelOffset);
+            }
+
+            if ( labelHasText(labels.height) )
+            {
+                const x = cx - rx - heightDimensionOffset;
+                addEndpointMarker({ x, y: cy }, 1, 0);
+                addEndpointMarker({ x, y: cy + heightPx }, 1, 0);
+                addDimensionLineWithGap(
+                    { x, y: cy },
+                    { x, y: cy + heightPx },
+                    labels.height,
+                    { rotate: false }
+                );
+            }
+
+            if ( labelHasText(this.insideLabel) )
+            {
+                addTextbookLabel(this.insideLabel, cx, cy + heightPx + ry + labelGap + textHeight * 0.5);
+            }
+
+            if ( labelHasText(this.outsideTopLabel) )
+            {
+                const radiusY = cy - ry - radiusDimensionOffset;
+                const radiusTextY = radiusY - radiusLabelOffset;
+                const outsideTopY = labelHasText(labels.radius)
+                    ? radiusTextY - textHeight - labelGap
+                    : cy - ry - labelGap - textHeight;
+                addTextbookLabel(this.outsideTopLabel, cx, outsideTopY);
+            }
+        }
+
+        const totalWidth = leftPad + 2 * rx + rightPad;
+        const totalHeight = topPad + 2 * ry + heightPx + bottomPad;
+        this.width = totalWidth;
+        this.height = totalHeight;
+        this.svgObject.setAttribute("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
+    }
+}
+
+
 export class omdEllipse extends jsvgGroup
 {
     constructor()
@@ -1567,7 +1900,12 @@ export class omdAngle extends jsvgGroup
         this.dotRadius = 4;
         this.fontSize = 28;
         this.arcRadius = 42;
+        this.showAngleTicks = false;
+        this.angleTickGap = 8;
+        this.angleTickLength = 12;
+        this.angleTickTolerance = 0.1;
         this.padding = 32;
+        this.showRayNames = false;
         this.vertexLabel = "";
         this.rays = [
             { angle: 0 },
@@ -1603,8 +1941,23 @@ export class omdAngle extends jsvgGroup
         if ( typeof data.arcRadius !== "undefined" )
             this.arcRadius = data.arcRadius;
 
+        if ( typeof data.showAngleTicks !== "undefined" )
+            this.showAngleTicks = data.showAngleTicks;
+
+        if ( typeof data.angleTickGap !== "undefined" )
+            this.angleTickGap = data.angleTickGap;
+
+        if ( typeof data.angleTickLength !== "undefined" )
+            this.angleTickLength = data.angleTickLength;
+
+        if ( typeof data.angleTickTolerance !== "undefined" )
+            this.angleTickTolerance = data.angleTickTolerance;
+
         if ( typeof data.padding !== "undefined" )
             this.padding = data.padding;
+
+        if ( typeof data.showRayNames !== "undefined" )
+            this.showRayNames = data.showRayNames;
 
         if ( typeof data.vertexLabel !== "undefined" )
             this.vertexLabel = data.vertexLabel;
@@ -1649,9 +2002,110 @@ export class omdAngle extends jsvgGroup
         return computedRays.find(ray => normalizeLabelValue(ray.name || ray.label) === name) || null;
     }
 
-    getAngleDelta( startAngle, endAngle )
+    getDirectedAngleDelta( startAngle, endAngle )
     {
         return ((endAngle - startAngle) % 360 + 360) % 360;
+    }
+
+    getAngleDelta( startAngle, endAngle, angleData = {} )
+    {
+        const delta = this.getDirectedAngleDelta( startAngle, endAngle );
+        if ( angleData.reflex === true || angleData.useReflexAngle === true )
+            return delta;
+
+        return delta > 180 ? delta - 360 : delta;
+    }
+
+    getAngleMeasureKey( startRay, endRay, angleData = {} )
+    {
+        const delta = Math.abs(this.getAngleDelta( startRay.angle, endRay.angle, angleData ));
+        const tolerance = Math.max(0.001, Number(this.angleTickTolerance) || 0.1);
+        return String(Math.round(delta / tolerance));
+    }
+
+    getAngleMarkerType( angleData )
+    {
+        return angleData.marker || angleData.type || "arc";
+    }
+
+    getAngleLabelText( angleData, startRay, endRay )
+    {
+        if ( typeof angleData.label !== "undefined" )
+            return normalizeLabelValue(angleData.label);
+
+        if ( this.getAngleMarkerType(angleData) !== "arc" )
+            return "";
+
+        if ( !startRay || !endRay )
+            return "";
+
+        const measure = Math.abs(this.getAngleDelta( startRay.angle, endRay.angle, angleData ));
+        return `${Math.round(measure)}°`;
+    }
+
+    getAngleTickGap()
+    {
+        return Math.max(1, Number(this.angleTickGap) || 8);
+    }
+
+    getAngleTickLength( angleData = {} )
+    {
+        return Math.max(2, Number(angleData.tickLength ?? this.angleTickLength) || 12);
+    }
+
+    getAngleTickCount( angleData, angleIndex, angleTickCounts )
+    {
+        if ( typeof angleData.tickCount === "number" )
+            return Math.max(1, Math.floor(angleData.tickCount));
+
+        if ( typeof angleData.arcCount === "number" )
+            return Math.max(1, Math.floor(angleData.arcCount));
+
+        return angleTickCounts?.get(angleIndex) || 1;
+    }
+
+    getAngleOuterRadius( angleData, angleIndex, angleTickCounts )
+    {
+        const radius = typeof angleData.arcRadius === "number" ? angleData.arcRadius : this.arcRadius;
+        const markerType = this.getAngleMarkerType(angleData);
+        if ( markerType !== "arc" )
+            return radius;
+
+        const tickCount = this.getAngleTickCount(angleData, angleIndex, angleTickCounts);
+        return this.showAngleTicks && tickCount > 0
+            ? radius + this.getAngleTickLength(angleData) * 0.5
+            : radius;
+    }
+
+    getAngleTickCounts( computedRays )
+    {
+        const counts = new Map();
+        if ( !this.showAngleTicks )
+            return counts;
+
+        const countsByMeasure = new Map();
+        let nextCount = 1;
+
+        this.angles.forEach((angleData, index) => {
+            if ( this.getAngleMarkerType(angleData) !== "arc" )
+                return;
+
+            const startRay = this.getAngleByIndexOrName(angleData.from, computedRays) || computedRays[0];
+            const endRay = this.getAngleByIndexOrName(angleData.to, computedRays) || computedRays[1];
+            if ( !startRay || !endRay )
+                return;
+
+            const measureKey = this.getAngleMeasureKey(startRay, endRay, angleData);
+            if ( !countsByMeasure.has(measureKey) )
+            {
+                countsByMeasure.set(measureKey, nextCount);
+                nextCount += 1;
+            }
+
+            counts.set(index, countsByMeasure.get(measureKey));
+        });
+
+        return counts;
     }
 
     getAngleRayLabelPosition( ray )
@@ -1662,6 +2116,17 @@ export class omdAngle extends jsvgGroup
             y: ray.y + ray.unitY * labelDistance,
             fontSize: typeof ray.fontSize === "number" ? ray.fontSize : this.fontSize
         };
+    }
+
+    getAngleRayDisplayLabel( ray )
+    {
+        if ( labelHasText(ray.label) )
+            return ray.label;
+
+        if ( this.showRayNames && labelHasText(ray.name) )
+            return ray.name;
+
+        return "";
     }
 
     getAngleLabelCandidates( angleData, startRay, endRay, radius )
@@ -1679,12 +2144,16 @@ export class omdAngle extends jsvgGroup
             ];
         }
 
-        const delta = this.getAngleDelta( startRay.angle, endRay.angle );
+        const delta = this.getAngleDelta( startRay.angle, endRay.angle, angleData );
         const midAngle = startRay.angle + delta * 0.5;
         const baseRadius = typeof angleData.labelRadius === "number" ? angleData.labelRadius : radius + 28;
-        const angleOffsets = [0, 12, -12, 22, -22, 34, -34];
+        const maxAngleOffset = Math.max(0, Math.abs(delta) * 0.5 - 4);
+        const angleOffsets = [0, 8, -8, 16, -16, 24, -24].filter(offset => Math.abs(offset) <= maxAngleOffset);
         const radiusOffsets = [0, 12, 24, -8, 36];
         const candidates = [];
+
+        if ( angleOffsets.length === 0 )
+            angleOffsets.push(0);
 
         for ( const radiusOffset of radiusOffsets )
         {
@@ -1734,9 +2203,9 @@ export class omdAngle extends jsvgGroup
         return score;
     }
 
-    getAngleArcAnchor( startRay, endRay, radius )
+    getAngleArcAnchor( angleData, startRay, endRay, radius )
     {
-        const delta = this.getAngleDelta( startRay.angle, endRay.angle );
+        const delta = this.getAngleDelta( startRay.angle, endRay.angle, angleData );
         const midAngle = startRay.angle + delta * 0.5;
         const radians = degreesToRadians( midAngle );
 
@@ -1747,9 +2216,9 @@ export class omdAngle extends jsvgGroup
         };
     }
 
-    getBestAngleLabelCandidate( angleData, startRay, endRay, radius, context )
+    getBestAngleLabelCandidate( angleData, startRay, endRay, radius, context, labelText )
     {
-        const text = normalizeLabelValue(angleData.label);
+        const text = normalizeLabelValue(labelText ?? this.getAngleLabelText(angleData, startRay, endRay));
         const fontSize = typeof angleData.fontSize === "number" ? angleData.fontSize : this.fontSize;
         let bestCandidate = null;
         let bestScore = Infinity;
@@ -1770,7 +2239,9 @@ export class omdAngle extends jsvgGroup
 
     shouldUseAngleCallout( angleData, layout, radius, labeledAngleCount )
     {
-        if ( angleData.labelMode === "inline" ) return false;
+        if ( angleData.labelMode === "inline" )
+            return layout.score >= 700;
+
         if ( angleData.labelMode === "callout" ) return true;
         if ( angleData.labelPosition && typeof angleData.labelPosition === "object" ) return false;
 
@@ -1783,24 +2254,41 @@ export class omdAngle extends jsvgGroup
 
     getAngleCalloutCandidates( angleData, startRay, endRay, radius, bounds )
     {
-        const anchor = this.getAngleArcAnchor( startRay, endRay, radius );
+        const anchor = this.getAngleArcAnchor( angleData, startRay, endRay, radius );
+        const delta = this.getAngleDelta( startRay.angle, endRay.angle, angleData );
+        const midAngle = startRay.angle + delta * 0.5;
+        const leaderLength = Math.max(24, (typeof angleData.fontSize === "number" ? angleData.fontSize : this.fontSize) * 1.5);
+        const leaderRadians = degreesToRadians(midAngle);
+        const directionX = Math.cos(leaderRadians);
+        const directionY = -Math.sin(leaderRadians);
+        const perpendicularX = -directionY;
+        const perpendicularY = directionX;
+        const leaderEnd = {
+            x: anchor.x + directionX * leaderLength,
+            y: anchor.y + directionY * leaderLength
+        };
         const fontSize = typeof angleData.fontSize === "number" ? angleData.fontSize : this.fontSize;
-        const labelY = bounds.minY - Math.max(22, fontSize * 1.15);
-        const xOffsets = [0, -26, 26, -52, 52, -78, 78];
-        const yOffsets = [0, -16, 16, -32];
+        const labelDistance = leaderLength + Math.max(18, fontSize * 0.85);
+        const labelCenter = {
+            x: anchor.x + directionX * labelDistance,
+            y: anchor.y + directionY * labelDistance
+        };
+        const radialOffsets = [0, 12, 24];
+        const perpendicularOffsets = [0, 16, -16, 32, -32, 48, -48];
 
         const candidates = [];
-        for ( const yOffset of yOffsets )
+        for ( const radialOffset of radialOffsets )
         {
-            for ( const xOffset of xOffsets )
+            for ( const perpendicularOffset of perpendicularOffsets )
             {
                 candidates.push({
-                    x: anchor.x + xOffset,
-                    y: labelY + yOffset,
+                    x: labelCenter.x + directionX * radialOffset + perpendicularX * perpendicularOffset,
+                    y: labelCenter.y + directionY * radialOffset + perpendicularY * perpendicularOffset,
                     anchor,
+                    leaderEnd,
                     fontSize,
                     mode: "callout",
-                    preferencePenalty: Math.abs(xOffset) * 0.25 + Math.abs(yOffset) * 0.5
+                    preferencePenalty: Math.abs(perpendicularOffset) * 0.4 + Math.abs(radialOffset) * 0.3
                 });
             }
         }
@@ -1808,9 +2296,9 @@ export class omdAngle extends jsvgGroup
         return candidates;
     }
 
-    getBestAngleCalloutCandidate( angleData, startRay, endRay, radius, context, bounds )
+    getBestAngleCalloutCandidate( angleData, startRay, endRay, radius, context, bounds, labelText )
     {
-        const text = normalizeLabelValue(angleData.label);
+        const text = normalizeLabelValue(labelText ?? this.getAngleLabelText(angleData, startRay, endRay));
         let bestCandidate = null;
         let bestScore = Infinity;
 
@@ -1827,13 +2315,12 @@ export class omdAngle extends jsvgGroup
 
             if ( score < bestScore )
             {
-                const leaderEndY = candidate.y + Math.sign(candidate.anchor.y - candidate.y) * candidate.fontSize * 0.65;
                 bestScore = score;
                 bestCandidate = {
                     ...candidate,
                     box,
                     score,
-                    leaderEnd: { x: candidate.x, y: leaderEndY }
+                    leaderEnd: candidate.leaderEnd
                 };
             }
         }
@@ -1841,39 +2328,44 @@ export class omdAngle extends jsvgGroup
         return bestCandidate;
     }
 
-    getAngleLabelLayouts( computedRays, context, bounds )
+    getAngleLabelLayouts( computedRays, context, bounds, angleTickCounts )
     {
-        const labeledAngleCount = this.angles.filter(angleData => labelHasText(angleData.label)).length;
+        const labeledAngleCount = this.angles.reduce((count, angleData) => {
+            const startRay = this.getAngleByIndexOrName(angleData.from, computedRays) || computedRays[0];
+            const endRay = this.getAngleByIndexOrName(angleData.to, computedRays) || computedRays[1];
+            return count + (labelHasText(this.getAngleLabelText(angleData, startRay, endRay)) ? 1 : 0);
+        }, 0);
         const sortedAngles = this.angles
             .map((angleData, index) => ({ angleData, index }))
             .sort((a, b) => {
-                const radiusA = typeof a.angleData.arcRadius === "number" ? a.angleData.arcRadius : this.arcRadius;
-                const radiusB = typeof b.angleData.arcRadius === "number" ? b.angleData.arcRadius : this.arcRadius;
+                const radiusA = this.getAngleOuterRadius(a.angleData, a.index, angleTickCounts);
+                const radiusB = this.getAngleOuterRadius(b.angleData, b.index, angleTickCounts);
                 return radiusA - radiusB || a.index - b.index;
             });
         const layouts = [];
 
-        for ( const { angleData } of sortedAngles )
+        for ( const { angleData, index } of sortedAngles )
         {
-            if ( !labelHasText(angleData.label) ) continue;
-
             const startRay = this.getAngleByIndexOrName(angleData.from, computedRays) || computedRays[0];
             const endRay = this.getAngleByIndexOrName(angleData.to, computedRays) || computedRays[1];
             if ( !startRay || !endRay ) continue;
 
-            const radius = typeof angleData.arcRadius === "number" ? angleData.arcRadius : this.arcRadius;
-            let layout = this.getBestAngleLabelCandidate(angleData, startRay, endRay, radius, context);
+            const labelText = this.getAngleLabelText(angleData, startRay, endRay);
+            if ( !labelHasText(labelText) ) continue;
+
+            const radius = this.getAngleOuterRadius(angleData, index, angleTickCounts);
+            let layout = this.getBestAngleLabelCandidate(angleData, startRay, endRay, radius, context, labelText);
             if ( !layout ) continue;
 
             if ( this.shouldUseAngleCallout(angleData, layout, radius, labeledAngleCount) )
             {
-                const calloutLayout = this.getBestAngleCalloutCandidate(angleData, startRay, endRay, radius, context, bounds);
+                const calloutLayout = this.getBestAngleCalloutCandidate(angleData, startRay, endRay, radius, context, bounds, labelText);
                 if ( calloutLayout )
                     layout = calloutLayout;
             }
 
             context.labelBoxes.push(layout.box);
-            layouts.push({ angleData, layout });
+            layouts.push({ angleData, layout, labelText });
         }
 
         return layouts;
@@ -1915,26 +2407,61 @@ export class omdAngle extends jsvgGroup
         this.contentHolder.addChild( label );
     }
 
-    getArcPathData( startRay, endRay, radius, shiftX, shiftY )
+    getArcPathData( startRay, endRay, radius, shiftX, shiftY, angleData = {} )
     {
-        const delta = this.getAngleDelta( startRay.angle, endRay.angle );
+        const delta = this.getAngleDelta( startRay.angle, endRay.angle, angleData );
         const startX = Math.cos(degreesToRadians(startRay.angle)) * radius + shiftX;
         const startY = -Math.sin(degreesToRadians(startRay.angle)) * radius + shiftY;
         const endX = Math.cos(degreesToRadians(endRay.angle)) * radius + shiftX;
         const endY = -Math.sin(degreesToRadians(endRay.angle)) * radius + shiftY;
-        const largeArcFlag = delta > 180 ? 1 : 0;
+        const largeArcFlag = Math.abs(delta) > 180 ? 1 : 0;
+        const sweepFlag = delta >= 0 ? 0 : 1;
 
-        return `M ${startX},${startY} A ${radius},${radius} 0 ${largeArcFlag} 0 ${endX},${endY}`;
+        return `M ${startX},${startY} A ${radius},${radius} 0 ${largeArcFlag} ${sweepFlag} ${endX},${endY}`;
     }
 
-    addAngleMarker( angleData, startRay, endRay, shiftX, shiftY )
+    addAngleTickMarks( angleData, startRay, endRay, radius, shiftX, shiftY, tickCount )
+    {
+        if ( !this.showAngleTicks || tickCount <= 0 )
+            return;
+
+        const delta = this.getAngleDelta( startRay.angle, endRay.angle, angleData );
+        const midAngle = startRay.angle + delta * 0.5;
+        const tickLength = this.getAngleTickLength(angleData);
+        const angularGap = this.getAngleTickGap() / Math.max(1, radius) * 180 / Math.PI;
+        const strokeColor = angleData.color || this.strokeColor;
+        const strokeWidth = typeof angleData.strokeWidth === "number" ? angleData.strokeWidth : this.strokeWidth;
+
+        for ( let tickIndex = 0; tickIndex < tickCount; tickIndex += 1 )
+        {
+            const angle = midAngle + (tickIndex - (tickCount - 1) * 0.5) * angularGap;
+            const radians = degreesToRadians(angle);
+            const unitX = Math.cos(radians);
+            const unitY = -Math.sin(radians);
+            const innerRadius = radius - tickLength * 0.5;
+            const outerRadius = radius + tickLength * 0.5;
+
+            const tick = new jsvgLine();
+            tick.setStrokeColor(strokeColor);
+            tick.setStrokeWidth(strokeWidth);
+            tick.setEndpoints(
+                unitX * innerRadius + shiftX,
+                unitY * innerRadius + shiftY,
+                unitX * outerRadius + shiftX,
+                unitY * outerRadius + shiftY
+            );
+            this.contentHolder.addChild(tick);
+        }
+    }
+
+    addAngleMarker( angleData, startRay, endRay, shiftX, shiftY, tickCount = 1 )
     {
         const radius = typeof angleData.arcRadius === "number" ? angleData.arcRadius : this.arcRadius;
-        const markerType = angleData.marker || angleData.type || "arc";
+        const markerType = this.getAngleMarkerType(angleData);
 
         if ( markerType === "right" )
         {
-            const size = typeof angleData.size === "number" ? angleData.size : radius * 0.72;
+            const size = typeof angleData.size === "number" ? angleData.size : 20;
             const cornerX = (startRay.unitX + endRay.unitX) * size + shiftX;
             const cornerY = (startRay.unitY + endRay.unitY) * size + shiftY;
             const d = [
@@ -1963,13 +2490,14 @@ export class omdAngle extends jsvgGroup
         }
 
         this.contentHolder.addChild( this.createRawPath(
-            this.getArcPathData( startRay, endRay, radius, shiftX, shiftY ),
+            this.getArcPathData( startRay, endRay, radius, shiftX, shiftY, angleData ),
             {
                 strokeColor: angleData.color || this.strokeColor,
                 strokeWidth: typeof angleData.strokeWidth === "number" ? angleData.strokeWidth : this.strokeWidth,
                 fillColor: "none"
             }
         ));
+        this.addAngleTickMarks( angleData, startRay, endRay, radius, shiftX, shiftY, tickCount );
     }
 
     updateLayout()
@@ -1977,6 +2505,7 @@ export class omdAngle extends jsvgGroup
         this.contentHolder.removeAllChildren();
 
         const computedRays = this.rays.map((ray, index) => this.getAngleRay(ray, index));
+        const angleTickCounts = this.getAngleTickCounts(computedRays);
         const bounds = {
             minX: 0,
             maxX: 0,
@@ -2006,10 +2535,11 @@ export class omdAngle extends jsvgGroup
         for ( const ray of computedRays )
         {
             this.addBoundsPoint( bounds, ray.x, ray.y );
-            if ( labelHasText(ray.label) )
+            const rayLabel = this.getAngleRayDisplayLabel(ray);
+            if ( labelHasText(rayLabel) )
             {
                 const labelPosition = this.getAngleRayLabelPosition(ray);
-                const labelBox = getEstimatedLabelBox(ray.label, labelPosition.x, labelPosition.y, {
+                const labelBox = getEstimatedLabelBox(rayLabel, labelPosition.x, labelPosition.y, {
                     fontSize: labelPosition.fontSize
                 });
                 labelContext.labelBoxes.push(labelBox);
@@ -2024,18 +2554,18 @@ export class omdAngle extends jsvgGroup
             this.addBoundsBox( bounds, vertexLabelBox );
         }
 
-        for ( const angleData of this.angles )
+        for ( const [index, angleData] of this.angles.entries() )
         {
             const startRay = this.getAngleByIndexOrName(angleData.from, computedRays) || computedRays[0];
             const endRay = this.getAngleByIndexOrName(angleData.to, computedRays) || computedRays[1];
             if ( !startRay || !endRay ) continue;
 
-            const radius = typeof angleData.arcRadius === "number" ? angleData.arcRadius : this.arcRadius;
+            const radius = this.getAngleOuterRadius(angleData, index, angleTickCounts);
             this.addBoundsPoint( bounds, -radius, -radius );
             this.addBoundsPoint( bounds, radius, radius );
         }
 
-        const angleLabelLayouts = this.getAngleLabelLayouts(computedRays, labelContext, bounds);
+        const angleLabelLayouts = this.getAngleLabelLayouts(computedRays, labelContext, bounds, angleTickCounts);
         for ( const { layout } of angleLabelLayouts )
             this.addBoundsBox( bounds, layout.box );
 
@@ -2051,13 +2581,14 @@ export class omdAngle extends jsvgGroup
             this.contentHolder.addChild( line );
         }
 
-        for ( const angleData of this.angles )
+        for ( const [index, angleData] of this.angles.entries() )
         {
             const startRay = this.getAngleByIndexOrName(angleData.from, computedRays) || computedRays[0];
             const endRay = this.getAngleByIndexOrName(angleData.to, computedRays) || computedRays[1];
             if ( !startRay || !endRay ) continue;
 
-            this.addAngleMarker( angleData, startRay, endRay, shiftX, shiftY );
+            const tickCount = this.getAngleTickCount(angleData, index, angleTickCounts);
+            this.addAngleMarker( angleData, startRay, endRay, shiftX, shiftY, tickCount );
         }
 
         const dot = new jsvgEllipse();
@@ -2073,11 +2604,12 @@ export class omdAngle extends jsvgGroup
 
         for ( const ray of computedRays )
         {
-            if ( !labelHasText(ray.label) ) continue;
+            const rayLabel = this.getAngleRayDisplayLabel(ray);
+            if ( !labelHasText(rayLabel) ) continue;
 
             const labelPosition = this.getAngleRayLabelPosition(ray);
             this.addTranslatedText(
-                ray.label,
+                rayLabel,
                 labelPosition.x,
                 labelPosition.y,
                 shiftX,
@@ -2105,9 +2637,9 @@ export class omdAngle extends jsvgGroup
             this.contentHolder.addChild( leader );
         }
 
-        for ( const { angleData, layout } of angleLabelLayouts )
+        for ( const { angleData, layout, labelText } of angleLabelLayouts )
         {
-            this.addTranslatedText( angleData.label, layout.x, layout.y, shiftX, shiftY, {
+            this.addTranslatedText( labelText, layout.x, layout.y, shiftX, shiftY, {
                 fontSize: layout.fontSize,
                 italic: angleData.italic === true
             });

@@ -1,6 +1,6 @@
 {
   "name": "@teachinglab/omd",
-  "version": "0.9.85-beta.2",
+  "version": "0.9.88",
   "description": "omd",
   "main": "./index.js",
   "module": "./index.js",
@@ -19,14 +19,41 @@
       "default": "./dist/omd.browser.js"
     },
     "./global": "./dist/omd.global.js",
+    "./schema": {
+      "types": "./schemas.d.ts",
+      "import": "./src/omdSchemas.js",
+      "default": "./src/omdSchemas.js"
+    },
     "./schemas": {
       "types": "./schemas.d.ts",
       "import": "./src/omdSchemas.js",
       "default": "./src/omdSchemas.js"
     },
+    "./schema.json": {
+      "types": "./schemas.d.ts",
+      "default": "./src/schema/omd-schemas.json"
+    },
     "./schemas.json": {
       "types": "./schemas.d.ts",
-      "default": "./src/data/omd-schemas.json"
+      "default": "./src/schema/omd-schemas.json"
+    },
+    "./sample": {
+      "types": "./samples.d.ts",
+      "import": "./src/omdSamples.js",
+      "default": "./src/omdSamples.js"
+    },
+    "./samples": {
+      "types": "./samples.d.ts",
+      "import": "./src/omdSamples.js",
+      "default": "./src/omdSamples.js"
+    },
+    "./sample.json": {
+      "types": "./samples.d.ts",
+      "default": "./src/schema/omd-samples.json"
+    },
+    "./samples.json": {
+      "types": "./samples.d.ts",
+      "default": "./src/schema/omd-samples.json"
     },
     "./package.json": "./package.json"
   },
@@ -34,6 +61,7 @@
     "index.js",
     "index.d.ts",
     "schemas.d.ts",
+    "samples.d.ts",
     "dist/",
     "src/",
     "omd/",

@@ -1914,8 +1914,8 @@
                   "name": "rays",
                   "type": "array",
                   "default": [
-                    { "angle": 0 },
-                    { "angle": 55 }
+                    { "name": "rayA", "angle": 0 },
+                    { "name": "rayB", "angle": 55 }
                   ],
                   "optional": false
                 },
@@ -1923,8 +1923,32 @@
                   "name": "angles",
                   "type": "array",
                   "default": [
-                    { "from": 0, "to": 1, "label": "a°" }
+                    { "from": "rayA", "to": "rayB", "label": "a°" }
                   ],
+                  "optional": true
+                },
+                {
+                  "name": "showAngleTicks",
+                  "type": "boolean",
+                  "default": true,
+                  "optional": true
+                },
+                {
+                  "name": "angleTickGap",
+                  "type": "number",
+                  "default": 8,
+                  "optional": true
+                },
+                {
+                  "name": "angleTickLength",
+                  "type": "number",
+                  "default": 12,
+                  "optional": true
+                },
+                {
+                  "name": "angleTickTolerance",
+                  "type": "number",
+                  "default": 0.1,
                   "optional": true
                 }
               ]
@@ -3660,6 +3684,116 @@
       }
     ]
   },
+  "cylinder": {
+    "notes": "Use radius and height for cylinder dimensions.",
+    "fields": [
+      {
+        "name": "radius",
+        "type": "number",
+        "default": 3,
+        "optional": false,
+        "description": "Cylinder radius in units"
+      },
+      {
+        "name": "height",
+        "type": "number",
+        "default": 5,
+        "optional": false,
+        "description": "Cylinder height in units"
+      },
+      {
+        "name": "unitScale",
+        "type": "number",
+        "default": 18,
+        "optional": true,
+        "description": "Pixels per unit"
+      },
+      {
+        "name": "showLabels",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Show dimension labels"
+      },
+      {
+        "name": "sideLabels",
+        "type": "object",
+        "default": null,
+        "optional": true,
+        "description": "Optional labels for cylinder dimensions",
+        "schema": {
+          "fields": [
+            {
+              "name": "radius",
+              "type": "string",
+              "default": "",
+              "optional": true
+            },
+            {
+              "name": "r",
+              "type": "string",
+              "default": "",
+              "optional": true
+            },
+            {
+              "name": "height",
+              "type": "string",
+              "default": "",
+              "optional": true
+            },
+            {
+              "name": "h",
+              "type": "string",
+              "default": "",
+              "optional": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "insideLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Optional label shown below the cylinder"
+      },
+      {
+        "name": "outsideTopLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Optional label shown above the top face"
+      },
+      {
+        "name": "showHiddenEdges",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Show dashed hidden back edge of bottom ellipse"
+      },
+      {
+        "name": "radiusLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Direct radius label override"
+      },
+      {
+        "name": "heightLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Direct height label override"
+      },
+      {
+        "name": "labelFontSize",
+        "type": "number",
+        "default": 12,
+        "optional": true,
+        "description": "Cylinder label font size"
+      }
+    ]
+  },
   "ellipse": {
     "fields": [
       {
@@ -3928,20 +4062,253 @@
         "name": "rays",
         "type": "array",
         "default": [
-          { "angle": 0 },
-          { "angle": 55 }
+          { "name": "rayA", "angle": 0 },
+          { "name": "rayB", "angle": 55 }
         ],
         "optional": false,
-        "description": "Rays from the shared vertex. Each ray supports { angle, length, label, labelDistance, color, strokeWidth }."
+        "description": "Rays from the shared vertex. Give each ray a short name like rayA, rayB, or rayC, then use those names in angles.from and angles.to. Angles are degrees with 0 pointing right and 90 pointing up.",
+        "itemSchema": {
+          "type": "object",
+          "description": "A ray extending from the shared vertex",
+          "fields": [
+            {
+              "name": "name",
+              "type": "string",
+              "default": "rayA",
+              "optional": true,
+              "description": "Ray identifier used by angles.from and angles.to. Prefer names over numeric indexes because they are easier to read and less error-prone"
+            },
+            {
+              "name": "angle",
+              "type": "number",
+              "default": 0,
+              "optional": false,
+              "description": "Ray direction in degrees. 0 points right; 90 points up"
+            },
+            {
+              "name": "length",
+              "type": "number",
+              "default": 160,
+              "optional": true,
+              "description": "Ray length in pixels. Defaults to the top-level rayLength"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "default": "",
+              "optional": true,
+              "description": "Optional label rendered near the ray tip"
+            },
+            {
+              "name": "labelDistance",
+              "type": "number",
+              "default": 12,
+              "optional": true,
+              "description": "Distance in pixels from the ray tip to the label"
+            },
+            {
+              "name": "color",
+              "type": "string",
+              "default": "black",
+              "optional": true,
+              "description": "Ray stroke color. Defaults to the top-level strokeColor"
+            },
+            {
+              "name": "strokeWidth",
+              "type": "number",
+              "default": 2,
+              "optional": true,
+              "description": "Ray stroke width. Defaults to the top-level strokeWidth"
+            },
+            {
+              "name": "fontSize",
+              "type": "number",
+              "default": 28,
+              "optional": true,
+              "description": "Ray label font size. Defaults to the top-level fontSize"
+            },
+            {
+              "name": "italic",
+              "type": "boolean",
+              "default": true,
+              "optional": true,
+              "description": "Whether the ray label is italic. Set false for upright text"
+            }
+          ]
+        }
       },
       {
         "name": "angles",
         "type": "array",
         "default": [
-          { "from": 0, "to": 1, "label": "a°" }
+          { "from": "rayA", "to": "rayB" }
         ],
         "optional": true,
-        "description": "Angle markers between rays. Each marker supports { from, to, label, marker: 'arc'|'right'|'full', arcRadius, labelRadius, labelPosition, labelMode: 'auto'|'inline'|'callout' }."
+        "description": "Angle markers between named rays. Use from/to ray names from the rays array, for example { from: 'rayA', to: 'rayB' }. When label is omitted for an arc marker, OMD defaults it to the smaller angle measure between the rays (for example 55° with the default rays). Set label to an empty string for no label or '?' for a question-mark label. The marker is drawn from the from ray toward the to ray; by default OMD uses the smaller angle unless reflex is true.",
+        "itemSchema": {
+          "type": "object",
+          "description": "A marker and optional label between two rays",
+          "fields": [
+            {
+              "name": "from",
+              "type": "string",
+              "default": "rayA",
+              "optional": false,
+              "description": "Start ray name. This should match a rays[].name value. Numeric indexes like 0 are accepted but names are recommended"
+            },
+            {
+              "name": "to",
+              "type": "string",
+              "default": "rayB",
+              "optional": false,
+              "description": "End ray name. This should match a rays[].name value. The angle marker is drawn from this angle's from ray toward this to ray"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "default": "",
+              "optional": true,
+              "description": "Optional text label for this angle. If omitted on an arc marker, OMD uses the angle measure between the rays by default. Use '' for blank or '?' for a placeholder label"
+            },
+            {
+              "name": "marker",
+              "type": "string",
+              "default": "arc",
+              "optional": true,
+              "description": "Marker style",
+              "enum": [
+                "arc",
+                "right",
+                "full",
+                "circle"
+              ]
+            },
+            {
+              "name": "type",
+              "type": "string",
+              "default": "",
+              "optional": true,
+              "description": "Alias for marker when marker is omitted",
+              "enum": [
+                "",
+                "arc",
+                "right",
+                "full",
+                "circle"
+              ]
+            },
+            {
+              "name": "arcRadius",
+              "type": "number",
+              "default": 42,
+              "optional": true,
+              "description": "Marker radius in pixels. Defaults to the top-level arcRadius"
+            },
+            {
+              "name": "size",
+              "type": "number",
+              "default": 20,
+              "optional": true,
+              "description": "Right-angle marker size in pixels"
+            },
+            {
+              "name": "labelRadius",
+              "type": "number",
+              "default": 70,
+              "optional": true,
+              "description": "Preferred radial distance for the angle label"
+            },
+            {
+              "name": "labelPosition",
+              "type": "object",
+              "default": null,
+              "optional": true,
+              "description": "Explicit angle label position relative to the vertex as { x, y }. Leave null to auto-place the label"
+            },
+            {
+              "name": "labelMode",
+              "type": "string",
+              "default": "auto",
+              "optional": true,
+              "description": "Angle label placement mode",
+              "enum": [
+                "auto",
+                "inline",
+                "callout"
+              ]
+            },
+            {
+              "name": "tickCount",
+              "type": "number",
+              "default": 1,
+              "optional": true,
+              "description": "Override the number of small tick marks on this angle marker"
+            },
+            {
+              "name": "arcCount",
+              "type": "number",
+              "default": 1,
+              "optional": true,
+              "description": "Alias for tickCount"
+            },
+            {
+              "name": "tickLength",
+              "type": "number",
+              "default": 12,
+              "optional": true,
+              "description": "Length in pixels of each small tick mark"
+            },
+            {
+              "name": "reflex",
+              "type": "boolean",
+              "default": false,
+              "optional": true,
+              "description": "When true, draw the directed reflex angle from from-ray to to-ray instead of the smaller angle"
+            },
+            {
+              "name": "useReflexAngle",
+              "type": "boolean",
+              "default": false,
+              "optional": true,
+              "description": "Alias for reflex"
+            },
+            {
+              "name": "color",
+              "type": "string",
+              "default": "black",
+              "optional": true,
+              "description": "Marker stroke color. Defaults to the top-level strokeColor"
+            },
+            {
+              "name": "strokeWidth",
+              "type": "number",
+              "default": 2,
+              "optional": true,
+              "description": "Marker stroke width. Defaults to the top-level strokeWidth"
+            },
+            {
+              "name": "fontSize",
+              "type": "number",
+              "default": 28,
+              "optional": true,
+              "description": "Angle label font size. Defaults to the top-level fontSize"
+            },
+            {
+              "name": "italic",
+              "type": "boolean",
+              "default": false,
+              "optional": true,
+              "description": "Whether the angle label is italic"
+            }
+          ]
+        }
+      },
+      {
+        "name": "showRayNames",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "When true, display each ray name at the end of the ray when ray.label is not provided"
       },
       {
         "name": "vertexLabel",
@@ -3979,6 +4346,34 @@
         "description": "Default radius for arc or full-circle angle markers"
       },
       {
+        "name": "showAngleTicks",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "When true, add 1, 2, 3, etc. small tick marks to distinguish angle measures. Equal angle measures share the same number of tick marks"
+      },
+      {
+        "name": "angleTickGap",
+        "type": "number",
+        "default": 8,
+        "optional": true,
+        "description": "Pixel spacing between multiple tick marks on the same angle marker"
+      },
+      {
+        "name": "angleTickLength",
+        "type": "number",
+        "default": 12,
+        "optional": true,
+        "description": "Default length in pixels of each small tick mark"
+      },
+      {
+        "name": "angleTickTolerance",
+        "type": "number",
+        "default": 0.1,
+        "optional": true,
+        "description": "Degree tolerance used when grouping equal angle measures for repeated markers"
+      },
+      {
         "name": "dotRadius",
         "type": "number",
         "default": 4,
@@ -3991,6 +4386,13 @@
         "default": 28,
         "optional": true,
         "description": "Default label font size in pixels"
+      },
+      {
+        "name": "padding",
+        "type": "number",
+        "default": 32,
+        "optional": true,
+        "description": "Padding around the computed angle diagram in pixels"
       }
     ]
   },

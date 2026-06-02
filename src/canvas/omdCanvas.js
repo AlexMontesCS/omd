@@ -1,4 +1,5 @@
 import { jsvgContainer } from '@teachinglab/jsvg';
+import { createFromJSON } from '../omdFactory.js';
 
 export class omdCanvas {
     constructor(container, options = {}) {
@@ -52,6 +53,18 @@ export class omdCanvas {
         this.width  = width;
         this.height = height;
         this.svg.setWidthAndHeight(width, height);
+    }
+
+    // Load a canvas scene from the JSON shape returned by ai-omd-canvas:
+    // { width, height, components: [{ omdType, x, y, scale?, ...fields }] }
+    loadFromJSON(json) {
+        const { width, height, components } = typeof json === 'string' ? JSON.parse(json) : json;
+        this.clear();
+        this.resize(width, height);
+        for (const { x = 0, y = 0, scale, ...omdJson } of components) {
+            const component = createFromJSON(omdJson);
+            this.add(component, { x, y, scale });
+        }
     }
 
     get items() {

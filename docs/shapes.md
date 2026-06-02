@@ -206,6 +206,10 @@ One or more rays from a shared vertex with arc markers and angle labels.
 | `strokeColor` | string | no | `'black'` | Default stroke color for rays and arcs |
 | `strokeWidth` | number | no | `2` | Default stroke width in pixels |
 | `arcRadius` | number | no | `42` | Default arc marker radius in pixels |
+| `showAngleTicks` | boolean | no | `true` | Use small tick marks on angle arcs to distinguish different angle measures |
+| `angleTickGap` | number | no | `8` | Pixel spacing between multiple tick marks on one angle arc |
+| `angleTickLength` | number | no | `12` | Length of each small tick mark in pixels |
+| `angleTickTolerance` | number | no | `0.1` | Degree tolerance for deciding which angles are equal |
 | `dotRadius` | number | no | `4` | Radius of the vertex dot in pixels |
 | `fontSize` | number | no | `28` | Font size for angle and ray labels |
 
@@ -227,9 +231,14 @@ One or more rays from a shared vertex with arc markers and angle labels.
 | `from` | Ray index (number) or ray `name`/`label` string |
 | `to` | Ray index (number) or ray `name`/`label` string |
 | `label` | Text label for this angle |
-| `marker` | `'arc'` (default), `'square'` / `'right'` for 90°, or `'full-circle'` |
+| `marker` | `'arc'` (default), `'right'` for 90°, or `'full'` / `'circle'` |
+| `tickCount` | Override the number of small tick marks for this angle |
+| `tickLength` | Override tick mark length for this angle |
+| `reflex` | Set true to draw the directed reflex angle instead of the smaller angle |
 
 Do not use `width`, `height`, or top-level `color` fields.
+
+Arc markers use the smaller angle between two rays by default, which matches most textbook diagrams. When `showAngleTicks` is true, angles with the same measure automatically receive the same number of small tick marks. Different measures are assigned one mark, then two, then three, and so on in the order they appear.
 
 ```js
 import { omdAngle } from '@teachinglab/omd';
@@ -243,7 +252,8 @@ angle.loadFromJSON({
     { from: 0, to: 1, label: '50°', marker: 'arc' }
   ],
   vertexLabel: 'C',
-  arcRadius: 50
+  arcRadius: 50,
+  showAngleTicks: true
 });
 ```
 
