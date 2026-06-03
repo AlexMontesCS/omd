@@ -169,6 +169,9 @@ function inspectRender(display, target) {
     if (box.width <= 0 || box.height <= 0) warnings.push("zero browser bounding box");
     if (component.width > 5000 || component.height > 5000) warnings.push("very large component dimensions");
 
+    const interactiveWarnings = inspectInteractiveCoordinatePlane(component);
+    warnings.push(...interactiveWarnings);
+
     return {
         chars: markup.length,
         width: Math.round(component.width),
@@ -177,6 +180,45 @@ function inspectRender(display, target) {
         domHeight: Math.round(box.height),
         warnings
     };
+}
+
+function inspectInteractiveCoordinatePlane(component) {
+    if (component?.type !== "omdCoordinatePlane" || component.interactive !== true) {
+        return [];
+    }
+
+    const rowCount = component.sliderControlRows?.length || 0;
+    if (rowCount !== component.variables.length) {
+        throw new Error(`Interactive coordinate plane expected ${component.variables.length} slider row(s), found ${rowCount}.`);
+    }
+
+    if (component.graphEquations?.length && !component.renderedFunctionEntries?.length) {
+        throw new Error("Interactive coordinate plane rendered controls but no graph functions.");
+    }
+
+    const row = component.sliderControlRows[0];
+    if (!row) return [];
+
+    const beforeText = row.valueText.textContent;
+    const beforePath = component.renderedFunctionEntries?.[0]?.path?.svgObject?.getAttribute("d") || "";
+    const nextValue = row.variable.value === row.variable.max ? row.variable.min : row.variable.max;
+
+    row.variable.currentValue = nextValue;
+    row.variable.value = nextValue;
+    component.refreshInteractiveElements();
+
+    const afterText = row.valueText.textContent;
+    const afterPath = component.renderedFunctionEntries?.[0]?.path?.svgObject?.getAttribute("d") || "";
+
+    if (beforeText === afterText) {
+        throw new Error("Interactive coordinate plane slider value did not update.");
+    }
+
+    if (beforePath && beforePath === afterPath) {
+        throw new Error("Interactive coordinate plane graph path did not update after slider change.");
+    }
+
+    return [];
 }
 
 async function nextFrame() {

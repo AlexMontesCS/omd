@@ -470,7 +470,48 @@ export class omdCoordinatePlane extends jsvgGroup {
     }
 
     compileFunctionExpression(functionString) {
-        return math.compile(this._extractExpression(functionString));
+        return math.compile(this.normalizeFunctionExpression(this._extractExpression(functionString)));
+    }
+
+    normalizeFunctionExpression(expression) {
+        const knownNames = ["x", ...this.variables.map((variable) => variable.name)]
+            .filter((name) => /^[A-Za-z_][A-Za-z0-9_]*$/.test(name));
+
+        if (knownNames.length <= 1) return expression;
+
+        const sortedNames = [...new Set(knownNames)].sort((a, b) => b.length - a.length);
+        return String(expression).replace(/[A-Za-z_][A-Za-z0-9_]*/g, (token, offset, source) => {
+            if (source[offset + token.length] === "(" || sortedNames.includes(token)) {
+                return token;
+            }
+
+            const parts = this.splitImplicitVariableProduct(token, sortedNames);
+            return parts && parts.length > 1 ? parts.join("*") : token;
+        });
+    }
+
+    splitImplicitVariableProduct(token, knownNames) {
+        const memo = new Map();
+        const splitFrom = (index) => {
+            if (index === token.length) return [];
+            if (memo.has(index)) return memo.get(index);
+
+            for (const name of knownNames) {
+                if (!token.startsWith(name, index)) continue;
+
+                const rest = splitFrom(index + name.length);
+                if (rest) {
+                    const result = [name, ...rest];
+                    memo.set(index, result);
+                    return result;
+                }
+            }
+
+            memo.set(index, null);
+            return null;
+        };
+
+        return splitFrom(0);
     }
 
     graphFunctionWithDomain(pathObject, domain, compiledExpression) {
@@ -925,9 +966,10 @@ export class omdCoordinatePlane extends jsvgGroup {
 
     equationContainsVariable(equation, variableName) {
         if (!equation || !variableName) return false;
+        const expression = this.normalizeFunctionExpression(this._extractExpression(equation));
         const escapedName = variableName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const variableRegex = new RegExp(`(^|[^A-Za-z0-9_])${escapedName}([^A-Za-z0-9_]|$)`);
-        return variableRegex.test(String(equation));
+        return variableRegex.test(expression);
     }
 
     createSvgElement(tagName, attributes = {}) {
