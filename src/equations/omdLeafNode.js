@@ -1,5 +1,6 @@
 import { omdNode } from "./omdNode.js";
 import { getTextBounds } from "./omdTextMetrics.js";
+import { OMD_MATH_FONT_FAMILY } from "../omdConstants.js";
 import { jsvgTextLine } from '@teachinglab/jsvg';
 
 /**
@@ -23,6 +24,7 @@ export class omdLeafNode extends omdNode {
     createTextElement(text) {
         let textElement = new jsvgTextLine();
         textElement.setText(text);
+        textElement.setFontFamily(OMD_MATH_FONT_FAMILY);
 
         textElement.setTextAnchor('middle');
         textElement.svgObject.setAttribute('dominant-baseline', 'middle');
@@ -55,7 +57,8 @@ export class omdLeafNode extends omdNode {
         this.textElement.setFontSize(fontSize);
 
         // Gerard: Gets text bounds based on fontSize using temporary span element
-        let bounds = getTextBounds(this.textElement.getText(), fontSize);
+        const fontFamily = this.textElement.svgObject?.style?.fontFamily || OMD_MATH_FONT_FAMILY;
+        let bounds = getTextBounds(this.textElement.getText(), fontSize, fontFamily);
         this.setWidthAndHeight(bounds.width, bounds.height);
     }
 

@@ -33,11 +33,12 @@ import { omdTerm } from './equations/omdTerm.js';
 import { omdPowerExpression } from './equations/omdPowerExpression.js';
 import { omdRationalExpression } from './equations/omdRationalExpression.js';
 import { omdFunction } from './equations/omdFunction.js';
-import { 
+import {
     omdRightTriangle,
     omdIsoscelesTriangle,
     omdRectangle,
     omdRectangularPrism,
+    omdCylinder,
     omdEllipse,
     omdCircle,
     omdAngle,
@@ -76,6 +77,7 @@ const OMD_TYPE_MAP = {
     'isoscelesTriangle': omdIsoscelesTriangle,
     'rectangle': omdRectangle,
     'rectangularPrism': omdRectangularPrism,
+    'cylinder': omdCylinder,
     'ellipse': omdEllipse,
     'circle': omdCircle,
     'angle': omdAngle,
@@ -141,7 +143,7 @@ export function createFromJSON(jsonData) {
     if (omdType === 'variable') {
         return omdVariableNode.fromName(jsonData.name);
     }
-    
+
     const Constructor = OMD_TYPE_MAP[omdType];
     
     if (!Constructor) {

@@ -2,6 +2,7 @@
 import { jsvgLayoutGroup, jsvgGroup } from "@teachinglab/jsvg";
 import { omdExpression } from "./omdExpression.js";
 import { omdMetaExpression } from "./omdMetaExpression.js";
+import { omdOperatorNode } from "./omdOperatorNode.js";
 
 export class omdFunction extends omdMetaExpression
 {
@@ -27,7 +28,10 @@ export class omdFunction extends omdMetaExpression
         this.leftHolder = new jsvgGroup();
         this.equationStack.addChild( this.leftHolder );
 
-        this.equalSign = new omdOperator('=');
+        this.equalSign = new omdOperatorNode({ type: "OperatorNode", op: "=" });
+        this.equalSign.computeDimensions();
+        this.equalSign.updateLayout();
+        this.equalSign.hideBackgroundByDefault();
         this.equationStack.addChild( this.equalSign );
 
         this.rightHolder = new jsvgGroup();

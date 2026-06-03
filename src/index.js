@@ -33,7 +33,8 @@ export { omdConstantNode } from './equations/omdConstantNode.js';
 // OMD Utilities and Helpers
 export { omdColor } from './omdConstants.js';
 export { createFromJSON, getSupportedTypes, isTypeSupported } from './omdFactory.js';
-export { default as omdSchemas } from './data/omd-schemas.json';
+export { default as omdSchemas } from './omdSchemas.js';
+export { default as omdSamples } from './omdSamples.js';
 
 // OMD Shape Classes
 export {
@@ -41,6 +42,7 @@ export {
     omdIsoscelesTriangle,
     omdRectangle,
     omdRectangularPrism,
+    omdCylinder,
     omdEllipse,
     omdCircle,
     omdAngle,

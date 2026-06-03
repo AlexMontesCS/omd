@@ -13,6 +13,8 @@ export const omdColor = {
 
 export const MULTIPLICATION_SYMBOL = '·';
 
+export const OMD_MATH_FONT_FAMILY = 'Albert Sans, Arial, Helvetica, sans-serif';
+
 export const IMPLICIT_MULTIPLICATION = {
     forceImplicit:              false,
     constantVariable:           true,

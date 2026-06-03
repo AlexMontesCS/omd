@@ -12,6 +12,7 @@ export class omdTileEquation extends jsvgGroup {
         // Sizing
         this.tileSize = 28;
         this.rowGap = 10;
+        this.equalGap = null;
         // Colors
         this.operatorColor = '#79BBFD';
         this.equalsColor = '#FF6B6B';
@@ -25,9 +26,9 @@ export class omdTileEquation extends jsvgGroup {
         if (!data || typeof data !== 'object') return;
 
         const eqStr = typeof data.equation === 'string' ? data.equation : null;
-        if (!eqStr) return;
-
-        const parsed = this._parseEquationString(eqStr);
+        const parsed = eqStr
+            ? this._parseEquationString(eqStr)
+            : this._parseTokenSides(data);
         if (!parsed) return;
 
         this._leftTokens = parsed.leftTokens;
@@ -36,15 +37,17 @@ export class omdTileEquation extends jsvgGroup {
 
         if (typeof data.tileSize === 'number') this.tileSize = data.tileSize;
         if (typeof data.rowGap === 'number') this.rowGap = data.rowGap;
+        if (typeof data.tileGap === 'number') this.rowGap = data.tileGap;
+        if (typeof data.equalGap === 'number') this.equalGap = data.equalGap;
         if (typeof data.fontFamily === 'string') this.fontFamily = data.fontFamily;
         if (typeof data.operatorColor === 'string') this.operatorColor = data.operatorColor;
         if (typeof data.equalsColor === 'string') this.equalsColor = data.equalsColor;
         if (typeof data.xPillColor === 'string') this.xPillColor = data.xPillColor;
         if (typeof data.numberTileColor === 'string') this.numberTileColor = data.numberTileColor;
         if (typeof data.numberTileDotColor === 'string') this.numberTileDotColor = data.numberTileDotColor;
-        // Legacy aliases
         if (typeof data.plusColor === 'string') this.operatorColor = data.plusColor;
         if (data.numberTileDefaults?.backgroundColor) this.numberTileColor = data.numberTileDefaults.backgroundColor;
+        if (data.numberTileDefaults?.color) this.numberTileColor = data.numberTileDefaults.color;
         if (data.numberTileDefaults?.dotColor) this.numberTileDotColor = data.numberTileDefaults.dotColor;
 
         this.updateLayout();
@@ -93,6 +96,54 @@ export class omdTileEquation extends jsvgGroup {
         }
     }
 
+    _parseTokenSides(data) {
+        if (!Array.isArray(data.left) && !Array.isArray(data.right)) return null;
+
+        const normalizeToken = (token) => {
+            if (token == null) return null;
+
+            if (typeof token === 'object') {
+                const kind = String(token.kind || 'const').toLowerCase();
+                const sign = token.sign === '-' || Number(token.value) < 0 ? '-' : '+';
+
+                if (kind === 'x' || kind === 'var') {
+                    return {
+                        kind: 'x',
+                        count: Math.max(1, Math.floor(Number(token.count ?? 1) || 1)),
+                        sign,
+                        label: token.label || 'x',
+                        color: token.color
+                    };
+                }
+
+                const value = Number(token.value ?? token.count ?? 1);
+                return Number.isFinite(value)
+                    ? { kind: 'const', value: Math.abs(value), sign, color: token.color }
+                    : null;
+            }
+
+            const text = String(token).trim().replace(/[−–]/g, '-');
+            if (!text) return null;
+
+            const sign = text.startsWith('-') ? '-' : '+';
+            const body = text.replace(/^[+-]/, '');
+            if (/^[a-zA-Z]$/.test(body)) return { kind: 'x', count: 1, sign, label: body };
+
+            const value = Number(body);
+            return Number.isFinite(value) ? { kind: 'const', value: Math.abs(value), sign } : null;
+        };
+
+        const leftTokens = Array.isArray(data.left) ? data.left.map(normalizeToken).filter(Boolean) : [];
+        const rightTokens = Array.isArray(data.right) ? data.right.map(normalizeToken).filter(Boolean) : [];
+        const variableToken = [...leftTokens, ...rightTokens].find((token) => token.kind === 'x' && token.label);
+
+        return {
+            leftTokens,
+            rightTokens,
+            xLabel: variableToken?.label || data.xLabel || 'x',
+        };
+    }
+
     // Width of an x-pill tile (wider than square for the label to fit)
     _xTileWidth() {
         const labelFontSize = this.tileSize * 0.7;
@@ -101,15 +152,15 @@ export class omdTileEquation extends jsvgGroup {
 
     // Space reserved for each operator symbol (+, −) or the = sign
     _opGap() {
-        return Math.round(this.tileSize * 1.1);
+        return Math.round(this.equalGap ?? this.tileSize * 1.1);
     }
 
-    _makeNumberTile(value) {
+    _makeNumberTile(value, token = {}) {
         const t = new omdNumberTile();
         t.loadFromJSON({
             value,
             size: 'medium',
-            backgroundColor: this.numberTileColor,
+            backgroundColor: token.color || this.numberTileColor,
             dotColor: this.numberTileDotColor,
         });
         return t;
@@ -135,11 +186,11 @@ export class omdTileEquation extends jsvgGroup {
             if (tok.kind === 'x') {
                 const w = this._xTileWidth();
                 const h = tok.count * this.tileSize + (tok.count - 1) * this.rowGap;
-                elements.push({ type: 'x', count: tok.count, width: w, height: h });
+                elements.push({ type: 'x', count: tok.count, label: tok.label, color: tok.color, width: w, height: h });
                 totalWidth += w;
                 maxHeight = Math.max(maxHeight, h);
             } else {
-                const tile = this._makeNumberTile(tok.value);
+                const tile = this._makeNumberTile(tok.value, tok);
                 elements.push({ type: 'num', tile, width: tile.width, height: tile.height });
                 totalWidth += tile.width;
                 maxHeight = Math.max(maxHeight, tile.height);
@@ -159,7 +210,7 @@ export class omdTileEquation extends jsvgGroup {
                 x += el.width;
             } else if (el.type === 'x') {
                 const y = (totalHeight - el.height) / 2;
-                this._renderXStack(el.count, x, y);
+                this._renderXStack(el.count, x, y, el.label, el.color);
                 x += el.width;
             } else {
                 el.tile.setPosition(x, (totalHeight - el.height) / 2);
@@ -182,7 +233,7 @@ export class omdTileEquation extends jsvgGroup {
         this.addChild(t);
     }
 
-    _renderXStack(count, x, y) {
+    _renderXStack(count, x, y, label = this._xLabel, color = this.xPillColor) {
         const w = this._xTileWidth();
         const h = this.tileSize;
         const g = new jsvgGroup();
@@ -192,12 +243,12 @@ export class omdTileEquation extends jsvgGroup {
             const r = new jsvgRect();
             r.setWidthAndHeight(w, h);
             r.setCornerRadius(h / 2);
-            r.setFillColor(this.xPillColor);
+            r.setFillColor(color || this.xPillColor);
             r.setPosition(0, tileY);
             g.addChild(r);
 
             const t = new jsvgTextLine();
-            t.setText(this._xLabel);
+            t.setText(label || this._xLabel);
             t.setFontWeight('bold');
             t.setFontSize(this.tileSize * 0.7);
             t.setFontFamily(this.fontFamily);

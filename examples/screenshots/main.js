@@ -1,20 +1,18 @@
-import { omdDisplay } from '../../src/canvas/omdDisplay.js';
-import { omdExpression } from '../../src/equations/omdExpression.js';
-import { omdEquation } from '../../src/equations/omdEquation.js';
-import { omdEquationStack } from '../../src/equations/omdEquationStack.js';
-import { omdEquationNode } from '../../src/equations/omdEquationNode.js';
-import { omdEquationWork } from '../../src/visualizations/omdEquationWork.js';
-import { omdNumberLine } from '../../src/visualizations/omdNumberLine.js';
-import { omdDoubleNumberLine } from '../../src/visualizations/omdDoubleNumberLine.js';
-import { omdBalanceHanger } from '../../src/visualizations/omdBalanceHanger.js';
-import { omdRatioChart } from '../../src/visualizations/omdRatioChart.js';
-import { omdSpinner } from '../../src/visualizations/omdSpinner.js';
-import { omdTapeDiagram } from '../../src/visualizations/omdTapeDiagram.js';
-import { omdDoubleTapeDiagram } from '../../src/visualizations/omdDoubleTapeDiagram.js';
-import { omdCoordinatePlane } from '../../src/visualizations/omdCoordinatePlane.js';
-import { omdTable } from '../../src/visualizations/omdTable.js';
-import { omdTileEquation } from '../../src/visualizations/omdTileEquation.js';
 import {
+    omdDisplay,
+    omdEquationStack,
+    omdEquationNode,
+    omdEquationWork,
+    omdNumberLine,
+    omdDoubleNumberLine,
+    omdBalanceHanger,
+    omdRatioChart,
+    omdSpinner,
+    omdTapeDiagram,
+    omdDoubleTapeDiagram,
+    omdCoordinatePlane,
+    omdTable,
+    omdTileEquation,
     omdRectangle,
     omdRectangularPrism,
     omdRightTriangle,
@@ -23,7 +21,7 @@ import {
     omdEllipse,
     omdAngle,
     omdRegularPolygon,
-} from '../../src/visualizations/omdShapes.js';
+} from 'https://unpkg.com/@teachinglab/omd@latest/browser';
 
 const D = (id, opts = {}) =>
     new omdDisplay(document.getElementById(id), { centerContent: true, autoScale: true, maxScale: 1, ...opts });
@@ -70,8 +68,8 @@ D('number-line').load(line);
 
 const doubleLine = new omdDoubleNumberLine();
 doubleLine.loadFromJSON({
-    topNumberLine:    { min: 0, max: 60, increment: 10, title: 'Minutes', units: 'min' },
-    bottomNumberLine: { min: 0, max: 6,  increment: 1,  title: 'Miles',   units: 'mi' },
+    topNumberLine: { min: 0, max: 60, increment: 10, title: 'Minutes', units: 'min' },
+    bottomNumberLine: { min: 0, max: 6, increment: 1, title: 'Miles', units: 'mi' },
     spacing: 40,
 });
 D('double-number-line').load(doubleLine);
@@ -125,7 +123,7 @@ const plane = new omdCoordinatePlane();
 plane.loadFromJSON({
     xMin: -6, xMax: 6, yMin: -6, yMax: 6,
     graphEquations: [
-        { equation: 'y = x + 1',     color: '#2563eb', strokeWidth: 2 },
+        { equation: 'y = x + 1', color: '#2563eb', strokeWidth: 2 },
         { equation: 'y = -0.5*x + 3', color: '#e11d48', strokeWidth: 2 },
     ],
     dotValues: [[2, 3, '#7c3aed']],
@@ -179,8 +177,8 @@ D('shape-circle').load(circle);
 const angle = new omdAngle();
 angle.loadFromJSON({
     rays: [
-        { angle: 0,   length: 90, label: 'B' },
-        { angle: 55,  length: 90, label: 'A' },
+        { angle: 0, length: 90, label: 'B' },
+        { angle: 55, length: 90, label: 'A' },
         { angle: -30, length: 90, label: 'C' },
     ],
     angles: [

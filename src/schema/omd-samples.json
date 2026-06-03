@@ -1,0 +1,6161 @@
+{
+  "equation": [
+    {
+      "_comment": "Renders one centered equation: x + 3 = 8. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "x + 3 = 8"
+    },
+    {
+      "_comment": "Renders one centered equation: 2x = 14. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "2x = 14"
+    },
+    {
+      "_comment": "Renders one centered equation: 3x - 5 = 16. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "3x - 5 = 16"
+    },
+    {
+      "_comment": "Renders one centered equation: 4(x + 2) = 28. Text is rendered at 29px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "4(x + 2) = 28",
+      "fontSize": 29
+    },
+    {
+      "_comment": "Renders one centered equation: 5x + 7 = 3x + 21. Text is rendered at 28px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "5x + 7 = 3x + 21",
+      "fontSize": 28
+    },
+    {
+      "_comment": "Renders one centered equation: (x + 4)/2 = 9. Text is rendered at 28px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "(x + 4)/2 = 9",
+      "fontSize": 28
+    },
+    {
+      "_comment": "Renders one centered equation: 2/3x - 5 = 7. Text is rendered at 27px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "2/3x - 5 = 7",
+      "fontSize": 27
+    },
+    {
+      "_comment": "Renders one centered equation: 0.4x + 1.2 = 5.6. Text is rendered at 27px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "0.4x + 1.2 = 5.6",
+      "fontSize": 27
+    },
+    {
+      "_comment": "Renders one centered equation: x^2 - 9 = 0. Text is rendered at 26px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "x^2 - 9 = 0",
+      "fontSize": 26
+    },
+    {
+      "_comment": "Renders one centered equation: (x - 2)(x + 5) = 0. Text is rendered at 26px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "(x - 2)(x + 5) = 0",
+      "fontSize": 26
+    },
+    {
+      "_comment": "Renders one centered equation: sqrt(x + 9) = 6. Text is rendered at 25px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "sqrt(x + 9) = 6",
+      "fontSize": 25
+    },
+    {
+      "_comment": "Renders one centered equation: 2^x = 32. Text is rendered at 25px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "2^x = 32",
+      "fontSize": 25
+    },
+    {
+      "_comment": "Renders one centered equation: log(x) + 2 = 5. Text is rendered at 24px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "log(x) + 2 = 5",
+      "fontSize": 24
+    },
+    {
+      "_comment": "Renders one centered equation: (3x^2 - 12)/(x - 2) = 9. Text is rendered at 24px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "(3x^2 - 12)/(x - 2) = 9",
+      "fontSize": 24
+    },
+    {
+      "_comment": "Renders one centered equation: sin(x) = 1/2. Text is rendered at 23px. The visual is just the equation layout, with no solution steps or supporting model.",
+      "omdType": "equation",
+      "equation": "sin(x) = 1/2",
+      "fontSize": 23
+    }
+  ],
+  "equationStack": [
+    {
+      "_comment": "Renders a vertical stack of 2 equations showing the progression x + 3 = 8 -> x = 5. Rows use the default stack alignment.",
+      "omdType": "equationStack",
+      "equations": [
+        "x + 3 = 8",
+        "x = 5"
+      ]
+    },
+    {
+      "_comment": "Renders a vertical stack of 2 equations showing the progression 2x = 14 -> x = 7. Rows use the default stack alignment.",
+      "omdType": "equationStack",
+      "equations": [
+        "2x = 14",
+        "x = 7"
+      ]
+    },
+    {
+      "_comment": "Renders a vertical stack of 3 equations showing the progression 3x - 5 = 16 -> 3x = 21 -> x = 7. Rows use equals alignment.",
+      "omdType": "equationStack",
+      "equations": [
+        "3x - 5 = 16",
+        "3x = 21",
+        "x = 7"
+      ],
+      "alignmentMode": "equals"
+    },
+    {
+      "_comment": "Renders a vertical stack of 4 equations showing the progression 4(x + 2) = 28 -> 4x + 8 = 28 -> 4x = 20 -> x = 5. Rows use center alignment.",
+      "omdType": "equationStack",
+      "equations": [
+        "4(x + 2) = 28",
+        "4x + 8 = 28",
+        "4x = 20",
+        "x = 5"
+      ],
+      "alignmentMode": "center"
+    },
+    {
+      "_comment": "Renders a vertical stack of 4 equations showing the progression 5x + 7 = 3x + 21 -> 2x + 7 = 21 -> 2x = 14 -> x = 7. Rows use equals alignment.",
+      "omdType": "equationStack",
+      "equations": [
+        "5x + 7 = 3x + 21",
+        "2x + 7 = 21",
+        "2x = 14",
+        "x = 7"
+      ],
+      "alignmentMode": "equals"
+    },
+    {
+      "_comment": "Renders a vertical stack of 3 equations showing the progression (x + 4)/2 = 9 -> x + 4 = 18 -> x = 14. Rows use center alignment. Text is rendered at 26px.",
+      "omdType": "equationStack",
+      "equations": [
+        "(x + 4)/2 = 9",
+        "x + 4 = 18",
+        "x = 14"
+      ],
+      "alignmentMode": "center",
+      "fontSize": 26
+    },
+    {
+      "_comment": "Renders a vertical stack of 3 equations showing the progression 2/3x - 5 = 7 -> 2/3x = 12 -> x = 18. Rows use equals alignment. Text is rendered at 25px.",
+      "omdType": "equationStack",
+      "equations": [
+        "2/3x - 5 = 7",
+        "2/3x = 12",
+        "x = 18"
+      ],
+      "alignmentMode": "equals",
+      "fontSize": 25
+    },
+    {
+      "_comment": "Renders a vertical stack of 3 equations showing the progression 0.4x + 1.2 = 5.6 -> 0.4x = 4.4 -> x = 11. Rows use center alignment. Text is rendered at 25px.",
+      "omdType": "equationStack",
+      "equations": [
+        "0.4x + 1.2 = 5.6",
+        "0.4x = 4.4",
+        "x = 11"
+      ],
+      "alignmentMode": "center",
+      "fontSize": 25
+    },
+    {
+      "_comment": "Renders a vertical stack of 3 parseable equations showing one branch of the progression x^2 - 9 = 0 -> x^2 = 9 -> x = 3. Rows use equals alignment. Text is rendered at 24px. Use equationWork for alternate-solution text such as x = -3 or x = 3.",
+      "omdType": "equationStack",
+      "equations": [
+        "x^2 - 9 = 0",
+        "x^2 = 9",
+        "x = 3"
+      ],
+      "alignmentMode": "equals",
+      "fontSize": 24
+    },
+    {
+      "_comment": "Renders a vertical stack of 3 parseable equations showing one zero-product branch: (x - 2)(x + 5) = 0 -> x - 2 = 0 -> x = 2. Rows use center alignment. Text is rendered at 24px. Use equationWork for the full alternate-solution explanation.",
+      "omdType": "equationStack",
+      "equations": [
+        "(x - 2)(x + 5) = 0",
+        "x - 2 = 0",
+        "x = 2"
+      ],
+      "alignmentMode": "center",
+      "fontSize": 24
+    },
+    {
+      "_comment": "Renders a vertical stack of 3 equations showing the progression sqrt(x + 9) = 6 -> x + 9 = 36 -> x = 27. Rows use equals alignment. Text is rendered at 23px.",
+      "omdType": "equationStack",
+      "equations": [
+        "sqrt(x + 9) = 6",
+        "x + 9 = 36",
+        "x = 27"
+      ],
+      "alignmentMode": "equals",
+      "fontSize": 23
+    },
+    {
+      "_comment": "Renders a vertical stack of 3 equations showing the progression 2^x = 32 -> 2^x = 2^5 -> x = 5. Rows use center alignment. Text is rendered at 23px.",
+      "omdType": "equationStack",
+      "equations": [
+        "2^x = 32",
+        "2^x = 2^5",
+        "x = 5"
+      ],
+      "alignmentMode": "center",
+      "fontSize": 23
+    },
+    {
+      "_comment": "Renders a vertical stack of 3 equations showing the progression log(x) + 2 = 5 -> log(x) = 3 -> x = 1000. Rows use equals alignment. Text is rendered at 22px.",
+      "omdType": "equationStack",
+      "equations": [
+        "log(x) + 2 = 5",
+        "log(x) = 3",
+        "x = 1000"
+      ],
+      "alignmentMode": "equals",
+      "fontSize": 22
+    },
+    {
+      "_comment": "Renders a vertical stack of 4 equations showing the progression (3x^2 - 12)/(x - 2) = 9 -> 3(x - 2)(x + 2)/(x - 2) = 9 -> 3(x + 2) = 9 -> x = 1. Rows use center alignment. Text is rendered at 22px.",
+      "omdType": "equationStack",
+      "equations": [
+        "(3x^2 - 12)/(x - 2) = 9",
+        "3(x - 2)(x + 2)/(x - 2) = 9",
+        "3(x + 2) = 9",
+        "x = 1"
+      ],
+      "alignmentMode": "center",
+      "fontSize": 22
+    },
+    {
+      "_comment": "Renders a vertical stack of 3 parseable equations showing the progression sin(x) = 1/2 -> 2 sin(x) = 1 -> x = pi / 6. Rows use equals alignment. Text is rendered at 21px. Use equationWork for degree notation such as 30° + 360°k.",
+      "omdType": "equationStack",
+      "equations": [
+        "sin(x) = 1/2",
+        "2 sin(x) = 1",
+        "x = pi / 6"
+      ],
+      "alignmentMode": "equals",
+      "fontSize": 21
+    }
+  ],
+  "equationWork": [
+    {
+      "_comment": "Shows worked equation steps from x + 3 = 8 to x = 5. Operation rows apply -3 / -3 to the two sides.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "x + 3",
+          "right": "8"
+        },
+        {
+          "kind": "operation",
+          "left": "-3",
+          "right": "-3",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "5"
+        }
+      ]
+    },
+    {
+      "_comment": "Shows worked equation steps from 2x = 14 to x = 7. Operation rows apply /2 / /2 to the two sides.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "2x",
+          "right": "14"
+        },
+        {
+          "kind": "operation",
+          "left": "/2",
+          "right": "/2",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "7"
+        }
+      ]
+    },
+    {
+      "_comment": "Shows worked equation steps from 3x - 5 = 16 to x = 7. Operation rows apply +5 / +5, /3 / /3 to the two sides. Operation annotations line up by equals.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "3x - 5",
+          "right": "16"
+        },
+        {
+          "kind": "operation",
+          "left": "+5",
+          "right": "+5",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "3x",
+          "right": "21"
+        },
+        {
+          "kind": "operation",
+          "left": "/3",
+          "right": "/3",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "7"
+        }
+      ],
+      "operationLineUp": "equals"
+    },
+    {
+      "_comment": "Shows worked equation steps from 4(x + 2) = 28 to x = 5. Operation rows apply -8 / -8, /4 / /4 to the two sides. Operation annotations line up by equals.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "4(x + 2)",
+          "right": "28"
+        },
+        {
+          "kind": "equation",
+          "left": "4x + 8",
+          "right": "28"
+        },
+        {
+          "kind": "operation",
+          "left": "-8",
+          "right": "-8",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "4x",
+          "right": "20"
+        },
+        {
+          "kind": "operation",
+          "left": "/4",
+          "right": "/4",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "5"
+        }
+      ],
+      "operationLineUp": "equals"
+    },
+    {
+      "_comment": "Shows worked equation steps from 5x + 7 = 3x + 21 to x = 7. Operation rows apply -3x / -3x, -7 / -7 to the two sides. Operation annotations line up by equals. Equation columns use left alignment end and right alignment start.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "5x + 7",
+          "right": "3x + 21"
+        },
+        {
+          "kind": "operation",
+          "left": "-3x",
+          "right": "-3x",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "2x + 7",
+          "right": "21"
+        },
+        {
+          "kind": "operation",
+          "left": "-7",
+          "right": "-7",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "2x",
+          "right": "14"
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "7"
+        }
+      ],
+      "operationLineUp": "equals",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start"
+    },
+    {
+      "_comment": "Shows worked equation steps from (x + 4)/2 = 9 to x = 14. Operation rows apply *2 / *2, -4 / -4 to the two sides. Operation annotations line up by equals. Equation columns use left alignment end and right alignment start.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "(x + 4)/2",
+          "right": "9"
+        },
+        {
+          "kind": "operation",
+          "left": "*2",
+          "right": "*2",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "x + 4",
+          "right": "18"
+        },
+        {
+          "kind": "operation",
+          "left": "-4",
+          "right": "-4",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "14"
+        }
+      ],
+      "operationLineUp": "equals",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start"
+    },
+    {
+      "_comment": "Shows worked equation steps from 2/3x - 5 = 7 to x = 18. Operation rows apply +5 / +5, *3/2 / *3/2 to the two sides. Operation annotations line up by equals. Equation columns use left alignment end and right alignment start.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "2/3x - 5",
+          "right": "7"
+        },
+        {
+          "kind": "operation",
+          "left": "+5",
+          "right": "+5",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "2/3x",
+          "right": "12"
+        },
+        {
+          "kind": "operation",
+          "left": "*3/2",
+          "right": "*3/2",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "18"
+        }
+      ],
+      "operationLineUp": "equals",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start"
+    },
+    {
+      "_comment": "Shows worked equation steps from 0.4x + 1.2 = 5.6 to x = 11. Operation rows apply -1.2 / -1.2, /0.4 / /0.4 to the two sides. Operation annotations line up by equals. Equation columns use left alignment end and right alignment start. Text is rendered at 33px.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "0.4x + 1.2",
+          "right": "5.6"
+        },
+        {
+          "kind": "operation",
+          "left": "-1.2",
+          "right": "-1.2",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "0.4x",
+          "right": "4.4"
+        },
+        {
+          "kind": "operation",
+          "left": "/0.4",
+          "right": "/0.4",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "11"
+        }
+      ],
+      "operationLineUp": "equals",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start",
+      "fontSize": 33
+    },
+    {
+      "_comment": "Shows worked equation steps from x^2 - 9 = 0 to x = -3 or 3. Operation annotations line up by equals. Equation columns use left alignment end and right alignment start. Text is rendered at 32px.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "x^2 - 9",
+          "right": "0"
+        },
+        {
+          "kind": "equation",
+          "left": "(x - 3)(x + 3)",
+          "right": "0"
+        },
+        {
+          "kind": "text",
+          "text": "Set each factor equal to zero."
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "-3 or 3"
+        }
+      ],
+      "operationLineUp": "equals",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start",
+      "fontSize": 32
+    },
+    {
+      "_comment": "Shows worked equation steps from (x - 2)(x + 5) = 0 to x = 2 or -5. Operation annotations line up by equals. Equation columns use left alignment end and right alignment start. Text is rendered at 31px.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "(x - 2)(x + 5)",
+          "right": "0"
+        },
+        {
+          "kind": "text",
+          "text": "Use the zero product property."
+        },
+        {
+          "kind": "equation",
+          "left": "x - 2",
+          "right": "0"
+        },
+        {
+          "kind": "equation",
+          "left": "x + 5",
+          "right": "0"
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "2 or -5"
+        }
+      ],
+      "operationLineUp": "equals",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start",
+      "fontSize": 31
+    },
+    {
+      "_comment": "Shows worked equation steps from sqrt(x + 9) = 6 to x = 27. Operation rows apply ^2 / ^2, -9 / -9 to the two sides. Operation annotations line up by equals. Equation columns use left alignment end and right alignment start. Rows are spaced by 24px. Separator lines use 3px strokes. Text is rendered at 30px.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "sqrt(x + 9)",
+          "right": "6"
+        },
+        {
+          "kind": "operation",
+          "left": "^2",
+          "right": "^2",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "x + 9",
+          "right": "36"
+        },
+        {
+          "kind": "operation",
+          "left": "-9",
+          "right": "-9",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "27"
+        }
+      ],
+      "operationLineUp": "equals",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start",
+      "fontSize": 30,
+      "rowGap": 24,
+      "lineStrokeWidth": 3
+    },
+    {
+      "_comment": "Shows worked equation steps from 2^x = 32 to x = 5. Operation annotations line up by equals. Equation columns use left alignment end and right alignment start. Rows are spaced by 25px. Separator lines use 3px strokes. Text is rendered at 29px.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "2^x",
+          "right": "32"
+        },
+        {
+          "kind": "equation",
+          "left": "2^x",
+          "right": "2^5"
+        },
+        {
+          "kind": "line"
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "5"
+        }
+      ],
+      "operationLineUp": "equals",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start",
+      "fontSize": 29,
+      "rowGap": 25,
+      "lineStrokeWidth": 3
+    },
+    {
+      "_comment": "Shows worked equation steps from log(x) + 2 = 5 to x = 1000. Operation rows apply -2 / -2 to the two sides. Operation annotations line up by equals. Equation columns use left alignment end and right alignment start. Rows are spaced by 26px. Separator lines use 3px strokes. Text is rendered at 28px.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "log(x) + 2",
+          "right": "5"
+        },
+        {
+          "kind": "operation",
+          "left": "-2",
+          "right": "-2",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "log(x)",
+          "right": "3"
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "1000"
+        }
+      ],
+      "operationLineUp": "equals",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start",
+      "fontSize": 28,
+      "rowGap": 26,
+      "lineStrokeWidth": 3
+    },
+    {
+      "_comment": "Shows worked equation steps from (3x^2 - 12)/(x - 2) = 9 to x = 1. Operation rows apply /3 / /3 to the two sides. Operation annotations line up by equals. Equation columns use left alignment end and right alignment start. Rows are spaced by 27px. Separator lines use 3px strokes. Text is rendered at 27px.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "(3x^2 - 12)/(x - 2)",
+          "right": "9"
+        },
+        {
+          "kind": "equation",
+          "left": "3(x - 2)(x + 2)/(x - 2)",
+          "right": "9"
+        },
+        {
+          "kind": "equation",
+          "left": "3(x + 2)",
+          "right": "9"
+        },
+        {
+          "kind": "operation",
+          "left": "/3",
+          "right": "/3",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "equation",
+          "left": "x + 2",
+          "right": "3"
+        },
+        {
+          "kind": "equation",
+          "left": "x",
+          "right": "1"
+        }
+      ],
+      "operationLineUp": "equals",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start",
+      "fontSize": 27,
+      "rowGap": 27,
+      "lineStrokeWidth": 3
+    },
+    {
+      "_comment": "Shows worked equation steps from the first equation. Operation annotations line up by decimal. Equation columns use left alignment end and right alignment start. Rows are spaced by 28px. Separator lines use 3px strokes. Text is rendered at 26px.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "expression",
+          "expression": "  124.5"
+        },
+        {
+          "kind": "expression",
+          "expression": "+  36.75",
+          "drawLineAfter": true
+        },
+        {
+          "kind": "expression",
+          "expression": "  161.25"
+        },
+        {
+          "kind": "text",
+          "text": "Decimal points stay aligned."
+        }
+      ],
+      "operationLineUp": "decimal",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start",
+      "fontSize": 26,
+      "rowGap": 28,
+      "lineStrokeWidth": 3
+    },
+    {
+      "_comment": "Shows a trigonometry solution with degree notation that is not parseable as an equationStack row. The non-math solution forms are rendered as text rows.",
+      "omdType": "equationWork",
+      "rows": [
+        {
+          "kind": "equation",
+          "left": "sin(x)",
+          "right": "1/2"
+        },
+        {
+          "kind": "text",
+          "text": "General solutions in degrees:"
+        },
+        {
+          "kind": "text",
+          "text": "x = 30° + 360°k"
+        },
+        {
+          "kind": "text",
+          "text": "or x = 150° + 360°k"
+        }
+      ],
+      "operationLineUp": "equals",
+      "equationLeftAlign": "end",
+      "equationRightAlign": "start",
+      "fontSize": 26,
+      "rowGap": 22,
+      "lineStrokeWidth": 3
+    }
+  ],
+  "expression": [
+    {
+      "_comment": "Renders one standalone expression: 3x + 2. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "3x + 2"
+    },
+    {
+      "_comment": "Renders one standalone expression: 5a - 7. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "5a - 7"
+    },
+    {
+      "_comment": "Renders one standalone expression: 2(x + 4). There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "2(x + 4)"
+    },
+    {
+      "_comment": "Renders one standalone expression: 3x^2 - 2x + 1. Text is rendered at 29px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "3x^2 - 2x + 1",
+      "fontSize": 29
+    },
+    {
+      "_comment": "Renders one standalone expression: (x + 1)/(x - 1). Text is rendered at 28px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "(x + 1)/(x - 1)",
+      "fontSize": 28
+    },
+    {
+      "_comment": "Renders one standalone expression: sqrt(x) + 5. Text is rendered at 28px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "sqrt(x) + 5",
+      "fontSize": 28
+    },
+    {
+      "_comment": "Renders one standalone expression: 2/3a + 1/4. Text is rendered at 27px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "2/3a + 1/4",
+      "fontSize": 27
+    },
+    {
+      "_comment": "Renders one standalone expression: 4.5m - 1.2. Text is rendered at 27px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "4.5m - 1.2",
+      "fontSize": 27
+    },
+    {
+      "_comment": "Renders one standalone expression: (2x - 3)(x + 5). Text is rendered at 26px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "(2x - 3)(x + 5)",
+      "fontSize": 26
+    },
+    {
+      "_comment": "Renders one standalone expression: x^3 - 4x + 9. Text is rendered at 26px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "x^3 - 4x + 9",
+      "fontSize": 26
+    },
+    {
+      "_comment": "Renders one standalone expression: sin(theta) + cos(theta). Text is rendered at 25px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "sin(theta) + cos(theta)",
+      "fontSize": 25
+    },
+    {
+      "_comment": "Renders one standalone expression: log(x) - 2. Text is rendered at 25px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "log(x) - 2",
+      "fontSize": 25
+    },
+    {
+      "_comment": "Renders one standalone expression: (a^2 - b^2)/(a - b). Text is rendered at 24px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "(a^2 - b^2)/(a - b)",
+      "fontSize": 24
+    },
+    {
+      "_comment": "Renders one standalone expression: sqrt(x^2 + y^2). Text is rendered at 24px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "sqrt(x^2 + y^2)",
+      "fontSize": 24
+    },
+    {
+      "_comment": "Renders one standalone expression: ((3x^2 - 12)/(x - 2)) + 7. Text is rendered at 23px. There is no equals sign, graph, or model, so the sample focuses on mathematical typesetting.",
+      "omdType": "expression",
+      "expression": "((3x^2 - 12)/(x - 2)) + 7",
+      "fontSize": 23
+    }
+  ],
+  "balanceHanger": [
+    {
+      "_comment": "Draws a balance hanger with left weights x and right weights 5. The hanger is level.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "x"
+      ],
+      "rightValues": [
+        5
+      ]
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights x, 2 and right weights 7. The hanger is level.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "x",
+        2
+      ],
+      "rightValues": [
+        7
+      ]
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights x, x and right weights 10. The hanger tilts right, indicating that side is lower/heavier.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "x",
+        "x"
+      ],
+      "rightValues": [
+        10
+      ],
+      "tilt": "right"
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights x, x, 3 and right weights 13. The hanger is level.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "x",
+        "x",
+        3
+      ],
+      "rightValues": [
+        13
+      ],
+      "tilt": "none"
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights 2, x, 1 and right weights 9. The hanger tilts left, indicating that side is lower/heavier.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        2,
+        "x",
+        1
+      ],
+      "rightValues": [
+        9
+      ],
+      "tilt": "left"
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights 3x and right weights 12. The hanger tilts right, indicating that side is lower/heavier. A background panel is shown.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "3x"
+      ],
+      "rightValues": [
+        12
+      ],
+      "tilt": "right",
+      "showBackground": true
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights x, x, x, 4 and right weights 19. The hanger is level. A background panel is shown.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "x",
+        "x",
+        "x",
+        4
+      ],
+      "rightValues": [
+        19
+      ],
+      "tilt": "none",
+      "showBackground": true
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights 5, x and right weights 2x. The hanger tilts left, indicating that side is lower/heavier. A background panel is shown.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        5,
+        "x"
+      ],
+      "rightValues": [
+        "2x"
+      ],
+      "tilt": "left",
+      "showBackground": true
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights 2x, 3 and right weights x, 10. The hanger tilts right, indicating that side is lower/heavier. A styled background is shown with fill #e0f2fe, 0.75 opacity.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "2x",
+        3
+      ],
+      "rightValues": [
+        "x",
+        10
+      ],
+      "tilt": "right",
+      "showBackground": true,
+      "backgroundColor": "#e0f2fe",
+      "backgroundOpacity": 0.75
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights x, x, -2 and right weights 8. The hanger is level. A styled background is shown with fill #e0f2fe, 0.75 opacity.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "x",
+        "x",
+        -2
+      ],
+      "rightValues": [
+        8
+      ],
+      "tilt": "none",
+      "showBackground": true,
+      "backgroundColor": "#e0f2fe",
+      "backgroundOpacity": 0.75
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights a, a, b and right weights 14. The hanger tilts left, indicating that side is lower/heavier. A styled background is shown with fill #e0f2fe, 0.75 opacity.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "a",
+        "a",
+        "b"
+      ],
+      "rightValues": [
+        14
+      ],
+      "tilt": "left",
+      "showBackground": true,
+      "backgroundColor": "#e0f2fe",
+      "backgroundOpacity": 0.75
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights 2x, x, 6 and right weights 21. The hanger tilts right, indicating that side is lower/heavier. Text is rendered at 22px. A styled background is shown with fill #e0f2fe, 0.75 opacity, 8px rounded corners.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "2x",
+        "x",
+        6
+      ],
+      "rightValues": [
+        21
+      ],
+      "tilt": "right",
+      "showBackground": true,
+      "backgroundColor": "#e0f2fe",
+      "backgroundOpacity": 0.75,
+      "fontSize": 22,
+      "backgroundCornerRadius": 8
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights x, 1, 1, 1 and right weights x, 3. The hanger is level. Text is rendered at 22px. A styled background is shown with fill #e0f2fe, 0.75 opacity, 8px rounded corners.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "x",
+        1,
+        1,
+        1
+      ],
+      "rightValues": [
+        "x",
+        3
+      ],
+      "tilt": "none",
+      "showBackground": true,
+      "backgroundColor": "#e0f2fe",
+      "backgroundOpacity": 0.75,
+      "fontSize": 22,
+      "backgroundCornerRadius": 8
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights 3x, -4 and right weights x, 8. The hanger tilts left, indicating that side is lower/heavier. Text is rendered at 22px. A styled background is shown with fill #e0f2fe, 0.75 opacity, 8px rounded corners.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "3x",
+        -4
+      ],
+      "rightValues": [
+        "x",
+        8
+      ],
+      "tilt": "left",
+      "showBackground": true,
+      "backgroundColor": "#e0f2fe",
+      "backgroundOpacity": 0.75,
+      "fontSize": 22,
+      "backgroundCornerRadius": 8
+    },
+    {
+      "_comment": "Draws a balance hanger with left weights x, x, y, 5 and right weights 2y, 9. The hanger tilts right, indicating that side is lower/heavier. Text is rendered at 22px. A styled background is shown with fill #e0f2fe, 0.75 opacity, 8px rounded corners.",
+      "omdType": "balanceHanger",
+      "leftValues": [
+        "x",
+        "x",
+        "y",
+        5
+      ],
+      "rightValues": [
+        "2y",
+        9
+      ],
+      "tilt": "right",
+      "showBackground": true,
+      "backgroundColor": "#e0f2fe",
+      "backgroundOpacity": 0.75,
+      "fontSize": 22,
+      "backgroundCornerRadius": 8
+    }
+  ],
+  "numberLine": [
+    {
+      "_comment": "Draws a number line from 0 to 10 with tick increment 1. No point markers are highlighted.",
+      "omdType": "numberLine",
+      "min": 0,
+      "max": 10,
+      "increment": 1
+    },
+    {
+      "_comment": "Draws a number line from 0 to 11 with tick increment 1. Highlighted dots appear at 2.",
+      "omdType": "numberLine",
+      "min": 0,
+      "max": 11,
+      "increment": 1,
+      "dotValues": [
+        2
+      ]
+    },
+    {
+      "_comment": "Draws a number line from 0 to 12 with tick increment 1. Highlighted dots appear at 3. Title text reads Temperature.",
+      "omdType": "numberLine",
+      "min": 0,
+      "max": 12,
+      "increment": 1,
+      "dotValues": [
+        3
+      ],
+      "title": "Temperature"
+    },
+    {
+      "_comment": "Draws a number line from 0 to 13 with tick increment 1. Highlighted dots appear at 4. Title text reads Change. A right arrowhead is shown.",
+      "omdType": "numberLine",
+      "min": 0,
+      "max": 13,
+      "increment": 1,
+      "dotValues": [
+        4
+      ],
+      "title": "Change",
+      "showRightArrow": true
+    },
+    {
+      "_comment": "Draws a number line from -4 to 12 with tick increment 1. Highlighted dots appear at 5. Title text reads Count. Both arrowheads are shown.",
+      "omdType": "numberLine",
+      "min": -4,
+      "max": 12,
+      "increment": 1,
+      "dotValues": [
+        5
+      ],
+      "title": "Count",
+      "showRightArrow": true,
+      "showLeftArrow": true
+    },
+    {
+      "_comment": "Draws a number line from -5 to 13 with tick increment 1. Tick labels use the unit text m. Highlighted dots appear at 6. Title text reads Distance. Both arrowheads are shown.",
+      "omdType": "numberLine",
+      "min": -5,
+      "max": 13,
+      "increment": 1,
+      "dotValues": [
+        6
+      ],
+      "title": "Distance",
+      "showRightArrow": true,
+      "showLeftArrow": true,
+      "units": " m"
+    },
+    {
+      "_comment": "Draws a number line from -6 to 14 with tick increment 1. Tick labels use the unit text units. Highlighted dots appear at 7. Special callout numbers are -6, 0, 14. Title text reads Temperature. Both arrowheads are shown.",
+      "omdType": "numberLine",
+      "min": -6,
+      "max": 14,
+      "increment": 1,
+      "dotValues": [
+        7
+      ],
+      "title": "Temperature",
+      "showRightArrow": true,
+      "showLeftArrow": true,
+      "units": " units",
+      "specialNumbers": [
+        -6,
+        0,
+        14
+      ]
+    },
+    {
+      "_comment": "Draws a number line from -7 to 15 with tick increment 1. Tick labels use the unit text m. Highlighted dots appear at 8. Special callout numbers are -7, 0, 15. Title text reads Change. Both arrowheads are shown.",
+      "omdType": "numberLine",
+      "min": -7,
+      "max": 15,
+      "increment": 1,
+      "dotValues": [
+        8
+      ],
+      "title": "Change",
+      "showRightArrow": true,
+      "showLeftArrow": true,
+      "units": " m",
+      "specialNumbers": [
+        -7,
+        0,
+        15
+      ]
+    },
+    {
+      "_comment": "Draws a number line from -8 to 16 with tick increment 0.5. Tick labels use the unit text units. Highlighted dots appear at -1.5, 0.5, 2.5. Special callout numbers are -8, 0, 16. Title text reads Count. Both arrowheads are shown.",
+      "omdType": "numberLine",
+      "min": -8,
+      "max": 16,
+      "increment": 0.5,
+      "dotValues": [
+        -1.5,
+        0.5,
+        2.5
+      ],
+      "title": "Count",
+      "showRightArrow": true,
+      "showLeftArrow": true,
+      "units": " units",
+      "specialNumbers": [
+        -8,
+        0,
+        16
+      ]
+    },
+    {
+      "_comment": "Draws a number line from -9 to 17 with tick increment 0.5. Tick labels use the unit text m. Highlighted dots appear at -1.5, 0.5, 2.5. Special callout numbers are -9, 0, 17. Title text reads Distance. Both arrowheads are shown.",
+      "omdType": "numberLine",
+      "min": -9,
+      "max": 17,
+      "increment": 0.5,
+      "dotValues": [
+        -1.5,
+        0.5,
+        2.5
+      ],
+      "title": "Distance",
+      "showRightArrow": true,
+      "showLeftArrow": true,
+      "units": " m",
+      "specialNumbers": [
+        -9,
+        0,
+        17
+      ],
+      "hideDefaultNumbers": false
+    },
+    {
+      "_comment": "Draws a number line from -10 to 18 with tick increment 0.5. Tick labels use the unit text units. Highlighted dots appear at -1.5, 0.5, 2.5. Special callout numbers are -10, 0, 18. Title text reads Temperature. Both arrowheads are shown. Default tick numbers are hidden.",
+      "omdType": "numberLine",
+      "min": -10,
+      "max": 18,
+      "increment": 0.5,
+      "dotValues": [
+        -1.5,
+        0.5,
+        2.5
+      ],
+      "title": "Temperature",
+      "showRightArrow": true,
+      "showLeftArrow": true,
+      "units": " units",
+      "specialNumbers": [
+        -10,
+        0,
+        18
+      ],
+      "hideDefaultNumbers": true
+    },
+    {
+      "_comment": "Draws a number line from -11 to 19 with tick increment 0.5. Tick labels use the unit text m. Highlighted dots appear at -1.5, 0.5, 2.5. Special callout numbers are -11, 0, 19. Title text reads Change. Axis label reads position. Both arrowheads are shown.",
+      "omdType": "numberLine",
+      "min": -11,
+      "max": 19,
+      "increment": 0.5,
+      "dotValues": [
+        -1.5,
+        0.5,
+        2.5
+      ],
+      "title": "Change",
+      "showRightArrow": true,
+      "showLeftArrow": true,
+      "units": " m",
+      "specialNumbers": [
+        -11,
+        0,
+        19
+      ],
+      "hideDefaultNumbers": false,
+      "label": "position"
+    },
+    {
+      "_comment": "Draws a number line from -12 to 20 with tick increment 0.5. Tick labels use the unit text units. Highlighted dots appear at -1.5, 0.5, 2.5. Special callout numbers are -12, 0, 20. Title text reads Count. Axis label reads position. Both arrowheads are shown. Default tick numbers are hidden. The rendered line is 584px wide.",
+      "omdType": "numberLine",
+      "min": -12,
+      "max": 20,
+      "increment": 0.5,
+      "dotValues": [
+        -1.5,
+        0.5,
+        2.5
+      ],
+      "title": "Count",
+      "showRightArrow": true,
+      "showLeftArrow": true,
+      "units": " units",
+      "specialNumbers": [
+        -12,
+        0,
+        20
+      ],
+      "hideDefaultNumbers": true,
+      "label": "position",
+      "totalWidth": 584
+    },
+    {
+      "_comment": "Draws a number line from -13 to 21 with tick increment 0.5. Tick labels use the unit text m. Highlighted dots appear at -1.5, 0.5, 2.5. Special callout numbers are -13, 0, 21. Title text reads Distance. Axis label reads position. Both arrowheads are shown. The rendered line is 596px wide.",
+      "omdType": "numberLine",
+      "min": -13,
+      "max": 21,
+      "increment": 0.5,
+      "dotValues": [
+        -1.5,
+        0.5,
+        2.5
+      ],
+      "title": "Distance",
+      "showRightArrow": true,
+      "showLeftArrow": true,
+      "units": " m",
+      "specialNumbers": [
+        -13,
+        0,
+        21
+      ],
+      "hideDefaultNumbers": false,
+      "label": "position",
+      "totalWidth": 596
+    },
+    {
+      "_comment": "Draws a number line from -14 to 22 with tick increment 0.5. Tick labels use the unit text units. Highlighted dots appear at -1.5, 0.5, 2.5. Special callout numbers are -14, 0, 22. Title text reads Temperature. Axis label reads position. Both arrowheads are shown. Default tick numbers are hidden. The rendered line is 608px wide.",
+      "omdType": "numberLine",
+      "min": -14,
+      "max": 22,
+      "increment": 0.5,
+      "dotValues": [
+        -1.5,
+        0.5,
+        2.5
+      ],
+      "title": "Temperature",
+      "showRightArrow": true,
+      "showLeftArrow": true,
+      "units": " units",
+      "specialNumbers": [
+        -14,
+        0,
+        22
+      ],
+      "hideDefaultNumbers": true,
+      "label": "position",
+      "totalWidth": 608
+    }
+  ],
+  "doubleNumberLine": [
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Hours: 0 to 4 by 1 and bottom Miles: 0 to 8 by 2. The two scales are separated by 22px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 4,
+        "increment": 1,
+        "title": "Hours"
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 8,
+        "increment": 2,
+        "title": "Miles"
+      },
+      "spacing": 22
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Hours: 0 to 5 by 1 and bottom Miles: 0 to 15 by 3. The two scales are separated by 23px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 5,
+        "increment": 1,
+        "title": "Hours"
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 15,
+        "increment": 3,
+        "title": "Miles"
+      },
+      "spacing": 23
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Hours: 0 to 6 by 1 and bottom Miles: 0 to 24 by 4. The two scales are separated by 24px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 6,
+        "increment": 1,
+        "title": "Hours"
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 24,
+        "increment": 4,
+        "title": "Miles"
+      },
+      "spacing": 24
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Hours: 0 to 7 by 1 and bottom Miles: 0 to 35 by 5. The two scales are separated by 25px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 7,
+        "increment": 1,
+        "title": "Hours",
+        "showRightArrow": true
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 35,
+        "increment": 5,
+        "title": "Miles",
+        "showRightArrow": true
+      },
+      "spacing": 25
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Hours: 0 to 8 by 1 and bottom Miles: 0 to 48 by 6. The two scales are separated by 26px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 8,
+        "increment": 1,
+        "title": "Hours",
+        "showRightArrow": true
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 48,
+        "increment": 6,
+        "title": "Miles",
+        "showRightArrow": true
+      },
+      "spacing": 26
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Cups: 0 to 9 by 1 hr and bottom Tablespoons: 0 to 63 by 7 mi. The two scales are separated by 27px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 9,
+        "increment": 1,
+        "title": "Cups",
+        "showRightArrow": true,
+        "units": " hr"
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 63,
+        "increment": 7,
+        "title": "Tablespoons",
+        "showRightArrow": true,
+        "units": " mi"
+      },
+      "spacing": 27
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Cups: 0 to 10 by 1 cups and bottom Tablespoons: 0 to 80 by 8 tbsp. The two scales are separated by 28px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 10,
+        "increment": 1,
+        "title": "Cups",
+        "showRightArrow": true,
+        "units": " cups"
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 80,
+        "increment": 8,
+        "title": "Tablespoons",
+        "showRightArrow": true,
+        "units": " tbsp"
+      },
+      "spacing": 28
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Cups: 0 to 11 by 1 hr and bottom Tablespoons: 0 to 99 by 9 mi. The two scales are separated by 29px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 11,
+        "increment": 1,
+        "title": "Cups",
+        "showRightArrow": true,
+        "units": " hr"
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 99,
+        "increment": 9,
+        "title": "Tablespoons",
+        "showRightArrow": true,
+        "units": " mi"
+      },
+      "spacing": 29
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Cups: 0 to 12 by 2 cups and bottom Tablespoons: 0 to 120 by 20 tbsp. The two scales are separated by 30px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 12,
+        "increment": 2,
+        "title": "Cups",
+        "showRightArrow": true,
+        "units": " cups",
+        "dotValues": [
+          2,
+          4
+        ]
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 120,
+        "increment": 20,
+        "title": "Tablespoons",
+        "showRightArrow": true,
+        "units": " tbsp",
+        "dotValues": [
+          20,
+          40
+        ]
+      },
+      "spacing": 30
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Cups: 0 to 13 by 2 hr and bottom Tablespoons: 0 to 143 by 22 mi. The two scales are separated by 31px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 13,
+        "increment": 2,
+        "title": "Cups",
+        "showRightArrow": true,
+        "units": " hr",
+        "dotValues": [
+          2,
+          4
+        ]
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 143,
+        "increment": 22,
+        "title": "Tablespoons",
+        "showRightArrow": true,
+        "units": " mi",
+        "dotValues": [
+          22,
+          44
+        ]
+      },
+      "spacing": 31
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Cups: 0 to 14 by 2 cups and bottom Tablespoons: 0 to 168 by 24 tbsp. The two scales are separated by 32px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 14,
+        "increment": 2,
+        "title": "Cups",
+        "showRightArrow": true,
+        "units": " cups",
+        "dotValues": [
+          2,
+          4
+        ]
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 168,
+        "increment": 24,
+        "title": "Tablespoons",
+        "showRightArrow": true,
+        "units": " tbsp",
+        "dotValues": [
+          24,
+          48
+        ]
+      },
+      "spacing": 32
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Cups: 0 to 15 by 2 hr and bottom Tablespoons: 0 to 195 by 26 mi. The two scales are separated by 33px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 15,
+        "increment": 2,
+        "title": "Cups",
+        "showRightArrow": true,
+        "units": " hr",
+        "dotValues": [
+          2,
+          4
+        ],
+        "specialNumbers": [
+          0,
+          15
+        ]
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 195,
+        "increment": 26,
+        "title": "Tablespoons",
+        "showRightArrow": true,
+        "units": " mi",
+        "dotValues": [
+          26,
+          52
+        ],
+        "specialNumbers": [
+          0,
+          195
+        ]
+      },
+      "spacing": 33
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Cups: 0 to 16 by 2 cups and bottom Tablespoons: 0 to 224 by 28 tbsp. The two scales are separated by 34px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 16,
+        "increment": 2,
+        "title": "Cups",
+        "showRightArrow": true,
+        "units": " cups",
+        "dotValues": [
+          2,
+          4
+        ],
+        "specialNumbers": [
+          0,
+          16
+        ]
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 224,
+        "increment": 28,
+        "title": "Tablespoons",
+        "showRightArrow": true,
+        "units": " tbsp",
+        "dotValues": [
+          28,
+          56
+        ],
+        "specialNumbers": [
+          0,
+          224
+        ]
+      },
+      "spacing": 34
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Cups: 0 to 17 by 2 hr and bottom Tablespoons: 0 to 255 by 30 mi. The two scales are separated by 35px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 17,
+        "increment": 2,
+        "title": "Cups",
+        "showRightArrow": true,
+        "units": " hr",
+        "dotValues": [
+          2,
+          4
+        ],
+        "specialNumbers": [
+          0,
+          17
+        ]
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 255,
+        "increment": 30,
+        "title": "Tablespoons",
+        "showRightArrow": true,
+        "units": " mi",
+        "dotValues": [
+          30,
+          60
+        ],
+        "specialNumbers": [
+          0,
+          255
+        ]
+      },
+      "spacing": 35
+    },
+    {
+      "_comment": "Draws two aligned number lines for comparison: top Cups: 0 to 18 by 2 cups and bottom Tablespoons: 0 to 288 by 32 tbsp. The two scales are separated by 36px so matching tick positions show the relationship between the quantities.",
+      "omdType": "doubleNumberLine",
+      "topNumberLine": {
+        "min": 0,
+        "max": 18,
+        "increment": 2,
+        "title": "Cups",
+        "showRightArrow": true,
+        "units": " cups",
+        "dotValues": [
+          2,
+          4
+        ],
+        "specialNumbers": [
+          0,
+          18
+        ]
+      },
+      "bottomNumberLine": {
+        "min": 0,
+        "max": 288,
+        "increment": 32,
+        "title": "Tablespoons",
+        "showRightArrow": true,
+        "units": " tbsp",
+        "dotValues": [
+          32,
+          64
+        ],
+        "specialNumbers": [
+          0,
+          288
+        ]
+      },
+      "spacing": 36
+    }
+  ],
+  "coordinatePlane": [
+    {
+      "_comment": "Draws a coordinate plane spanning x=-5 to 5 and y=-5 to 5. It is an empty grid with axes and tick marks only.",
+      "omdType": "coordinatePlane",
+      "xMin": -5,
+      "xMax": 5,
+      "yMin": -5,
+      "yMax": 5
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-5 to 5 and y=-5 to 5. It is an empty grid with axes and tick marks only. Ticks are spaced every 1.",
+      "omdType": "coordinatePlane",
+      "xMin": -5,
+      "xMax": 5,
+      "yMin": -5,
+      "yMax": 5,
+      "tickInterval": 1
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-5 to 5 and y=-5 to 6. It is an empty grid with axes and tick marks only. Ticks are spaced every 1. Axis labels are x and y.",
+      "omdType": "coordinatePlane",
+      "xMin": -5,
+      "xMax": 5,
+      "yMin": -5,
+      "yMax": 6,
+      "tickInterval": 1,
+      "xLabel": "x",
+      "yLabel": "y"
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-6 to 6 and y=-5 to 6. It graphs y = 1x + 1 in #16a34a. Ticks are spaced every 1. Axis labels are x and y.",
+      "omdType": "coordinatePlane",
+      "xMin": -6,
+      "xMax": 6,
+      "yMin": -5,
+      "yMax": 6,
+      "tickInterval": 1,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = 1x + 1",
+          "color": "#16a34a",
+          "strokeWidth": 2
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-6 to 6 and y=-6 to 7. It graphs y = 2x - 1 in #9333ea. Ticks are spaced every 1. Axis labels are x and y.",
+      "omdType": "coordinatePlane",
+      "xMin": -6,
+      "xMax": 6,
+      "yMin": -6,
+      "yMax": 7,
+      "tickInterval": 1,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = 2x - 1",
+          "color": "#9333ea",
+          "strokeWidth": 2
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-6 to 6 and y=-6 to 7. It graphs y = 3x + 1 in #ea580c; plots points (0, 0) in #111827, (1, 4) in #0891b2. Ticks are spaced every 1. Axis labels are x and y.",
+      "omdType": "coordinatePlane",
+      "xMin": -6,
+      "xMax": 6,
+      "yMin": -6,
+      "yMax": 7,
+      "tickInterval": 1,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = 3x + 1",
+          "color": "#ea580c",
+          "strokeWidth": 2
+        }
+      ],
+      "dotValues": [
+        [
+          0,
+          0,
+          "#111827"
+        ],
+        [
+          1,
+          4,
+          "#0891b2"
+        ]
+      ]
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-7 to 7 and y=-6 to 8. It graphs y = 4x - 1 in #0891b2; plots points (0, 0) in #111827, (1, 5) in #111827. Ticks are spaced every 1. Axis labels are x and y. Tick labels are shown.",
+      "omdType": "coordinatePlane",
+      "xMin": -7,
+      "xMax": 7,
+      "yMin": -6,
+      "yMax": 8,
+      "tickInterval": 1,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = 4x - 1",
+          "color": "#0891b2",
+          "strokeWidth": 2
+        }
+      ],
+      "dotValues": [
+        [
+          0,
+          0,
+          "#111827"
+        ],
+        [
+          1,
+          5,
+          "#111827"
+        ]
+      ],
+      "showTickLabels": true
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-7 to 7 and y=-6 to 8. It graphs y = 5x + 1 in #111827; plots points (0, 0) in #111827, (1, 6) in #2563eb; draws segments (-2, -1) to (3, 5) in #64748b. Ticks are spaced every 1. Axis labels are x and y. Tick labels are shown.",
+      "omdType": "coordinatePlane",
+      "xMin": -7,
+      "xMax": 7,
+      "yMin": -6,
+      "yMax": 8,
+      "tickInterval": 1,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = 5x + 1",
+          "color": "#111827",
+          "strokeWidth": 2
+        }
+      ],
+      "dotValues": [
+        [
+          0,
+          0,
+          "#111827"
+        ],
+        [
+          1,
+          6,
+          "#2563eb"
+        ]
+      ],
+      "showTickLabels": true,
+      "lineSegments": [
+        {
+          "point1": [
+            -2,
+            -1
+          ],
+          "point2": [
+            3,
+            5
+          ],
+          "color": "#64748b",
+          "strokeWidth": 2
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-7 to 7 and y=-7 to 9. It graphs y = 6x - 1 in #2563eb; y = x^2 (quadratic) in #dc2626; plots points (0, 0) in #111827, (1, 7) in #dc2626; draws segments (-2, -1) to (3, 6) in #64748b. Ticks are spaced every 1. Axis labels are x and y. Tick labels are shown.",
+      "omdType": "coordinatePlane",
+      "xMin": -7,
+      "xMax": 7,
+      "yMin": -7,
+      "yMax": 9,
+      "tickInterval": 1,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = 6x - 1",
+          "color": "#2563eb",
+          "strokeWidth": 2
+        },
+        {
+          "equation": "y = x^2",
+          "color": "#dc2626",
+          "strokeWidth": 2,
+          "label": "quadratic"
+        }
+      ],
+      "dotValues": [
+        [
+          0,
+          0,
+          "#111827"
+        ],
+        [
+          1,
+          7,
+          "#dc2626"
+        ]
+      ],
+      "showTickLabels": true,
+      "lineSegments": [
+        {
+          "point1": [
+            -2,
+            -1
+          ],
+          "point2": [
+            3,
+            6
+          ],
+          "color": "#64748b",
+          "strokeWidth": 2
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-8 to 8 and y=-7 to 9. It graphs y = 7x + 1 in #dc2626; y = x^2 (quadratic) in #dc2626; plots points (0, 0) in #111827, (1, 8) in #16a34a; draws segments (-2, -1) to (3, 7) in #64748b. Ticks are spaced every 2. Axis labels are x and y. Tick labels are shown.",
+      "omdType": "coordinatePlane",
+      "xMin": -8,
+      "xMax": 8,
+      "yMin": -7,
+      "yMax": 9,
+      "tickInterval": 2,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = 7x + 1",
+          "color": "#dc2626",
+          "strokeWidth": 2
+        },
+        {
+          "equation": "y = x^2",
+          "color": "#dc2626",
+          "strokeWidth": 2,
+          "label": "quadratic"
+        }
+      ],
+      "dotValues": [
+        [
+          0,
+          0,
+          "#111827"
+        ],
+        [
+          1,
+          8,
+          "#16a34a"
+        ]
+      ],
+      "showTickLabels": true,
+      "lineSegments": [
+        {
+          "point1": [
+            -2,
+            -1
+          ],
+          "point2": [
+            3,
+            7
+          ],
+          "color": "#64748b",
+          "strokeWidth": 2
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-8 to 8 and y=-7 to 10. It graphs y = 8x - 1 in #16a34a; y = x^2 (quadratic) in #dc2626; plots points (0, 0) in #111827, (1, 9) in #9333ea; draws segments (-2, -1) to (3, 8) in #64748b; overlays rightTriangle. Ticks are spaced every 2. Axis labels are x and y. Tick labels are shown.",
+      "omdType": "coordinatePlane",
+      "xMin": -8,
+      "xMax": 8,
+      "yMin": -7,
+      "yMax": 10,
+      "tickInterval": 2,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = 8x - 1",
+          "color": "#16a34a",
+          "strokeWidth": 2
+        },
+        {
+          "equation": "y = x^2",
+          "color": "#dc2626",
+          "strokeWidth": 2,
+          "label": "quadratic"
+        }
+      ],
+      "dotValues": [
+        [
+          0,
+          0,
+          "#111827"
+        ],
+        [
+          1,
+          9,
+          "#9333ea"
+        ]
+      ],
+      "showTickLabels": true,
+      "lineSegments": [
+        {
+          "point1": [
+            -2,
+            -1
+          ],
+          "point2": [
+            3,
+            8
+          ],
+          "color": "#64748b",
+          "strokeWidth": 2
+        }
+      ],
+      "shapeSet": [
+        {
+          "omdType": "rightTriangle",
+          "horizontalLeg": 3,
+          "verticalLeg": 4,
+          "unitScale": 10,
+          "showLabels": true
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-8 to 8 and y=-7 to 10. It graphs y = ax + 2 (slider line) in #2563eb; plots points (0, 0) in #111827, (1, 10) in #ea580c; draws segments (-2, -1) to (3, 9) in #64748b; overlays rightTriangle; adds sliders a=1 from -3 to 3 by 0.5. Ticks are spaced every 2. Axis labels are x and y. Tick labels are shown. Interactive controls are enabled.",
+      "omdType": "coordinatePlane",
+      "xMin": -8,
+      "xMax": 8,
+      "yMin": -7,
+      "yMax": 10,
+      "tickInterval": 2,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = ax + 2",
+          "color": "#2563eb",
+          "strokeWidth": 3,
+          "label": "slider line"
+        }
+      ],
+      "dotValues": [
+        [
+          0,
+          0,
+          "#111827"
+        ],
+        [
+          1,
+          10,
+          "#ea580c"
+        ]
+      ],
+      "showTickLabels": true,
+      "lineSegments": [
+        {
+          "point1": [
+            -2,
+            -1
+          ],
+          "point2": [
+            3,
+            9
+          ],
+          "color": "#64748b",
+          "strokeWidth": 2
+        }
+      ],
+      "shapeSet": [
+        {
+          "omdType": "rightTriangle",
+          "horizontalLeg": 3,
+          "verticalLeg": 4,
+          "unitScale": 10,
+          "showLabels": true
+        }
+      ],
+      "interactive": true,
+      "variables": [
+        {
+          "name": "a",
+          "value": 1,
+          "min": -3,
+          "max": 3,
+          "step": 0.5
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-9 to 9 and y=-8 to 11. It graphs y = ax + 2 (slider line) in #2563eb; plots points (0, 0) in #111827, (1, 11) in #0891b2; draws segments (-2, -1) to (3, 10) in #64748b; overlays rightTriangle; adds sliders a=1 from -3 to 3 by 0.5. Ticks are spaced every 2. Axis labels are x and y. Tick labels are shown. Interactive controls are enabled.",
+      "omdType": "coordinatePlane",
+      "xMin": -9,
+      "xMax": 9,
+      "yMin": -8,
+      "yMax": 11,
+      "tickInterval": 2,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = ax + 2",
+          "color": "#2563eb",
+          "strokeWidth": 3,
+          "label": "slider line"
+        }
+      ],
+      "dotValues": [
+        [
+          0,
+          0,
+          "#111827"
+        ],
+        [
+          1,
+          11,
+          "#0891b2"
+        ]
+      ],
+      "showTickLabels": true,
+      "lineSegments": [
+        {
+          "point1": [
+            -2,
+            -1
+          ],
+          "point2": [
+            3,
+            10
+          ],
+          "color": "#64748b",
+          "strokeWidth": 2
+        }
+      ],
+      "shapeSet": [
+        {
+          "omdType": "rightTriangle",
+          "horizontalLeg": 3,
+          "verticalLeg": 4,
+          "unitScale": 10,
+          "showLabels": true
+        }
+      ],
+      "interactive": true,
+      "variables": [
+        {
+          "name": "a",
+          "value": 1,
+          "min": -3,
+          "max": 3,
+          "step": 0.5
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-9 to 9 and y=-8 to 11. It graphs y = ax + 2 (slider line) in #2563eb; plots points (0, 0) in #111827, (1, 12) in #111827; draws segments (-2, -1) to (3, 11) in #64748b; overlays rightTriangle; adds sliders a=1 from -3 to 3 by 0.5. Ticks are spaced every 2. Axis labels are x and y. Tick labels are shown. Interactive controls are enabled. The plane uses the large size preset. A styled background is shown with fill #f8fafc, 1 opacity, 10px rounded corners.",
+      "omdType": "coordinatePlane",
+      "xMin": -9,
+      "xMax": 9,
+      "yMin": -8,
+      "yMax": 11,
+      "tickInterval": 2,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = ax + 2",
+          "color": "#2563eb",
+          "strokeWidth": 3,
+          "label": "slider line"
+        }
+      ],
+      "dotValues": [
+        [
+          0,
+          0,
+          "#111827"
+        ],
+        [
+          1,
+          12,
+          "#111827"
+        ]
+      ],
+      "showTickLabels": true,
+      "lineSegments": [
+        {
+          "point1": [
+            -2,
+            -1
+          ],
+          "point2": [
+            3,
+            11
+          ],
+          "color": "#64748b",
+          "strokeWidth": 2
+        }
+      ],
+      "shapeSet": [
+        {
+          "omdType": "rightTriangle",
+          "horizontalLeg": 3,
+          "verticalLeg": 4,
+          "unitScale": 10,
+          "showLabels": true
+        }
+      ],
+      "interactive": true,
+      "variables": [
+        {
+          "name": "a",
+          "value": 1,
+          "min": -3,
+          "max": 3,
+          "step": 0.5
+        }
+      ],
+      "size": "large",
+      "backgroundColor": "#f8fafc",
+      "backgroundOpacity": 1,
+      "backgroundCornerRadius": 10
+    },
+    {
+      "_comment": "Draws a coordinate plane spanning x=-9 to 9 and y=-8 to 12. It graphs y = ax + 2 (slider line) in #2563eb; plots points (0, 0) in #111827, (1, 13) in #2563eb; draws segments (-2, -1) to (3, 12) in #64748b; overlays rightTriangle; adds sliders a=1 from -3 to 3 by 0.5. Ticks are spaced every 2. Axis labels are x and y. Tick labels are shown. Interactive controls are enabled. The plane uses the large size preset. A styled background is shown with fill #f8fafc, 1 opacity, 10px rounded corners.",
+      "omdType": "coordinatePlane",
+      "xMin": -9,
+      "xMax": 9,
+      "yMin": -8,
+      "yMax": 12,
+      "tickInterval": 2,
+      "xLabel": "x",
+      "yLabel": "y",
+      "graphEquations": [
+        {
+          "equation": "y = ax + 2",
+          "color": "#2563eb",
+          "strokeWidth": 3,
+          "label": "slider line"
+        }
+      ],
+      "dotValues": [
+        [
+          0,
+          0,
+          "#111827"
+        ],
+        [
+          1,
+          13,
+          "#2563eb"
+        ]
+      ],
+      "showTickLabels": true,
+      "lineSegments": [
+        {
+          "point1": [
+            -2,
+            -1
+          ],
+          "point2": [
+            3,
+            12
+          ],
+          "color": "#64748b",
+          "strokeWidth": 2
+        }
+      ],
+      "shapeSet": [
+        {
+          "omdType": "rightTriangle",
+          "horizontalLeg": 3,
+          "verticalLeg": 4,
+          "unitScale": 10,
+          "showLabels": true
+        }
+      ],
+      "interactive": true,
+      "variables": [
+        {
+          "name": "a",
+          "value": 1,
+          "min": -3,
+          "max": 3,
+          "step": 0.5
+        }
+      ],
+      "size": "large",
+      "backgroundColor": "#f8fafc",
+      "backgroundOpacity": 1,
+      "backgroundCornerRadius": 10
+    }
+  ],
+  "tapeDiagram": [
+    {
+      "_comment": "Builds a tape diagram with segments 1, 2.",
+      "omdType": "tapeDiagram",
+      "values": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "_comment": "Builds a tape diagram titled Total with segments 1, 2, 3.",
+      "omdType": "tapeDiagram",
+      "values": [
+        "1",
+        "2",
+        "3"
+      ],
+      "title": "Total"
+    },
+    {
+      "_comment": "Builds a tape diagram titled Unknown with segments 1, 2, 3, 4.",
+      "omdType": "tapeDiagram",
+      "values": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "title": "Unknown"
+    },
+    {
+      "_comment": "Builds a tape diagram titled Comparison with segments 1, 2, 3, 4, 5. The tape is 348px wide.",
+      "omdType": "tapeDiagram",
+      "values": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "title": "Comparison",
+      "totalWidth": 348
+    },
+    {
+      "_comment": "Builds a tape diagram titled Parts with segments x (weight 3, color #bfdbfe), 4 (weight 4, color #fecaca). The tape is 364px wide.",
+      "omdType": "tapeDiagram",
+      "values": [
+        {
+          "value": "x",
+          "weight": 3,
+          "color": "#bfdbfe"
+        },
+        {
+          "value": "4",
+          "weight": 4,
+          "color": "#fecaca"
+        }
+      ],
+      "title": "Parts",
+      "totalWidth": 364
+    },
+    {
+      "_comment": "Builds a tape diagram titled Total with segments x (weight 4, color #bfdbfe), 5 (weight 5, color #fecaca). Brace labels: 10 total over segments 0-2 above. The tape is 380px wide.",
+      "omdType": "tapeDiagram",
+      "values": [
+        {
+          "value": "x",
+          "weight": 4,
+          "color": "#bfdbfe"
+        },
+        {
+          "value": "5",
+          "weight": 5,
+          "color": "#fecaca"
+        }
+      ],
+      "title": "Total",
+      "totalWidth": 380,
+      "labelSet": [
+        {
+          "startIndex": 0,
+          "endIndex": 2,
+          "label": "10 total",
+          "showBelow": false
+        }
+      ]
+    },
+    {
+      "_comment": "Builds a tape diagram titled Unknown with segments x (weight 2, color #bfdbfe), 6 (weight 6, color #fecaca). Brace labels: 11 total over segments 0-2 below. The tape is 396px wide.",
+      "omdType": "tapeDiagram",
+      "values": [
+        {
+          "value": "x",
+          "weight": 2,
+          "color": "#bfdbfe"
+        },
+        {
+          "value": "6",
+          "weight": 6,
+          "color": "#fecaca"
+        }
+      ],
+      "title": "Unknown",
+      "totalWidth": 396,
+      "labelSet": [
+        {
+          "startIndex": 0,
+          "endIndex": 2,
+          "label": "11 total",
+          "showBelow": true
+        }
+      ]
+    },
+    {
+      "_comment": "Builds a tape diagram titled Comparison with segments x (weight 3, color #bfdbfe), 7 (weight 7, color #fecaca). Brace labels: 12 total over segments 0-2 above. The tape is 412px wide.",
+      "omdType": "tapeDiagram",
+      "values": [
+        {
+          "value": "x",
+          "weight": 3,
+          "color": "#bfdbfe"
+        },
+        {
+          "value": "7",
+          "weight": 7,
+          "color": "#fecaca"
+        }
+      ],
+      "title": "Comparison",
+      "totalWidth": 412,
+      "labelSet": [
+        {
+          "startIndex": 0,
+          "endIndex": 2,
+          "label": "12 total",
+          "showBelow": false
+        }
+      ]
+    },
+    {
+      "_comment": "Builds a tape diagram titled Parts with segments x (weight 4, color #bfdbfe), 8 (weight 8, color #fecaca). Brace labels: 13 total over segments 0-2 below. The tape is 428px wide. Segments are 42px tall. Segment corners are rounded by 6px. Dimension/annotation labels use 18px text.",
+      "omdType": "tapeDiagram",
+      "values": [
+        {
+          "value": "x",
+          "weight": 4,
+          "color": "#bfdbfe"
+        },
+        {
+          "value": "8",
+          "weight": 8,
+          "color": "#fecaca"
+        }
+      ],
+      "title": "Parts",
+      "totalWidth": 428,
+      "labelSet": [
+        {
+          "startIndex": 0,
+          "endIndex": 2,
+          "label": "13 total",
+          "showBelow": true
+        }
+      ],
+      "segmentHeight": 42,
+      "segmentCornerRadius": 6,
+      "labelFontSize": 18
+    },
+    {
+      "_comment": "Builds a tape diagram titled Total with segments x (weight 2, color #bfdbfe), 9 (weight 9, color #fecaca). Brace labels: 14 total over segments 0-2 above. The tape is 444px wide. Segments are 42px tall. Segment corners are rounded by 6px. Dimension/annotation labels use 18px text.",
+      "omdType": "tapeDiagram",
+      "values": [
+        {
+          "value": "x",
+          "weight": 2,
+          "color": "#bfdbfe"
+        },
+        {
+          "value": "9",
+          "weight": 9,
+          "color": "#fecaca"
+        }
+      ],
+      "title": "Total",
+      "totalWidth": 444,
+      "labelSet": [
+        {
+          "startIndex": 0,
+          "endIndex": 2,
+          "label": "14 total",
+          "showBelow": false
+        }
+      ],
+      "segmentHeight": 42,
+      "segmentCornerRadius": 6,
+      "labelFontSize": 18
+    },
+    {
+      "_comment": "Builds a tape diagram titled Unknown with segments x (weight 3, color #bfdbfe), 10 (weight 10, color #fecaca). Brace labels: 15 total over segments 0-2 below. The tape is 460px wide. Segments are 42px tall. Segment corners are rounded by 6px. Dimension/annotation labels use 18px text.",
+      "omdType": "tapeDiagram",
+      "values": [
+        {
+          "value": "x",
+          "weight": 3,
+          "color": "#bfdbfe"
+        },
+        {
+          "value": "10",
+          "weight": 10,
+          "color": "#fecaca"
+        }
+      ],
+      "title": "Unknown",
+      "totalWidth": 460,
+      "labelSet": [
+        {
+          "startIndex": 0,
+          "endIndex": 2,
+          "label": "15 total",
+          "showBelow": true
+        }
+      ],
+      "segmentHeight": 42,
+      "segmentCornerRadius": 6,
+      "labelFontSize": 18
+    },
+    {
+      "_comment": "Builds a tape diagram titled Comparison with segments x (weight 4, color #bfdbfe), 11 (weight 11, color #fecaca). Brace labels: 16 total over segments 0-2 above; unknown over segments 0-1 above in #2563eb. The tape is 476px wide. Segments are 42px tall. Segment corners are rounded by 6px. Dimension/annotation labels use 18px text.",
+      "omdType": "tapeDiagram",
+      "values": [
+        {
+          "value": "x",
+          "weight": 4,
+          "color": "#bfdbfe"
+        },
+        {
+          "value": "11",
+          "weight": 11,
+          "color": "#fecaca"
+        }
+      ],
+      "title": "Comparison",
+      "totalWidth": 476,
+      "labelSet": [
+        {
+          "startIndex": 0,
+          "endIndex": 2,
+          "label": "16 total",
+          "showBelow": false
+        },
+        {
+          "startIndex": 0,
+          "endIndex": 1,
+          "label": "unknown",
+          "color": "#2563eb",
+          "strokeWidth": 3
+        }
+      ],
+      "segmentHeight": 42,
+      "segmentCornerRadius": 6,
+      "labelFontSize": 18
+    },
+    {
+      "_comment": "Builds a tape diagram titled Parts with segments x (weight 2, color #bfdbfe), 12 (weight 12, color #fecaca). Brace labels: 17 total over segments 0-2 below; unknown over segments 0-1 above in #2563eb. The tape is 492px wide. Segments are 42px tall. Segment corners are rounded by 6px. Dimension/annotation labels use 18px text.",
+      "omdType": "tapeDiagram",
+      "values": [
+        {
+          "value": "x",
+          "weight": 2,
+          "color": "#bfdbfe"
+        },
+        {
+          "value": "12",
+          "weight": 12,
+          "color": "#fecaca"
+        }
+      ],
+      "title": "Parts",
+      "totalWidth": 492,
+      "labelSet": [
+        {
+          "startIndex": 0,
+          "endIndex": 2,
+          "label": "17 total",
+          "showBelow": true
+        },
+        {
+          "startIndex": 0,
+          "endIndex": 1,
+          "label": "unknown",
+          "color": "#2563eb",
+          "strokeWidth": 3
+        }
+      ],
+      "segmentHeight": 42,
+      "segmentCornerRadius": 6,
+      "labelFontSize": 18
+    },
+    {
+      "_comment": "Builds a tape diagram titled Total with segments x (weight 3, color #bfdbfe), 13 (weight 13, color #fecaca). Brace labels: 18 total over segments 0-2 above; unknown over segments 0-1 above in #2563eb. The tape is 508px wide. Segments are 42px tall. Segment corners are rounded by 6px. Segment outlines use 2px strokes. Title color is #111827. Brace color is #475569. Dimension/annotation labels use 18px text.",
+      "omdType": "tapeDiagram",
+      "values": [
+        {
+          "value": "x",
+          "weight": 3,
+          "color": "#bfdbfe"
+        },
+        {
+          "value": "13",
+          "weight": 13,
+          "color": "#fecaca"
+        }
+      ],
+      "title": "Total",
+      "totalWidth": 508,
+      "labelSet": [
+        {
+          "startIndex": 0,
+          "endIndex": 2,
+          "label": "18 total",
+          "showBelow": false
+        },
+        {
+          "startIndex": 0,
+          "endIndex": 1,
+          "label": "unknown",
+          "color": "#2563eb",
+          "strokeWidth": 3
+        }
+      ],
+      "segmentHeight": 42,
+      "segmentCornerRadius": 6,
+      "labelFontSize": 18,
+      "titleColor": "#111827",
+      "braceColor": "#475569",
+      "segmentStrokeWidth": 2
+    },
+    {
+      "_comment": "Builds a tape diagram titled Unknown with segments x (weight 4, color #bfdbfe), 14 (weight 14, color #fecaca). Brace labels: 19 total over segments 0-2 below; unknown over segments 0-1 above in #2563eb. The tape is 524px wide. Segments are 42px tall. Segment corners are rounded by 6px. Segment outlines use 2px strokes. Title color is #111827. Brace color is #475569. Dimension/annotation labels use 18px text.",
+      "omdType": "tapeDiagram",
+      "values": [
+        {
+          "value": "x",
+          "weight": 4,
+          "color": "#bfdbfe"
+        },
+        {
+          "value": "14",
+          "weight": 14,
+          "color": "#fecaca"
+        }
+      ],
+      "title": "Unknown",
+      "totalWidth": 524,
+      "labelSet": [
+        {
+          "startIndex": 0,
+          "endIndex": 2,
+          "label": "19 total",
+          "showBelow": true
+        },
+        {
+          "startIndex": 0,
+          "endIndex": 1,
+          "label": "unknown",
+          "color": "#2563eb",
+          "strokeWidth": 3
+        }
+      ],
+      "segmentHeight": 42,
+      "segmentCornerRadius": 6,
+      "labelFontSize": 18,
+      "titleColor": "#111827",
+      "braceColor": "#475569",
+      "segmentStrokeWidth": 2
+    }
+  ],
+  "doubleTapeDiagram": [
+    {
+      "_comment": "Builds a double tape diagram with top tape Pencils containing 1 and bottom tape Cost containing $1, $1. The tapes are separated by 22px.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Pencils",
+        "values": [
+          "1"
+        ]
+      },
+      "bottomTapeDiagram": {
+        "title": "Cost",
+        "values": [
+          "$1",
+          "$1"
+        ]
+      },
+      "spacing": 22
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Pencils containing 1, 1 and bottom tape Cost containing $2, $2. The tapes are separated by 23px.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Pencils",
+        "values": [
+          "1",
+          "1"
+        ]
+      },
+      "bottomTapeDiagram": {
+        "title": "Cost",
+        "values": [
+          "$2",
+          "$2"
+        ]
+      },
+      "spacing": 23
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Pencils containing 1, 1, 1 and bottom tape Cost containing $3, $3. The tapes are separated by 24px.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Pencils",
+        "values": [
+          "1",
+          "1",
+          "1"
+        ]
+      },
+      "bottomTapeDiagram": {
+        "title": "Cost",
+        "values": [
+          "$3",
+          "$3"
+        ]
+      },
+      "spacing": 24
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Pencils containing 1 and bottom tape Cost containing $4, $4. The tapes are separated by 25px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Pencils",
+        "values": [
+          "1"
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 1,
+            "label": "top total"
+          }
+        ]
+      },
+      "bottomTapeDiagram": {
+        "title": "Cost",
+        "values": [
+          "$4",
+          "$4"
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ]
+      },
+      "spacing": 25
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Pencils containing 1, 1 and bottom tape Cost containing $5, $5. The tapes are separated by 26px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Pencils",
+        "values": [
+          "1",
+          "1"
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "top total"
+          }
+        ]
+      },
+      "bottomTapeDiagram": {
+        "title": "Cost",
+        "values": [
+          "$5",
+          "$5"
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ]
+      },
+      "spacing": 26
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Recipe A containing 1, 1, 1 and bottom tape Recipe B containing $6, $6. The tapes are separated by 27px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Recipe A",
+        "values": [
+          "1",
+          "1",
+          "1"
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 3,
+            "label": "top total"
+          }
+        ]
+      },
+      "bottomTapeDiagram": {
+        "title": "Recipe B",
+        "values": [
+          "$6",
+          "$6"
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ]
+      },
+      "spacing": 27
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Recipe A containing x (weight 2), 6 (weight 6) and bottom tape Recipe B containing 2x (weight 4), 9 (weight 9). The tapes are separated by 28px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Recipe A",
+        "values": [
+          {
+            "value": "x",
+            "weight": 2
+          },
+          {
+            "value": "6",
+            "weight": 6
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "top total"
+          }
+        ]
+      },
+      "bottomTapeDiagram": {
+        "title": "Recipe B",
+        "values": [
+          {
+            "value": "2x",
+            "weight": 4
+          },
+          {
+            "value": "9",
+            "weight": 9
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ]
+      },
+      "spacing": 28
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Recipe A containing x (weight 2), 7 (weight 7) and bottom tape Recipe B containing 2x (weight 4), 10 (weight 10). The tapes are separated by 29px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total. Tape widths are top 410px and bottom 410px.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Recipe A",
+        "values": [
+          {
+            "value": "x",
+            "weight": 2
+          },
+          {
+            "value": "7",
+            "weight": 7
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "top total"
+          }
+        ],
+        "totalWidth": 410
+      },
+      "bottomTapeDiagram": {
+        "title": "Recipe B",
+        "values": [
+          {
+            "value": "2x",
+            "weight": 4
+          },
+          {
+            "value": "10",
+            "weight": 10
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ],
+        "totalWidth": 410
+      },
+      "spacing": 29
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Recipe A containing x (weight 2), 8 (weight 8) and bottom tape Recipe B containing 2x (weight 4), 11 (weight 11). The tapes are separated by 30px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total. Tape widths are top 420px and bottom 420px.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Recipe A",
+        "values": [
+          {
+            "value": "x",
+            "weight": 2
+          },
+          {
+            "value": "8",
+            "weight": 8
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "top total"
+          }
+        ],
+        "totalWidth": 420
+      },
+      "bottomTapeDiagram": {
+        "title": "Recipe B",
+        "values": [
+          {
+            "value": "2x",
+            "weight": 4
+          },
+          {
+            "value": "11",
+            "weight": 11
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ],
+        "totalWidth": 420
+      },
+      "spacing": 30
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Recipe A containing x (weight 2), 9 (weight 9) and bottom tape Recipe B containing 2x (weight 4), 12 (weight 12). The tapes are separated by 31px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total. Tape widths are top 430px and bottom 430px.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Recipe A",
+        "values": [
+          {
+            "value": "x",
+            "weight": 2
+          },
+          {
+            "value": "9",
+            "weight": 9
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "top total"
+          }
+        ],
+        "totalWidth": 430
+      },
+      "bottomTapeDiagram": {
+        "title": "Recipe B",
+        "values": [
+          {
+            "value": "2x",
+            "weight": 4
+          },
+          {
+            "value": "12",
+            "weight": 12
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ],
+        "totalWidth": 430
+      },
+      "spacing": 31
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Recipe A containing x (weight 2), 10 (weight 10) and bottom tape Recipe B containing 2x (weight 4), 13 (weight 13). The tapes are separated by 32px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total. Tape widths are top 440px and bottom 440px. Styling uses segment heights 38/38 and label fonts 17/17.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Recipe A",
+        "values": [
+          {
+            "value": "x",
+            "weight": 2
+          },
+          {
+            "value": "10",
+            "weight": 10
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "top total"
+          }
+        ],
+        "totalWidth": 440,
+        "segmentHeight": 38,
+        "labelFontSize": 17
+      },
+      "bottomTapeDiagram": {
+        "title": "Recipe B",
+        "values": [
+          {
+            "value": "2x",
+            "weight": 4
+          },
+          {
+            "value": "13",
+            "weight": 13
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ],
+        "totalWidth": 440,
+        "segmentHeight": 38,
+        "labelFontSize": 17
+      },
+      "spacing": 32
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Recipe A containing x (weight 2), 11 (weight 11) and bottom tape Recipe B containing 2x (weight 4), 14 (weight 14). The tapes are separated by 33px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total. Tape widths are top 450px and bottom 450px. Styling uses segment heights 38/38 and label fonts 17/17.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Recipe A",
+        "values": [
+          {
+            "value": "x",
+            "weight": 2
+          },
+          {
+            "value": "11",
+            "weight": 11
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "top total"
+          }
+        ],
+        "totalWidth": 450,
+        "segmentHeight": 38,
+        "labelFontSize": 17
+      },
+      "bottomTapeDiagram": {
+        "title": "Recipe B",
+        "values": [
+          {
+            "value": "2x",
+            "weight": 4
+          },
+          {
+            "value": "14",
+            "weight": 14
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ],
+        "totalWidth": 450,
+        "segmentHeight": 38,
+        "labelFontSize": 17
+      },
+      "spacing": 33
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Recipe A containing x (weight 2), 12 (weight 12) and bottom tape Recipe B containing 2x (weight 4), 15 (weight 15). The tapes are separated by 34px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total. Tape widths are top 460px and bottom 460px. Styling uses segment heights 38/38 and label fonts 17/17.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Recipe A",
+        "values": [
+          {
+            "value": "x",
+            "weight": 2
+          },
+          {
+            "value": "12",
+            "weight": 12
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "top total"
+          }
+        ],
+        "totalWidth": 460,
+        "segmentHeight": 38,
+        "labelFontSize": 17
+      },
+      "bottomTapeDiagram": {
+        "title": "Recipe B",
+        "values": [
+          {
+            "value": "2x",
+            "weight": 4
+          },
+          {
+            "value": "15",
+            "weight": 15
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ],
+        "totalWidth": 460,
+        "segmentHeight": 38,
+        "labelFontSize": 17
+      },
+      "spacing": 34
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Recipe A containing x (weight 2), 13 (weight 13) and bottom tape Recipe B containing 2x (weight 4), 16 (weight 16). The tapes are separated by 35px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total. Tape widths are top 470px and bottom 470px. Styling uses segment heights 38/38 and label fonts 17/17.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Recipe A",
+        "values": [
+          {
+            "value": "x",
+            "weight": 2
+          },
+          {
+            "value": "13",
+            "weight": 13
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "top total"
+          }
+        ],
+        "totalWidth": 470,
+        "segmentHeight": 38,
+        "labelFontSize": 17
+      },
+      "bottomTapeDiagram": {
+        "title": "Recipe B",
+        "values": [
+          {
+            "value": "2x",
+            "weight": 4
+          },
+          {
+            "value": "16",
+            "weight": 16
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ],
+        "totalWidth": 470,
+        "segmentHeight": 38,
+        "labelFontSize": 17
+      },
+      "spacing": 35
+    },
+    {
+      "_comment": "Builds a double tape diagram with top tape Recipe A containing x (weight 2), 14 (weight 14) and bottom tape Recipe B containing 2x (weight 4), 17 (weight 17). The tapes are separated by 36px. Top tape includes brace label(s) top total. Bottom tape includes brace label(s) bottom total. Tape widths are top 480px and bottom 480px. Styling uses segment heights 38/38 and label fonts 17/17.",
+      "omdType": "doubleTapeDiagram",
+      "topTapeDiagram": {
+        "title": "Recipe A",
+        "values": [
+          {
+            "value": "x",
+            "weight": 2
+          },
+          {
+            "value": "14",
+            "weight": 14
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "top total"
+          }
+        ],
+        "totalWidth": 480,
+        "segmentHeight": 38,
+        "labelFontSize": 17
+      },
+      "bottomTapeDiagram": {
+        "title": "Recipe B",
+        "values": [
+          {
+            "value": "2x",
+            "weight": 4
+          },
+          {
+            "value": "17",
+            "weight": 17
+          }
+        ],
+        "labelSet": [
+          {
+            "startIndex": 0,
+            "endIndex": 2,
+            "label": "bottom total",
+            "showBelow": true
+          }
+        ],
+        "totalWidth": 480,
+        "segmentHeight": 38,
+        "labelFontSize": 17
+      },
+      "spacing": 36
+    }
+  ],
+  "tileEquation": [
+    {
+      "_comment": "Creates an algebra-tile model for x + 3 = 8. Tiles are 26px.",
+      "omdType": "tileEquation",
+      "equation": "x + 3 = 8",
+      "tileSize": 26
+    },
+    {
+      "_comment": "Creates an algebra-tile model for 2x = 10. Tiles are 27px.",
+      "omdType": "tileEquation",
+      "equation": "2x = 10",
+      "tileSize": 27
+    },
+    {
+      "_comment": "Creates an algebra-tile model for 2x + 3 = 11. Tiles are 28px.",
+      "omdType": "tileEquation",
+      "equation": "2x + 3 = 11",
+      "tileSize": 28
+    },
+    {
+      "_comment": "Creates an algebra-tile model for 3x - 2 = 7. Tiles are 29px.",
+      "omdType": "tileEquation",
+      "equation": "3x - 2 = 7",
+      "tileSize": 29
+    },
+    {
+      "_comment": "Creates an algebra-tile model for x + 5 = 2x. Tiles are 30px.",
+      "omdType": "tileEquation",
+      "equation": "x + 5 = 2x",
+      "tileSize": 30
+    },
+    {
+      "_comment": "Creates an algebra-tile model for 4x + 1 = 13. Tiles are 31px.",
+      "omdType": "tileEquation",
+      "equation": "4x + 1 = 13",
+      "tileSize": 31
+    },
+    {
+      "_comment": "Creates an algebra-tile model for a custom two-sided equation. The left side is {'kind':'var','count':3}, 2 and the right side is 11.",
+      "omdType": "tileEquation",
+      "left": [
+        {
+          "kind": "var",
+          "count": 3
+        },
+        {
+          "kind": "const",
+          "value": 2,
+          "count": 1
+        }
+      ],
+      "right": [
+        {
+          "kind": "const",
+          "value": 11,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "_comment": "Creates an algebra-tile model for a custom two-sided equation. The left side is {'kind':'x','count':4}, 3 and the right side is 12. Tile labels are shown.",
+      "omdType": "tileEquation",
+      "left": [
+        {
+          "kind": "x",
+          "count": 4
+        },
+        {
+          "kind": "const",
+          "value": 3,
+          "count": 1
+        }
+      ],
+      "right": [
+        {
+          "kind": "const",
+          "value": 12,
+          "count": 1
+        }
+      ],
+      "showLabels": true
+    },
+    {
+      "_comment": "Creates an algebra-tile model for a custom two-sided equation. The left side is {'kind':'var','count':1}, 4 and the right side is 13. Tiles are 36px. Tile gap is 5px. Tile labels are shown.",
+      "omdType": "tileEquation",
+      "left": [
+        {
+          "kind": "var",
+          "count": 1
+        },
+        {
+          "kind": "const",
+          "value": 4,
+          "count": 1
+        }
+      ],
+      "right": [
+        {
+          "kind": "const",
+          "value": 13,
+          "count": 1
+        }
+      ],
+      "showLabels": true,
+      "tileSize": 36,
+      "tileGap": 5
+    },
+    {
+      "_comment": "Creates an algebra-tile model for a custom two-sided equation. The left side is {'kind':'x','count':2}, 5 and the right side is 14. Tiles are 37px. Tile gap is 6px. Tile labels are shown.",
+      "omdType": "tileEquation",
+      "left": [
+        {
+          "kind": "x",
+          "count": 2
+        },
+        {
+          "kind": "const",
+          "value": 5,
+          "count": 1
+        }
+      ],
+      "right": [
+        {
+          "kind": "const",
+          "value": 14,
+          "count": 1
+        }
+      ],
+      "showLabels": true,
+      "tileSize": 37,
+      "tileGap": 6
+    },
+    {
+      "_comment": "Creates an algebra-tile model for a custom two-sided equation. The left side is {'kind':'var','count':3}, 6 and the right side is {'kind':'x','count':1,'color':'#bfdbfe'} (color #bfdbfe), 15. Tiles are 38px. Tile gap is 7px. Tile labels are shown.",
+      "omdType": "tileEquation",
+      "left": [
+        {
+          "kind": "var",
+          "count": 3
+        },
+        {
+          "kind": "const",
+          "value": 6,
+          "count": 1
+        }
+      ],
+      "right": [
+        {
+          "kind": "x",
+          "count": 1,
+          "color": "#bfdbfe"
+        },
+        {
+          "kind": "const",
+          "value": 15,
+          "count": 1
+        }
+      ],
+      "showLabels": true,
+      "tileSize": 38,
+      "tileGap": 7
+    },
+    {
+      "_comment": "Creates an algebra-tile model for a custom two-sided equation. The left side is {'kind':'x','count':4}, 7 and the right side is {'kind':'x','count':1,'color':'#bfdbfe'} (color #bfdbfe), 16. Tiles are 39px. Tile gap is 8px. Tile labels are shown.",
+      "omdType": "tileEquation",
+      "left": [
+        {
+          "kind": "x",
+          "count": 4
+        },
+        {
+          "kind": "const",
+          "value": 7,
+          "count": 1
+        }
+      ],
+      "right": [
+        {
+          "kind": "x",
+          "count": 1,
+          "color": "#bfdbfe"
+        },
+        {
+          "kind": "const",
+          "value": 16,
+          "count": 1
+        }
+      ],
+      "showLabels": true,
+      "tileSize": 39,
+      "tileGap": 8
+    },
+    {
+      "_comment": "Creates an algebra-tile model for a custom two-sided equation. The left side is {'kind':'var','count':1}, 8 and the right side is {'kind':'x','count':1,'color':'#bfdbfe'} (color #bfdbfe), 17. Tiles are 40px. Tile gap is 5px. Tile labels are shown. Variable tiles use #dbeafe. Positive tiles use #64748b. The equals sign uses #111827.",
+      "omdType": "tileEquation",
+      "left": [
+        {
+          "kind": "var",
+          "count": 1
+        },
+        {
+          "kind": "const",
+          "value": 8,
+          "count": 1
+        }
+      ],
+      "right": [
+        {
+          "kind": "x",
+          "count": 1,
+          "color": "#bfdbfe"
+        },
+        {
+          "kind": "const",
+          "value": 17,
+          "count": 1
+        }
+      ],
+      "showLabels": true,
+      "tileSize": 40,
+      "tileGap": 5,
+      "xPillColor": "#dbeafe",
+      "plusColor": "#64748b",
+      "equalsColor": "#111827"
+    },
+    {
+      "_comment": "Creates an algebra-tile model for a custom two-sided equation. The left side is {'kind':'x','count':2}, 9 and the right side is {'kind':'x','count':1,'color':'#bfdbfe'} (color #bfdbfe), 18. Tiles are 41px. Tile gap is 6px. Tile labels are shown. Variable tiles use #dbeafe. Positive tiles use #64748b. The equals sign uses #111827.",
+      "omdType": "tileEquation",
+      "left": [
+        {
+          "kind": "x",
+          "count": 2
+        },
+        {
+          "kind": "const",
+          "value": 9,
+          "count": 1
+        }
+      ],
+      "right": [
+        {
+          "kind": "x",
+          "count": 1,
+          "color": "#bfdbfe"
+        },
+        {
+          "kind": "const",
+          "value": 18,
+          "count": 1
+        }
+      ],
+      "showLabels": true,
+      "tileSize": 41,
+      "tileGap": 6,
+      "xPillColor": "#dbeafe",
+      "plusColor": "#64748b",
+      "equalsColor": "#111827"
+    },
+    {
+      "_comment": "Creates an algebra-tile model for a custom two-sided equation. The left side is {'kind':'var','count':3,'stack':true}, 10 and the right side is {'kind':'x','count':1,'color':'#bfdbfe'} (color #bfdbfe), 19. Tiles are 42px. Tile gap is 7px. Tile labels are shown. Variable tiles use #dbeafe. Positive tiles use #64748b. The equals sign uses #111827. Number-tile defaults are {'color':'#fef3c7'}.",
+      "omdType": "tileEquation",
+      "left": [
+        {
+          "kind": "var",
+          "count": 3,
+          "stack": true
+        },
+        {
+          "kind": "const",
+          "value": 10,
+          "count": 1
+        }
+      ],
+      "right": [
+        {
+          "kind": "x",
+          "count": 1,
+          "color": "#bfdbfe"
+        },
+        {
+          "kind": "const",
+          "value": 19,
+          "count": 1
+        }
+      ],
+      "showLabels": true,
+      "tileSize": 42,
+      "tileGap": 7,
+      "xPillColor": "#dbeafe",
+      "plusColor": "#64748b",
+      "equalsColor": "#111827",
+      "numberTileDefaults": {
+        "color": "#fef3c7"
+      }
+    }
+  ],
+  "table": [
+    {
+      "_comment": "Renders a function table for y = x + 1.",
+      "omdType": "table",
+      "equation": "y = x + 1"
+    },
+    {
+      "_comment": "Renders a function table for y = 2x. Headers are x, y.",
+      "omdType": "table",
+      "equation": "y = 2x",
+      "headers": [
+        "x",
+        "y"
+      ]
+    },
+    {
+      "_comment": "Renders a function table for y = 2x + 3. Headers are x, y. Input x values run from -2 to 4 by 1.",
+      "omdType": "table",
+      "equation": "y = 2x + 3",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": -2,
+      "xMax": 4,
+      "stepSize": 1
+    },
+    {
+      "_comment": "Renders a function table for y = -x + 4. Headers are x, y. Input x values run from -2 to 4 by 1.",
+      "omdType": "table",
+      "equation": "y = -x + 4",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": -2,
+      "xMax": 4,
+      "stepSize": 1
+    },
+    {
+      "_comment": "Renders a function table for y = x^2. Headers are x, y. Input x values run from -2 to 4 by 1. Title text reads Table 5.",
+      "omdType": "table",
+      "equation": "y = x^2",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": -2,
+      "xMax": 4,
+      "stepSize": 1,
+      "title": "Table 5"
+    },
+    {
+      "_comment": "Renders a function table for y = x^2 - 1. Headers are x, y. Input x values run from -2 to 4 by 1. Title text reads Table 6.",
+      "omdType": "table",
+      "equation": "y = x^2 - 1",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": -2,
+      "xMax": 4,
+      "stepSize": 1,
+      "title": "Table 6"
+    },
+    {
+      "_comment": "Renders a function table for y = 3x - 2. Headers are x, y. Input x values run from -2 to 4 by 1. Title text reads Table 7. Rows alternate #f8fafc and #e0f2fe.",
+      "omdType": "table",
+      "equation": "y = 3x - 2",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": -2,
+      "xMax": 4,
+      "stepSize": 1,
+      "title": "Table 7",
+      "alternatingRowColors": [
+        "#f8fafc",
+        "#e0f2fe"
+      ]
+    },
+    {
+      "_comment": "Renders a function table for y = 1/2x + 5. Headers are x, y. Input x values run from -2 to 4 by 1. Title text reads Table 8. Rows alternate #f8fafc and #e0f2fe.",
+      "omdType": "table",
+      "equation": "y = 1/2x + 5",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": -2,
+      "xMax": 4,
+      "stepSize": 1,
+      "title": "Table 8",
+      "alternatingRowColors": [
+        "#f8fafc",
+        "#e0f2fe"
+      ]
+    },
+    {
+      "_comment": "Renders a function table for y = -2x + 7. Headers are x, y. Input x values run from -2 to 4 by 1. Title text reads Table 9. Rows alternate #f8fafc and #e0f2fe. Header text is 20px. Text is rendered at 18px.",
+      "omdType": "table",
+      "equation": "y = -2x + 7",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": -2,
+      "xMax": 4,
+      "stepSize": 1,
+      "title": "Table 9",
+      "alternatingRowColors": [
+        "#f8fafc",
+        "#e0f2fe"
+      ],
+      "fontSize": 18,
+      "headerFontSize": 20
+    },
+    {
+      "_comment": "Renders a function table for y = x^3. Headers are x, y. Input x values run from -2 to 4 by 1. Title text reads Table 10. Rows alternate #f8fafc and #e0f2fe. Header text is 20px. Text is rendered at 18px.",
+      "omdType": "table",
+      "equation": "y = x^3",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": -2,
+      "xMax": 4,
+      "stepSize": 1,
+      "title": "Table 10",
+      "alternatingRowColors": [
+        "#f8fafc",
+        "#e0f2fe"
+      ],
+      "fontSize": 18,
+      "headerFontSize": 20
+    },
+    {
+      "_comment": "Renders a function table for y = abs(x). Headers are x, y. Input x values run from -2 to 4 by 2. Title text reads Table 11. Cells are 36px tall. Minimum cell width is 72px. Rows alternate #f8fafc and #e0f2fe. Header text is 20px. Text is rendered at 18px.",
+      "omdType": "table",
+      "equation": "y = abs(x)",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": -2,
+      "xMax": 4,
+      "stepSize": 2,
+      "title": "Table 11",
+      "alternatingRowColors": [
+        "#f8fafc",
+        "#e0f2fe"
+      ],
+      "fontSize": 18,
+      "headerFontSize": 20,
+      "minCellWidth": 72,
+      "cellHeight": 36
+    },
+    {
+      "_comment": "Renders a function table for y = 2^x. Headers are x, y. Input x values run from -2 to 4 by 2. Title text reads Table 12. Cells are 36px tall. Minimum cell width is 72px. Rows alternate #f8fafc and #e0f2fe. Header text is 20px. Text is rendered at 18px.",
+      "omdType": "table",
+      "equation": "y = 2^x",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": -2,
+      "xMax": 4,
+      "stepSize": 2,
+      "title": "Table 12",
+      "alternatingRowColors": [
+        "#f8fafc",
+        "#e0f2fe"
+      ],
+      "fontSize": 18,
+      "headerFontSize": 20,
+      "minCellWidth": 72,
+      "cellHeight": 36
+    },
+    {
+      "_comment": "Renders a function table for y = sqrt(x). Headers are x, y. Input x values run from 0 to 8 by 2. Title text reads Table 13. Cells are 36px tall. Minimum cell width is 72px. Rows alternate #f8fafc and #e0f2fe. Header text is 20px. Text is rendered at 18px. A styled background is shown with fill #ffffff, 0.95 opacity, 8px rounded corners.",
+      "omdType": "table",
+      "equation": "y = sqrt(x)",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": 0,
+      "xMax": 8,
+      "stepSize": 2,
+      "title": "Table 13",
+      "alternatingRowColors": [
+        "#f8fafc",
+        "#e0f2fe"
+      ],
+      "fontSize": 18,
+      "headerFontSize": 20,
+      "minCellWidth": 72,
+      "cellHeight": 36,
+      "showBackground": true,
+      "backgroundColor": "#ffffff",
+      "backgroundOpacity": 0.95,
+      "backgroundCornerRadius": 8
+    },
+    {
+      "_comment": "Renders a function table for y = x^2 + 2x + 1. Headers are x, y. Input x values run from 0 to 8 by 2. Title text reads Table 14. Cells are 36px tall. Minimum cell width is 72px. Rows alternate #f8fafc and #e0f2fe. Header text is 20px. Text is rendered at 18px. A styled background is shown with fill #ffffff, 0.95 opacity, 8px rounded corners.",
+      "omdType": "table",
+      "equation": "y = x^2 + 2x + 1",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": 0,
+      "xMax": 8,
+      "stepSize": 2,
+      "title": "Table 14",
+      "alternatingRowColors": [
+        "#f8fafc",
+        "#e0f2fe"
+      ],
+      "fontSize": 18,
+      "headerFontSize": 20,
+      "minCellWidth": 72,
+      "cellHeight": 36,
+      "showBackground": true,
+      "backgroundColor": "#ffffff",
+      "backgroundOpacity": 0.95,
+      "backgroundCornerRadius": 8
+    },
+    {
+      "_comment": "Renders an explicit data table with 4 rows and headers x, y. Title text reads Table 15. Cells are 36px tall. Minimum cell width is 72px. Rows alternate #f8fafc and #e0f2fe. Header text is 20px. Text is rendered at 18px. A styled background is shown with fill #ffffff, 0.95 opacity, 8px rounded corners.",
+      "omdType": "table",
+      "equation": "y = (x - 1)(x + 3)",
+      "headers": [
+        "x",
+        "y"
+      ],
+      "xMin": 0,
+      "xMax": 8,
+      "stepSize": 2,
+      "title": "Table 15",
+      "alternatingRowColors": [
+        "#f8fafc",
+        "#e0f2fe"
+      ],
+      "fontSize": 18,
+      "headerFontSize": 20,
+      "minCellWidth": 72,
+      "cellHeight": 36,
+      "showBackground": true,
+      "backgroundColor": "#ffffff",
+      "backgroundOpacity": 0.95,
+      "backgroundCornerRadius": 8,
+      "data": [
+        [
+          -3,
+          0
+        ],
+        [
+          -1,
+          -4
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          3,
+          12
+        ]
+      ]
+    }
+  ],
+  "ratioChart": [
+    {
+      "_comment": "Creates a default ratio chart comparing 1:3.",
+      "omdType": "ratioChart",
+      "valueA": 1,
+      "valueB": 3
+    },
+    {
+      "_comment": "Creates a default ratio chart comparing 2:4.",
+      "omdType": "ratioChart",
+      "valueA": 2,
+      "valueB": 4
+    },
+    {
+      "_comment": "Creates a dot ratio chart comparing 3:5.",
+      "omdType": "ratioChart",
+      "valueA": 3,
+      "valueB": 5,
+      "renderType": "dot"
+    },
+    {
+      "_comment": "Creates a tile ratio chart comparing 4:6.",
+      "omdType": "ratioChart",
+      "valueA": 4,
+      "valueB": 6,
+      "renderType": "tile"
+    },
+    {
+      "_comment": "Creates a bar ratio chart comparing 5:7. It uses the medium size preset.",
+      "omdType": "ratioChart",
+      "valueA": 5,
+      "valueB": 7,
+      "renderType": "bar",
+      "size": "medium"
+    },
+    {
+      "_comment": "Creates a pie ratio chart comparing 6:8. It uses the large size preset.",
+      "omdType": "ratioChart",
+      "valueA": 6,
+      "valueB": 8,
+      "renderType": "pie",
+      "size": "large"
+    },
+    {
+      "_comment": "Creates a dots ratio chart comparing 7:9. It uses the small size preset.",
+      "omdType": "ratioChart",
+      "valueA": 7,
+      "valueB": 9,
+      "renderType": "dots",
+      "size": "small"
+    },
+    {
+      "_comment": "Creates a dot ratio chart comparing 4:9. It uses the medium size preset. Fraction fields show 4/13.",
+      "omdType": "ratioChart",
+      "valueA": 4,
+      "valueB": 9,
+      "renderType": "dot",
+      "size": "medium",
+      "numerator": 4,
+      "denominator": 13
+    },
+    {
+      "_comment": "Creates a tile ratio chart comparing 5:9. It uses the large size preset. Fraction fields show 5/14.",
+      "omdType": "ratioChart",
+      "valueA": 5,
+      "valueB": 9,
+      "renderType": "tile",
+      "size": "large",
+      "numerator": 5,
+      "denominator": 14
+    },
+    {
+      "_comment": "Creates a bar ratio chart comparing 6:9. It uses the small size preset. Fraction fields show 6/15.",
+      "omdType": "ratioChart",
+      "valueA": 6,
+      "valueB": 9,
+      "renderType": "bar",
+      "size": "small",
+      "numerator": 6,
+      "denominator": 15
+    },
+    {
+      "_comment": "Creates a pie ratio chart comparing 7:9. It uses the medium size preset. Fraction fields show 7/16.",
+      "omdType": "ratioChart",
+      "valueA": 7,
+      "valueB": 9,
+      "renderType": "pie",
+      "size": "medium",
+      "numerator": 7,
+      "denominator": 16
+    },
+    {
+      "_comment": "Creates a dots ratio chart comparing 8:9. It uses the large size preset. Fraction fields show 8/17.",
+      "omdType": "ratioChart",
+      "valueA": 8,
+      "valueB": 9,
+      "renderType": "dots",
+      "size": "large",
+      "numerator": 8,
+      "denominator": 17
+    },
+    {
+      "_comment": "Creates a dot ratio chart comparing 9:9. It uses the small size preset. Fraction fields show 9/18.",
+      "omdType": "ratioChart",
+      "valueA": 9,
+      "valueB": 9,
+      "renderType": "dot",
+      "size": "small",
+      "numerator": 9,
+      "denominator": 18
+    },
+    {
+      "_comment": "Creates a tile ratio chart comparing 10:9. It uses the medium size preset. Fraction fields show 10/19.",
+      "omdType": "ratioChart",
+      "valueA": 10,
+      "valueB": 9,
+      "renderType": "tile",
+      "size": "medium",
+      "numerator": 10,
+      "denominator": 19
+    },
+    {
+      "_comment": "Creates a bar ratio chart comparing 11:9. It uses the large size preset. Fraction fields show 11/20.",
+      "omdType": "ratioChart",
+      "valueA": 11,
+      "valueB": 9,
+      "renderType": "bar",
+      "size": "large",
+      "numerator": 11,
+      "denominator": 20
+    }
+  ],
+  "rightTriangle": [
+    {
+      "_comment": "Draws a right triangle with horizontal leg 3 and vertical leg 4. No automatic dimension labels are shown.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 3,
+      "verticalLeg": 4
+    },
+    {
+      "_comment": "Draws a right triangle with horizontal leg 4 and vertical leg 5. No automatic dimension labels are shown.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 4,
+      "verticalLeg": 5
+    },
+    {
+      "_comment": "Draws a right triangle with horizontal leg 5 and vertical leg 6. Dimension labels are visible.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 5,
+      "verticalLeg": 6,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a right triangle with horizontal leg 6 and vertical leg 7. Dimension labels are visible.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 6,
+      "verticalLeg": 7,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a right triangle with horizontal leg 7 and vertical leg 8. Dimension labels are visible. It uses 20px per unit.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 7,
+      "verticalLeg": 8,
+      "showLabels": true,
+      "unitScale": 20
+    },
+    {
+      "_comment": "Draws a right triangle with horizontal leg 8 and vertical leg 9. Dimension labels are visible. It uses 19px per unit.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 8,
+      "verticalLeg": 9,
+      "showLabels": true,
+      "unitScale": 19
+    },
+    {
+      "_comment": "Draws a right triangle with horizontal leg 9 and vertical leg 10. Dimension labels are visible. It uses 18px per unit.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 9,
+      "verticalLeg": 10,
+      "showLabels": true,
+      "unitScale": 18
+    },
+    {
+      "_comment": "Draws a right triangle with horizontal leg 10 and vertical leg 11. Dimension labels are visible. It uses 17px per unit.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 10,
+      "verticalLeg": 11,
+      "showLabels": true,
+      "unitScale": 17
+    },
+    {
+      "_comment": "Draws a right triangle derived from hypotenuse 18 with angle A 45° and angle B unspecified°. Dimension labels are visible. It uses 16px per unit.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 11,
+      "verticalLeg": 12,
+      "showLabels": true,
+      "unitScale": 16,
+      "angleA": 45,
+      "hypotenuse": 18
+    },
+    {
+      "_comment": "Draws a right triangle derived from hypotenuse 19 with angle A 50° and angle B unspecified°. Dimension labels are visible. It uses 15px per unit.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 12,
+      "verticalLeg": 13,
+      "showLabels": true,
+      "unitScale": 15,
+      "angleA": 50,
+      "hypotenuse": 19
+    },
+    {
+      "_comment": "Draws a right triangle derived from hypotenuse 20 with angle A 30° and angle B unspecified°. Dimension labels are visible. It uses 14px per unit.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 13,
+      "verticalLeg": 14,
+      "showLabels": true,
+      "unitScale": 14,
+      "angleA": 30,
+      "hypotenuse": 20
+    },
+    {
+      "_comment": "Draws a right triangle derived from hypotenuse 21 with angle A 35° and angle B unspecified°. Dimension labels are visible. It uses 13px per unit.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 14,
+      "verticalLeg": 15,
+      "showLabels": true,
+      "unitScale": 13,
+      "angleA": 35,
+      "hypotenuse": 21
+    },
+    {
+      "_comment": "Draws a right triangle derived from hypotenuse 22 with angle A 40° and angle B 50°. Dimension labels are visible. It uses 12px per unit.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 15,
+      "verticalLeg": 16,
+      "showLabels": true,
+      "unitScale": 12,
+      "angleA": 40,
+      "hypotenuse": 22,
+      "angleB": 50
+    },
+    {
+      "_comment": "Draws a right triangle derived from hypotenuse 23 with angle A 45° and angle B 45°. Dimension labels are visible. It uses 11px per unit.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 16,
+      "verticalLeg": 17,
+      "showLabels": true,
+      "unitScale": 11,
+      "angleA": 45,
+      "hypotenuse": 23,
+      "angleB": 45
+    },
+    {
+      "_comment": "Draws a right triangle derived from hypotenuse 24 with angle A 50° and angle B 40°. Dimension labels are visible. It uses 10px per unit.",
+      "omdType": "rightTriangle",
+      "horizontalLeg": 17,
+      "verticalLeg": 18,
+      "showLabels": true,
+      "unitScale": 10,
+      "angleA": 50,
+      "hypotenuse": 24,
+      "angleB": 40
+    }
+  ],
+  "isoscelesTriangle": [
+    {
+      "_comment": "Draws an isosceles triangle with base 4 and height 3; the apex is centered above the base. No automatic dimension labels are shown.",
+      "omdType": "isoscelesTriangle",
+      "base": 4,
+      "height": 3
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 5 and height 4; the apex is centered above the base. No automatic dimension labels are shown.",
+      "omdType": "isoscelesTriangle",
+      "base": 5,
+      "height": 4
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 6 and height 4; the apex is centered above the base. Dimension labels are visible.",
+      "omdType": "isoscelesTriangle",
+      "base": 6,
+      "height": 4,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 7 and height 5; the apex is centered above the base. Dimension labels are visible.",
+      "omdType": "isoscelesTriangle",
+      "base": 7,
+      "height": 5,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 8 and height 5; the apex is centered above the base. Dimension labels are visible. It uses 22px per unit.",
+      "omdType": "isoscelesTriangle",
+      "base": 8,
+      "height": 5,
+      "showLabels": true,
+      "unitScale": 22
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 9 and height 6; the apex is centered above the base. Dimension labels are visible. It uses 21px per unit.",
+      "omdType": "isoscelesTriangle",
+      "base": 9,
+      "height": 6,
+      "showLabels": true,
+      "unitScale": 21
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 10 and height 6; the apex is centered above the base. Dimension labels are visible. It uses 20px per unit.",
+      "omdType": "isoscelesTriangle",
+      "base": 10,
+      "height": 6,
+      "showLabels": true,
+      "unitScale": 20
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 11 and height 7; the apex is centered above the base. Dimension labels are visible. It uses 19px per unit.",
+      "omdType": "isoscelesTriangle",
+      "base": 11,
+      "height": 7,
+      "showLabels": true,
+      "unitScale": 19
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 12 and height 7; the apex is centered above the base. Dimension labels are visible. It uses 18px per unit.",
+      "omdType": "isoscelesTriangle",
+      "base": 12,
+      "height": 7,
+      "showLabels": true,
+      "unitScale": 18
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 13 and height 8; the apex is centered above the base. Dimension labels are visible. It uses 17px per unit.",
+      "omdType": "isoscelesTriangle",
+      "base": 13,
+      "height": 8,
+      "showLabels": true,
+      "unitScale": 17
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 14 and height 8; the apex is centered above the base. Dimension labels are visible. It uses 16px per unit.",
+      "omdType": "isoscelesTriangle",
+      "base": 14,
+      "height": 8,
+      "showLabels": true,
+      "unitScale": 16
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 15 and height 9; the apex is centered above the base. Dimension labels are visible. It uses 15px per unit.",
+      "omdType": "isoscelesTriangle",
+      "base": 15,
+      "height": 9,
+      "showLabels": true,
+      "unitScale": 15
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 16 and height 9; the apex is centered above the base. Dimension labels are visible. It uses 14px per unit.",
+      "omdType": "isoscelesTriangle",
+      "base": 16,
+      "height": 9,
+      "showLabels": true,
+      "unitScale": 14
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 17 and height 10; the apex is centered above the base. Dimension labels are visible. It uses 13px per unit.",
+      "omdType": "isoscelesTriangle",
+      "base": 17,
+      "height": 10,
+      "showLabels": true,
+      "unitScale": 13
+    },
+    {
+      "_comment": "Draws an isosceles triangle with base 18 and height 10; the apex is centered above the base. Dimension labels are visible. It uses 12px per unit.",
+      "omdType": "isoscelesTriangle",
+      "base": 18,
+      "height": 10,
+      "showLabels": true,
+      "unitScale": 12
+    }
+  ],
+  "rectangle": [
+    {
+      "_comment": "Draws a 3 by 2 rectangle. No automatic dimension labels are shown.",
+      "omdType": "rectangle",
+      "width": 3,
+      "height": 2
+    },
+    {
+      "_comment": "Draws a 4 by 3 rectangle. Dimension labels are visible.",
+      "omdType": "rectangle",
+      "width": 4,
+      "height": 3,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a 5 by 4 rectangle. Dimension labels are visible.",
+      "omdType": "rectangle",
+      "width": 5,
+      "height": 4,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a 6 by 5 rectangle. Dimension labels are visible. It uses 23px per unit.",
+      "omdType": "rectangle",
+      "width": 6,
+      "height": 5,
+      "showLabels": true,
+      "unitScale": 23
+    },
+    {
+      "_comment": "Draws a 7 by 6 rectangle. Dimension labels are visible. It uses 22px per unit.",
+      "omdType": "rectangle",
+      "width": 7,
+      "height": 6,
+      "showLabels": true,
+      "unitScale": 22
+    },
+    {
+      "_comment": "Draws a 8 by 7 rectangle. Dimension labels are visible. Label mode is edge. It uses 21px per unit.",
+      "omdType": "rectangle",
+      "width": 8,
+      "height": 7,
+      "showLabels": true,
+      "unitScale": 21,
+      "labelMode": "edge"
+    },
+    {
+      "_comment": "Draws a 9 by 2 rectangle. Dimension labels are visible. Label mode is side. Side labels read top 9, right 2, bottom 9, and left 2. It uses 20px per unit.",
+      "omdType": "rectangle",
+      "width": 9,
+      "height": 2,
+      "showLabels": true,
+      "unitScale": 20,
+      "labelMode": "side",
+      "sideLabels": {
+        "top": "9",
+        "right": "2",
+        "bottom": "9",
+        "left": "2"
+      }
+    },
+    {
+      "_comment": "Draws a 10 by 3 rectangle. Dimension labels are visible. Label mode is edge. Side labels read top 10, right 3, bottom 10, and left 3. It uses 19px per unit.",
+      "omdType": "rectangle",
+      "width": 10,
+      "height": 3,
+      "showLabels": true,
+      "unitScale": 19,
+      "labelMode": "edge",
+      "sideLabels": {
+        "top": "10",
+        "right": "3",
+        "bottom": "10",
+        "left": "3"
+      }
+    },
+    {
+      "_comment": "Draws a 11 by 4 rectangle. Dimension labels are visible. Label mode is side. Side labels read top 11, right 4, bottom 11, and left 4. Center text reads A = 44. It uses 18px per unit.",
+      "omdType": "rectangle",
+      "width": 11,
+      "height": 4,
+      "showLabels": true,
+      "unitScale": 18,
+      "labelMode": "side",
+      "sideLabels": {
+        "top": "11",
+        "right": "4",
+        "bottom": "11",
+        "left": "4"
+      },
+      "centerLabel": "A = 44"
+    },
+    {
+      "_comment": "Draws a 12 by 5 rectangle. Dimension labels are visible. Label mode is edge. Side labels read top 12, right 5, bottom 12, and left 5. Center text reads A = 60. It uses 17px per unit.",
+      "omdType": "rectangle",
+      "width": 12,
+      "height": 5,
+      "showLabels": true,
+      "unitScale": 17,
+      "labelMode": "edge",
+      "sideLabels": {
+        "top": "12",
+        "right": "5",
+        "bottom": "12",
+        "left": "5"
+      },
+      "centerLabel": "A = 60"
+    },
+    {
+      "_comment": "Draws a 13 by 6 rectangle. Dimension labels are visible. Label mode is side. Side labels read top 13, right 6, bottom 13, and left 6. Center text reads A = 78. Outside top text reads length. Outside right text reads width. It uses 16px per unit.",
+      "omdType": "rectangle",
+      "width": 13,
+      "height": 6,
+      "showLabels": true,
+      "unitScale": 16,
+      "labelMode": "side",
+      "sideLabels": {
+        "top": "13",
+        "right": "6",
+        "bottom": "13",
+        "left": "6"
+      },
+      "centerLabel": "A = 78",
+      "outsideTopLabel": "length",
+      "outsideRightLabel": "width"
+    },
+    {
+      "_comment": "Draws a 14 by 7 rectangle. Dimension labels are visible. Label mode is edge. Side labels read top 14, right 7, bottom 14, and left 7. Center text reads A = 98. Outside top text reads length. Outside right text reads width. It uses 15px per unit.",
+      "omdType": "rectangle",
+      "width": 14,
+      "height": 7,
+      "showLabels": true,
+      "unitScale": 15,
+      "labelMode": "edge",
+      "sideLabels": {
+        "top": "14",
+        "right": "7",
+        "bottom": "14",
+        "left": "7"
+      },
+      "centerLabel": "A = 98",
+      "outsideTopLabel": "length",
+      "outsideRightLabel": "width"
+    },
+    {
+      "_comment": "Draws a 15 by 2 rectangle. Dimension labels are visible. Label mode is side. Side labels read top 15, right 2, bottom 15, and left 2. Center text reads A = 30. Outside top text reads length. Outside right text reads width. It uses 14px per unit.",
+      "omdType": "rectangle",
+      "width": 15,
+      "height": 2,
+      "showLabels": true,
+      "unitScale": 14,
+      "labelMode": "side",
+      "sideLabels": {
+        "top": "15",
+        "right": "2",
+        "bottom": "15",
+        "left": "2"
+      },
+      "centerLabel": "A = 30",
+      "outsideTopLabel": "length",
+      "outsideRightLabel": "width"
+    },
+    {
+      "_comment": "Draws a 16 by 3 rectangle. Dimension labels are visible. Label mode is edge. Side labels read top 16, right 3, bottom 16, and left 3. Center text reads A = 48. Outside top text reads length. Outside right text reads width. Outside bottom text reads opposite sides match. It uses 13px per unit. Dimension/annotation labels use 18px text.",
+      "omdType": "rectangle",
+      "width": 16,
+      "height": 3,
+      "showLabels": true,
+      "unitScale": 13,
+      "labelMode": "edge",
+      "sideLabels": {
+        "top": "16",
+        "right": "3",
+        "bottom": "16",
+        "left": "3"
+      },
+      "centerLabel": "A = 48",
+      "outsideTopLabel": "length",
+      "outsideRightLabel": "width",
+      "outsideBottomLabel": "opposite sides match",
+      "labelFontSize": 18
+    },
+    {
+      "_comment": "Draws a 17 by 4 rectangle. Dimension labels are visible. Label mode is side. Side labels read top 17, right 4, bottom 17, and left 4. Center text reads A = 68. Outside top text reads length. Outside right text reads width. Outside bottom text reads opposite sides match. It uses 12px per unit. Dimension/annotation labels use 18px text.",
+      "omdType": "rectangle",
+      "width": 17,
+      "height": 4,
+      "showLabels": true,
+      "unitScale": 12,
+      "labelMode": "side",
+      "sideLabels": {
+        "top": "17",
+        "right": "4",
+        "bottom": "17",
+        "left": "4"
+      },
+      "centerLabel": "A = 68",
+      "outsideTopLabel": "length",
+      "outsideRightLabel": "width",
+      "outsideBottomLabel": "opposite sides match",
+      "labelFontSize": 18
+    }
+  ],
+  "rectangularPrism": [
+    {
+      "_comment": "Draws a rectangular prism with front length 3, depth 2, and height 2. No automatic dimension labels are shown.",
+      "omdType": "rectangularPrism",
+      "length": 3,
+      "width": 2,
+      "height": 2
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 4, depth 3, and height 2. Dimension labels are visible.",
+      "omdType": "rectangularPrism",
+      "length": 4,
+      "width": 3,
+      "height": 2,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 5, depth 4, and height 3. Dimension labels are visible.",
+      "omdType": "rectangularPrism",
+      "length": 5,
+      "width": 4,
+      "height": 3,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 6, depth 5, and height 3. Dimension labels are visible. It uses 19px per unit.",
+      "omdType": "rectangularPrism",
+      "length": 6,
+      "width": 5,
+      "height": 3,
+      "showLabels": true,
+      "unitScale": 19
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 7, depth 6, and height 4. Dimension labels are visible. It uses 18px per unit.",
+      "omdType": "rectangularPrism",
+      "length": 7,
+      "width": 6,
+      "height": 4,
+      "showLabels": true,
+      "unitScale": 18
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 8, depth 2, and height 4. Dimension labels are visible. Dimension labels read length 8, width 2, and height 4. It uses 17px per unit.",
+      "omdType": "rectangularPrism",
+      "length": 8,
+      "width": 2,
+      "height": 4,
+      "showLabels": true,
+      "unitScale": 17,
+      "sideLabels": {
+        "length": "8",
+        "width": "2",
+        "height": "4"
+      }
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 9, depth 3, and height 5. Dimension labels are visible. Dimension labels read length 9, width 3, and height 5. It uses 16px per unit.",
+      "omdType": "rectangularPrism",
+      "length": 9,
+      "width": 3,
+      "height": 5,
+      "showLabels": true,
+      "unitScale": 16,
+      "sideLabels": {
+        "length": "9",
+        "width": "3",
+        "height": "5"
+      }
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 10, depth 4, and height 5. Dimension labels are visible. Dimension labels read length 10, width 4, and height 5. Volume text below the prism reads V = 200. It uses 15px per unit.",
+      "omdType": "rectangularPrism",
+      "length": 10,
+      "width": 4,
+      "height": 5,
+      "showLabels": true,
+      "unitScale": 15,
+      "sideLabels": {
+        "length": "10",
+        "width": "4",
+        "height": "5"
+      },
+      "insideLabel": "V = 200"
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 11, depth 5, and height 6. Dimension labels are visible. Dimension labels read length 11, width 5, and height 6. Volume text below the prism reads V = 330. It uses 14px per unit.",
+      "omdType": "rectangularPrism",
+      "length": 11,
+      "width": 5,
+      "height": 6,
+      "showLabels": true,
+      "unitScale": 14,
+      "sideLabels": {
+        "length": "11",
+        "width": "5",
+        "height": "6"
+      },
+      "insideLabel": "V = 330"
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 12, depth 6, and height 6. Dimension labels are visible. Dimension labels read length 12, width 6, and height 6. Volume text below the prism reads V = 432. Hidden construction edges are turned off. It uses 13px per unit.",
+      "omdType": "rectangularPrism",
+      "length": 12,
+      "width": 6,
+      "height": 6,
+      "showLabels": true,
+      "unitScale": 13,
+      "sideLabels": {
+        "length": "12",
+        "width": "6",
+        "height": "6"
+      },
+      "insideLabel": "V = 432",
+      "showHiddenEdges": false
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 13, depth 2, and height 7. Dimension labels are visible. Dimension labels read length 13, width 2, and height 7. Volume text below the prism reads V = 182. Dashed hidden construction edges are shown. It uses 12px per unit.",
+      "omdType": "rectangularPrism",
+      "length": 13,
+      "width": 2,
+      "height": 7,
+      "showLabels": true,
+      "unitScale": 12,
+      "sideLabels": {
+        "length": "13",
+        "width": "2",
+        "height": "7"
+      },
+      "insideLabel": "V = 182",
+      "showHiddenEdges": true
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 14, depth 3, and height 7. Dimension labels are visible. Dimension labels read length 14, width 3, and height 7. Symbolic overrides are length l, width w, height h. Volume text below the prism reads V = 294. Hidden construction edges are turned off. It uses 11px per unit.",
+      "omdType": "rectangularPrism",
+      "length": 14,
+      "width": 3,
+      "height": 7,
+      "showLabels": true,
+      "unitScale": 11,
+      "sideLabels": {
+        "length": "14",
+        "width": "3",
+        "height": "7"
+      },
+      "insideLabel": "V = 294",
+      "showHiddenEdges": false,
+      "lengthLabel": "l",
+      "widthLabel": "w",
+      "heightLabel": "h"
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 15, depth 4, and height 8. Dimension labels are visible. Dimension labels read length 15, width 4, and height 8. Symbolic overrides are length l, width w, height h. Volume text below the prism reads V = 480. Dashed hidden construction edges are shown. It uses 10px per unit.",
+      "omdType": "rectangularPrism",
+      "length": 15,
+      "width": 4,
+      "height": 8,
+      "showLabels": true,
+      "unitScale": 10,
+      "sideLabels": {
+        "length": "15",
+        "width": "4",
+        "height": "8"
+      },
+      "insideLabel": "V = 480",
+      "showHiddenEdges": true,
+      "lengthLabel": "l",
+      "widthLabel": "w",
+      "heightLabel": "h"
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 16, depth 5, and height 8. Dimension labels are visible. Dimension labels read length 16, width 5, and height 8. Symbolic overrides are length l, width w, height h. Volume text below the prism reads V = 640. Text above the prism reads rectangular prism. Hidden construction edges are turned off. It uses 9px per unit. Dimension/annotation labels use 17px text.",
+      "omdType": "rectangularPrism",
+      "length": 16,
+      "width": 5,
+      "height": 8,
+      "showLabels": true,
+      "unitScale": 9,
+      "sideLabels": {
+        "length": "16",
+        "width": "5",
+        "height": "8"
+      },
+      "insideLabel": "V = 640",
+      "showHiddenEdges": false,
+      "lengthLabel": "l",
+      "widthLabel": "w",
+      "heightLabel": "h",
+      "outsideTopLabel": "rectangular prism",
+      "labelFontSize": 17
+    },
+    {
+      "_comment": "Draws a rectangular prism with front length 17, depth 6, and height 9. Dimension labels are visible. Dimension labels read length 17, width 6, and height 9. Symbolic overrides are length l, width w, height h. Volume text below the prism reads V = 918. Text above the prism reads rectangular prism. Dashed hidden construction edges are shown. It uses 8px per unit. Dimension/annotation labels use 17px text.",
+      "omdType": "rectangularPrism",
+      "length": 17,
+      "width": 6,
+      "height": 9,
+      "showLabels": true,
+      "unitScale": 8,
+      "sideLabels": {
+        "length": "17",
+        "width": "6",
+        "height": "9"
+      },
+      "insideLabel": "V = 918",
+      "showHiddenEdges": true,
+      "lengthLabel": "l",
+      "widthLabel": "w",
+      "heightLabel": "h",
+      "outsideTopLabel": "rectangular prism",
+      "labelFontSize": 17
+    }
+  ],
+  "cylinder": [
+    {
+      "_comment": "Draws a cylinder with radius 3 and height 4. No automatic dimension labels are shown.",
+      "omdType": "cylinder",
+      "radius": 3,
+      "height": 4
+    },
+    {
+      "_comment": "Draws a cylinder with radius 3 and height 5. Dimension labels are visible.",
+      "omdType": "cylinder",
+      "radius": 3,
+      "height": 5,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a cylinder with radius 4 and height 6. Dimension labels are visible.",
+      "omdType": "cylinder",
+      "radius": 4,
+      "height": 6,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a cylinder with radius 4 and height 7. Dimension labels are visible. It uses 17px per unit.",
+      "omdType": "cylinder",
+      "radius": 4,
+      "height": 7,
+      "showLabels": true,
+      "unitScale": 17
+    },
+    {
+      "_comment": "Draws a cylinder with radius 5 and height 8. Dimension labels are visible. Dimension labels read radius 5 and height 8. It uses 16px per unit.",
+      "omdType": "cylinder",
+      "radius": 5,
+      "height": 8,
+      "showLabels": true,
+      "unitScale": 16,
+      "sideLabels": {
+        "radius": "5",
+        "height": "8"
+      }
+    },
+    {
+      "_comment": "Draws a cylinder with radius 5 and height 10. Dimension labels are visible. Dimension labels read radius 5 and height 10. Formula/volume text below the cylinder reads V = 250π. It uses 15px per unit.",
+      "omdType": "cylinder",
+      "radius": 5,
+      "height": 10,
+      "showLabels": true,
+      "unitScale": 15,
+      "sideLabels": {
+        "radius": "5",
+        "height": "10"
+      },
+      "insideLabel": "V = 250π"
+    },
+    {
+      "_comment": "Draws a cylinder with radius 6 and height 9. Dimension labels are visible. Dimension labels read radius 6 and height 9. Formula/volume text below the cylinder reads V = 324π. It uses 14px per unit.",
+      "omdType": "cylinder",
+      "radius": 6,
+      "height": 9,
+      "showLabels": true,
+      "unitScale": 14,
+      "sideLabels": {
+        "radius": "6",
+        "height": "9"
+      },
+      "insideLabel": "V = 324π"
+    },
+    {
+      "_comment": "Draws a cylinder with radius 7 and height 10. Dimension labels are visible. Dimension labels read radius 7 and height 10. Formula/volume text below the cylinder reads V = 490π. Hidden construction edges are turned off. It uses 13px per unit.",
+      "omdType": "cylinder",
+      "radius": 7,
+      "height": 10,
+      "showLabels": true,
+      "unitScale": 13,
+      "sideLabels": {
+        "radius": "7",
+        "height": "10"
+      },
+      "insideLabel": "V = 490π",
+      "showHiddenEdges": false
+    },
+    {
+      "_comment": "Draws a cylinder with radius 4 and height 12. Dimension labels are visible. Dimension labels read radius 4 and height 12. Formula/volume text below the cylinder reads V = 192π. Dashed hidden construction edges are shown. It uses 12px per unit.",
+      "omdType": "cylinder",
+      "radius": 4,
+      "height": 12,
+      "showLabels": true,
+      "unitScale": 12,
+      "sideLabels": {
+        "radius": "4",
+        "height": "12"
+      },
+      "insideLabel": "V = 192π",
+      "showHiddenEdges": true
+    },
+    {
+      "_comment": "Draws a cylinder with radius 3 and height 8. Dimension labels are visible. Symbolic overrides are radius r and height h. Formula/volume text below the cylinder reads V = πr²h. Text above the cylinder reads cylinder. It uses 14px per unit.",
+      "omdType": "cylinder",
+      "radius": 3,
+      "height": 8,
+      "showLabels": true,
+      "unitScale": 14,
+      "radiusLabel": "r",
+      "heightLabel": "h",
+      "insideLabel": "V = πr²h",
+      "outsideTopLabel": "cylinder"
+    }
+  ],
+  "ellipse": [
+    {
+      "_comment": "Draws an ellipse with horizontal value 3 and vertical value 2. No automatic dimension labels are shown.",
+      "omdType": "ellipse",
+      "width": 3,
+      "height": 2
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 4 and vertical value 2. Dimension labels are visible.",
+      "omdType": "ellipse",
+      "width": 4,
+      "height": 2,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 5 and vertical value 3. Dimension labels are visible.",
+      "omdType": "ellipse",
+      "width": 5,
+      "height": 3,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 6 and vertical value 3. Dimension labels are visible. It uses 21px per unit.",
+      "omdType": "ellipse",
+      "width": 6,
+      "height": 3,
+      "showLabels": true,
+      "unitScale": 21
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 7 and vertical value 4. Dimension labels are visible. It uses 20px per unit.",
+      "omdType": "ellipse",
+      "width": 7,
+      "height": 4,
+      "showLabels": true,
+      "unitScale": 20
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 8 and vertical value 4. Dimension labels are visible. It uses 19px per unit.",
+      "omdType": "ellipse",
+      "width": 8,
+      "height": 4,
+      "showLabels": true,
+      "unitScale": 19
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 9 and vertical value 5. Dimension labels are visible. It uses 18px per unit.",
+      "omdType": "ellipse",
+      "width": 9,
+      "height": 5,
+      "showLabels": true,
+      "unitScale": 18
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 10 and vertical value 5. Dimension labels are visible. It uses 17px per unit.",
+      "omdType": "ellipse",
+      "width": 10,
+      "height": 5,
+      "showLabels": true,
+      "unitScale": 17
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 11 and vertical value 6. Dimension labels are visible. It uses 16px per unit.",
+      "omdType": "ellipse",
+      "width": 11,
+      "height": 6,
+      "showLabels": true,
+      "unitScale": 16
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 12 and vertical value 6. Dimension labels are visible. It uses 15px per unit.",
+      "omdType": "ellipse",
+      "width": 12,
+      "height": 6,
+      "showLabels": true,
+      "unitScale": 15
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 13 and vertical value 7. Dimension labels are visible. It uses 14px per unit.",
+      "omdType": "ellipse",
+      "width": 13,
+      "height": 7,
+      "showLabels": true,
+      "unitScale": 14
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 14 and vertical value 7. Dimension labels are visible. It uses 13px per unit.",
+      "omdType": "ellipse",
+      "width": 14,
+      "height": 7,
+      "showLabels": true,
+      "unitScale": 13
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 15 and vertical value 8. Dimension labels are visible. It uses 12px per unit.",
+      "omdType": "ellipse",
+      "width": 15,
+      "height": 8,
+      "showLabels": true,
+      "unitScale": 12
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 16 and vertical value 8. Dimension labels are visible. It uses 11px per unit.",
+      "omdType": "ellipse",
+      "width": 16,
+      "height": 8,
+      "showLabels": true,
+      "unitScale": 11
+    },
+    {
+      "_comment": "Draws an ellipse with horizontal value 17 and vertical value 9. Dimension labels are visible. It uses 10px per unit.",
+      "omdType": "ellipse",
+      "width": 17,
+      "height": 9,
+      "showLabels": true,
+      "unitScale": 10
+    }
+  ],
+  "circle": [
+    {
+      "_comment": "Draws a circle with radius 2. No automatic dimension labels are shown.",
+      "omdType": "circle",
+      "radius": 2
+    },
+    {
+      "_comment": "Draws a circle with radius 3. Dimension labels are visible.",
+      "omdType": "circle",
+      "radius": 3,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a circle with radius 4. Dimension labels are visible.",
+      "omdType": "circle",
+      "radius": 4,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a circle with radius 5. Dimension labels are visible. It uses 25px per unit.",
+      "omdType": "circle",
+      "radius": 5,
+      "showLabels": true,
+      "unitScale": 25
+    },
+    {
+      "_comment": "Draws a circle with radius 6. Dimension labels are visible. It uses 24px per unit.",
+      "omdType": "circle",
+      "radius": 6,
+      "showLabels": true,
+      "unitScale": 24
+    },
+    {
+      "_comment": "Draws a circle with radius 7. Dimension labels are visible. Points: O at center, A at 0°, B at 95°. It uses 23px per unit.",
+      "omdType": "circle",
+      "radius": 7,
+      "showLabels": true,
+      "unitScale": 23,
+      "points": [
+        {
+          "name": "O",
+          "label": "O",
+          "type": "center"
+        },
+        {
+          "name": "A",
+          "angle": 0
+        },
+        {
+          "name": "B",
+          "angle": 95
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a circle with radius 8. Dimension labels are visible. Points: O at center, A at 0°, B at 96°. It uses 22px per unit.",
+      "omdType": "circle",
+      "radius": 8,
+      "showLabels": true,
+      "unitScale": 22,
+      "points": [
+        {
+          "name": "O",
+          "label": "O",
+          "type": "center"
+        },
+        {
+          "name": "A",
+          "angle": 0
+        },
+        {
+          "name": "B",
+          "angle": 96
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a circle with radius 9. Dimension labels are visible. Points: O at center, A at 0°, B at 97°. Segments: O-A labeled r in #2563eb. It uses 21px per unit.",
+      "omdType": "circle",
+      "radius": 9,
+      "showLabels": true,
+      "unitScale": 21,
+      "points": [
+        {
+          "name": "O",
+          "label": "O",
+          "type": "center"
+        },
+        {
+          "name": "A",
+          "angle": 0
+        },
+        {
+          "name": "B",
+          "angle": 97
+        }
+      ],
+      "segments": [
+        {
+          "from": "O",
+          "to": "A",
+          "label": "r",
+          "color": "#2563eb"
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a circle with radius 10. Dimension labels are visible. Points: O at center, A at 0°, B at 98°. Segments: O-A labeled r in #2563eb. It uses 20px per unit.",
+      "omdType": "circle",
+      "radius": 10,
+      "showLabels": true,
+      "unitScale": 20,
+      "points": [
+        {
+          "name": "O",
+          "label": "O",
+          "type": "center"
+        },
+        {
+          "name": "A",
+          "angle": 0
+        },
+        {
+          "name": "B",
+          "angle": 98
+        }
+      ],
+      "segments": [
+        {
+          "from": "O",
+          "to": "A",
+          "label": "r",
+          "color": "#2563eb"
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a circle with radius 11. Dimension labels are visible. Points: O at center, A at 0°, B at 99°, C at 180°, D at 270°. Segments: O-A labeled r in #2563eb. It uses 19px per unit.",
+      "omdType": "circle",
+      "radius": 11,
+      "showLabels": true,
+      "unitScale": 19,
+      "points": [
+        {
+          "name": "O",
+          "label": "O",
+          "type": "center"
+        },
+        {
+          "name": "A",
+          "angle": 0
+        },
+        {
+          "name": "B",
+          "angle": 99
+        },
+        {
+          "name": "C",
+          "angle": 180
+        },
+        {
+          "name": "D",
+          "angle": 270
+        }
+      ],
+      "segments": [
+        {
+          "from": "O",
+          "to": "A",
+          "label": "r",
+          "color": "#2563eb"
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a circle with radius 12. Dimension labels are visible. Points: O at center, A at 0°, B at 100°, C at 180°, D at 270°. Segments: O-A labeled r in #2563eb; A-C labeled diameter in #dc2626 with 3px stroke. It uses 18px per unit.",
+      "omdType": "circle",
+      "radius": 12,
+      "showLabels": true,
+      "unitScale": 18,
+      "points": [
+        {
+          "name": "O",
+          "label": "O",
+          "type": "center"
+        },
+        {
+          "name": "A",
+          "angle": 0
+        },
+        {
+          "name": "B",
+          "angle": 100
+        },
+        {
+          "name": "C",
+          "angle": 180
+        },
+        {
+          "name": "D",
+          "angle": 270
+        }
+      ],
+      "segments": [
+        {
+          "from": "O",
+          "to": "A",
+          "label": "r",
+          "color": "#2563eb"
+        },
+        {
+          "from": "A",
+          "to": "C",
+          "label": "diameter",
+          "color": "#dc2626",
+          "strokeWidth": 3
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a circle with radius 13. Dimension labels are visible. Points: O at center, A at 0°, B at 101°, C at 180°, D at 270°. Segments: O-A labeled r in #2563eb; A-C labeled diameter in #dc2626 with 3px stroke. It uses 17px per unit.",
+      "omdType": "circle",
+      "radius": 13,
+      "showLabels": true,
+      "unitScale": 17,
+      "points": [
+        {
+          "name": "O",
+          "label": "O",
+          "type": "center"
+        },
+        {
+          "name": "A",
+          "angle": 0
+        },
+        {
+          "name": "B",
+          "angle": 101
+        },
+        {
+          "name": "C",
+          "angle": 180
+        },
+        {
+          "name": "D",
+          "angle": 270
+        }
+      ],
+      "segments": [
+        {
+          "from": "O",
+          "to": "A",
+          "label": "r",
+          "color": "#2563eb"
+        },
+        {
+          "from": "A",
+          "to": "C",
+          "label": "diameter",
+          "color": "#dc2626",
+          "strokeWidth": 3
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a circle with radius 14. Dimension labels are visible. Points: O at center, A at 0°, B at 102°, C at 180°, D at 270°. Segments: O-A labeled r in #2563eb; A-C labeled diameter in #dc2626 with 3px stroke; B-D labeled chord. It uses 16px per unit.",
+      "omdType": "circle",
+      "radius": 14,
+      "showLabels": true,
+      "unitScale": 16,
+      "points": [
+        {
+          "name": "O",
+          "label": "O",
+          "type": "center"
+        },
+        {
+          "name": "A",
+          "angle": 0
+        },
+        {
+          "name": "B",
+          "angle": 102
+        },
+        {
+          "name": "C",
+          "angle": 180
+        },
+        {
+          "name": "D",
+          "angle": 270
+        }
+      ],
+      "segments": [
+        {
+          "from": "O",
+          "to": "A",
+          "label": "r",
+          "color": "#2563eb"
+        },
+        {
+          "from": "A",
+          "to": "C",
+          "label": "diameter",
+          "color": "#dc2626",
+          "strokeWidth": 3
+        },
+        {
+          "from": "B",
+          "to": "D",
+          "label": "chord",
+          "labelOffset": 24,
+          "labelPosition": 0.55
+        }
+      ]
+    },
+    {
+      "_comment": "Draws a circle with radius 15. Dimension labels are visible. Points: O at center, A at 0°, B at 103°, C at 180°, D at 270°. Segments: O-A labeled r in #2563eb; A-C labeled diameter in #dc2626 with 3px stroke; B-D labeled chord. It uses 15px per unit. Point radius is 5px. Point and segment annotations use 16px text.",
+      "omdType": "circle",
+      "radius": 15,
+      "showLabels": true,
+      "unitScale": 15,
+      "points": [
+        {
+          "name": "O",
+          "label": "O",
+          "type": "center"
+        },
+        {
+          "name": "A",
+          "angle": 0
+        },
+        {
+          "name": "B",
+          "angle": 103
+        },
+        {
+          "name": "C",
+          "angle": 180
+        },
+        {
+          "name": "D",
+          "angle": 270
+        }
+      ],
+      "segments": [
+        {
+          "from": "O",
+          "to": "A",
+          "label": "r",
+          "color": "#2563eb"
+        },
+        {
+          "from": "A",
+          "to": "C",
+          "label": "diameter",
+          "color": "#dc2626",
+          "strokeWidth": 3
+        },
+        {
+          "from": "B",
+          "to": "D",
+          "label": "chord",
+          "labelOffset": 24,
+          "labelPosition": 0.55
+        }
+      ],
+      "pointRadius": 5,
+      "annotationFontSize": 16
+    },
+    {
+      "_comment": "Draws a circle with radius 16. Dimension labels are visible. Points: O at center, A at 0°, B at 104°, C at 180°, D at 270°. Segments: O-A labeled r in #2563eb; A-C labeled diameter in #dc2626 with 3px stroke; B-D labeled chord. It uses 14px per unit. Point radius is 5px. Point and segment annotations use 16px text.",
+      "omdType": "circle",
+      "radius": 16,
+      "showLabels": true,
+      "unitScale": 14,
+      "points": [
+        {
+          "name": "O",
+          "label": "O",
+          "type": "center"
+        },
+        {
+          "name": "A",
+          "angle": 0
+        },
+        {
+          "name": "B",
+          "angle": 104
+        },
+        {
+          "name": "C",
+          "angle": 180
+        },
+        {
+          "name": "D",
+          "angle": 270
+        }
+      ],
+      "segments": [
+        {
+          "from": "O",
+          "to": "A",
+          "label": "r",
+          "color": "#2563eb"
+        },
+        {
+          "from": "A",
+          "to": "C",
+          "label": "diameter",
+          "color": "#dc2626",
+          "strokeWidth": 3
+        },
+        {
+          "from": "B",
+          "to": "D",
+          "label": "chord",
+          "labelOffset": 24,
+          "labelPosition": 0.55
+        }
+      ],
+      "pointRadius": 5,
+      "annotationFontSize": 16
+    }
+  ],
+  "angle": [
+    {
+      "_comment": "Draws an angle diagram at the shared vertex with rays A at 0° (horizontally right, name used for angle references); B at 25° (up and to the right, name used for angle references). No angle arc markers are drawn.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 25,
+          "name": "B"
+        }
+      ]
+    },
+    {
+      "_comment": "Draws an angle diagram at the shared vertex with rays A at 0° (horizontally right, name shown); B at 33° (up and to the right, name shown). Marker 1 marks angle A-B spanning 33° using an arc, auto-labeled 33°.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 33,
+          "name": "B"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B"
+        }
+      ],
+      "showRayNames": true
+    },
+    {
+      "_comment": "Draws an angle diagram at the shared vertex with rays A at 0° (horizontally right, name used for angle references); B at 41° (up and to the right, name used for angle references). Marker 1 marks angle A-B spanning 41° using an arc, auto-labeled 41°.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 41,
+          "name": "B"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B"
+        }
+      ]
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 49° (up and to the right, name used for angle references). Marker 1 marks angle A-B spanning 49° using an arc, auto-labeled 49°.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 49,
+          "name": "B"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B"
+        }
+      ],
+      "vertexLabel": "O"
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 57° (up and to the right, name used for angle references). Marker 1 marks angle A-B spanning 57° using an arc, auto-labeled 57°. Rays are 146px long.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 57,
+          "name": "B"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B"
+        }
+      ],
+      "vertexLabel": "O",
+      "rayLength": 146
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 65° (up and to the right, name used for angle references). Marker 1 marks angle A-B spanning 65° using an arc, auto-labeled 65°. Rays are 150px long. Ray and arc strokes use #ea580c. Stroke width is 3px.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 65,
+          "name": "B"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B"
+        }
+      ],
+      "vertexLabel": "O",
+      "rayLength": 150,
+      "strokeColor": "#ea580c",
+      "strokeWidth": 3
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 73° (up and to the right, name used for angle references). Marker 1 marks angle A-B spanning 73° using an arc, auto-labeled 73°. Rays are 154px long. Ray and arc strokes use #0891b2. Stroke width is 3px.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 73,
+          "name": "B"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B"
+        }
+      ],
+      "vertexLabel": "O",
+      "rayLength": 154,
+      "strokeColor": "#0891b2",
+      "strokeWidth": 3
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 81° (up and to the right, name used for angle references); C at 111° (up and to the left, visible label C). Marker 1 marks angle A-B spanning 81° using an arc, auto-labeled 81°. Rays are 158px long. Ray and arc strokes use #111827. Stroke width is 3px.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 81,
+          "name": "B"
+        },
+        {
+          "angle": 111,
+          "name": "C",
+          "label": "C"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B"
+        }
+      ],
+      "vertexLabel": "O",
+      "rayLength": 158,
+      "strokeColor": "#111827",
+      "strokeWidth": 3
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 89° (up and to the right, name used for angle references); C at 114° (up and to the left, visible label C). Marker 1 marks angle A-B spanning 89° using an arc, auto-labeled 89°. Marker 2 marks angle B-C spanning 25° using an arc at 52px radius, without a text label. Rays are 162px long. Ray and arc strokes use #2563eb. Stroke width is 3px.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 89,
+          "name": "B"
+        },
+        {
+          "angle": 114,
+          "name": "C",
+          "label": "C"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B"
+        },
+        {
+          "from": "B",
+          "to": "C",
+          "label": "",
+          "marker": "arc",
+          "arcRadius": 52
+        }
+      ],
+      "vertexLabel": "O",
+      "rayLength": 162,
+      "strokeColor": "#2563eb",
+      "strokeWidth": 3
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 97° (up and to the left, name used for angle references); C at 117° (up and to the left, visible label C). Marker 1 marks angle A-B spanning 97° using an arc, auto-labeled 97°. Marker 2 marks angle B-C spanning 20° using an arc at 52px radius, labeled ?. Rays are 166px long. Ray and arc strokes use #dc2626. Stroke width is 3px.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 97,
+          "name": "B"
+        },
+        {
+          "angle": 117,
+          "name": "C",
+          "label": "C"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B"
+        },
+        {
+          "from": "B",
+          "to": "C",
+          "label": "?",
+          "marker": "arc",
+          "arcRadius": 52
+        }
+      ],
+      "vertexLabel": "O",
+      "rayLength": 166,
+      "strokeColor": "#dc2626",
+      "strokeWidth": 3
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 105° (up and to the left, name used for angle references); C at 120° (up and to the left, visible label C). Marker 1 marks angle A-B spanning 105° using an arc, auto-labeled 105°. Marker 2 marks angle B-C spanning 15° using an arc at 52px radius, labeled b°. Rays are 170px long. Ray and arc strokes use #16a34a. Stroke width is 3px. Default arc radius is 44px. Vertex dot radius is 5px. Text is rendered at 17px.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 105,
+          "name": "B"
+        },
+        {
+          "angle": 120,
+          "name": "C",
+          "label": "C"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B"
+        },
+        {
+          "from": "B",
+          "to": "C",
+          "label": "b°",
+          "marker": "arc",
+          "arcRadius": 52
+        }
+      ],
+      "vertexLabel": "O",
+      "rayLength": 170,
+      "strokeColor": "#16a34a",
+      "strokeWidth": 3,
+      "arcRadius": 44,
+      "dotRadius": 5,
+      "fontSize": 17
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 113° (up and to the left, name used for angle references); C at 123° (up and to the left, visible label C). Marker 1 marks angle A-B spanning 113° using an arc, labeled 113°. Marker 2 marks angle B-C spanning 10° using an arc at 52px radius, labeled b°. Rays are 174px long. Ray and arc strokes use #9333ea. Stroke width is 3px. Default arc radius is 44px. Vertex dot radius is 5px. Text is rendered at 17px.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 113,
+          "name": "B"
+        },
+        {
+          "angle": 123,
+          "name": "C",
+          "label": "C"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B",
+          "label": "113°"
+        },
+        {
+          "from": "B",
+          "to": "C",
+          "label": "b°",
+          "marker": "arc",
+          "arcRadius": 52
+        }
+      ],
+      "vertexLabel": "O",
+      "rayLength": 174,
+      "strokeColor": "#9333ea",
+      "strokeWidth": 3,
+      "arcRadius": 44,
+      "dotRadius": 5,
+      "fontSize": 17
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 121° (up and to the left, name used for angle references); C at 126° (up and to the left, visible label C); D at 180° (horizontally left, visible label D). Marker 1 marks angle A-B spanning 121° using an arc, labeled 121°. Marker 2 marks angle B-C spanning 5° using an arc at 52px radius, labeled b°. Rays are 178px long. Ray and arc strokes use #ea580c. Stroke width is 3px. Default arc radius is 44px. Vertex dot radius is 5px. Text is rendered at 17px.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 121,
+          "name": "B"
+        },
+        {
+          "angle": 126,
+          "name": "C",
+          "label": "C"
+        },
+        {
+          "angle": 180,
+          "name": "D",
+          "label": "D"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B",
+          "label": "121°"
+        },
+        {
+          "from": "B",
+          "to": "C",
+          "label": "b°",
+          "marker": "arc",
+          "arcRadius": 52
+        }
+      ],
+      "vertexLabel": "O",
+      "rayLength": 178,
+      "strokeColor": "#ea580c",
+      "strokeWidth": 3,
+      "arcRadius": 44,
+      "dotRadius": 5,
+      "fontSize": 17
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 129° (up and to the left, name used for angle references); C at 129° (up and to the left, visible label C); D at 180° (horizontally left, visible label D). Marker 1 marks angle A-B spanning 129° using an arc, labeled 129°. Marker 2 marks angle B-C spanning 0° using an arc at 52px radius, labeled b°. Marker 3 marks angle C-D spanning 51° using a circle with 78px label radius, labeled c°. Rays are 182px long. Ray and arc strokes use #0891b2. Stroke width is 3px. Default arc radius is 44px. Vertex dot radius is 5px. Text is rendered at 17px.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 129,
+          "name": "B"
+        },
+        {
+          "angle": 129,
+          "name": "C",
+          "label": "C"
+        },
+        {
+          "angle": 180,
+          "name": "D",
+          "label": "D"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B",
+          "label": "129°"
+        },
+        {
+          "from": "B",
+          "to": "C",
+          "label": "b°",
+          "marker": "arc",
+          "arcRadius": 52
+        },
+        {
+          "from": "C",
+          "to": "D",
+          "label": "c°",
+          "marker": "circle",
+          "labelRadius": 78
+        }
+      ],
+      "vertexLabel": "O",
+      "rayLength": 182,
+      "strokeColor": "#0891b2",
+      "strokeWidth": 3,
+      "arcRadius": 44,
+      "dotRadius": 5,
+      "fontSize": 17
+    },
+    {
+      "_comment": "Draws an angle diagram at O with rays A at 0° (horizontally right, name used for angle references); B at 137° (up and to the left, name used for angle references); C at 132° (up and to the left, visible label C); D at 180° (horizontally left, visible label D). Marker 1 marks angle A-B spanning 137° using an arc, labeled 137°. Marker 2 marks angle B-C spanning 5° using an arc at 52px radius, labeled b°. Marker 3 marks angle C-D spanning 48° using a circle with 78px label radius, labeled c°. Rays are 186px long. Ray and arc strokes use #111827. Stroke width is 3px. Default arc radius is 44px. Vertex dot radius is 5px. Padding is 36px. Text is rendered at 17px.",
+      "omdType": "angle",
+      "rays": [
+        {
+          "angle": 0,
+          "name": "A"
+        },
+        {
+          "angle": 137,
+          "name": "B"
+        },
+        {
+          "angle": 132,
+          "name": "C",
+          "label": "C"
+        },
+        {
+          "angle": 180,
+          "name": "D",
+          "label": "D"
+        }
+      ],
+      "angles": [
+        {
+          "from": "A",
+          "to": "B",
+          "label": "137°"
+        },
+        {
+          "from": "B",
+          "to": "C",
+          "label": "b°",
+          "marker": "arc",
+          "arcRadius": 52
+        },
+        {
+          "from": "C",
+          "to": "D",
+          "label": "c°",
+          "marker": "circle",
+          "labelRadius": 78
+        }
+      ],
+      "vertexLabel": "O",
+      "rayLength": 186,
+      "strokeColor": "#111827",
+      "strokeWidth": 3,
+      "arcRadius": 44,
+      "dotRadius": 5,
+      "fontSize": 17,
+      "padding": 36
+    }
+  ],
+  "regularPolygon": [
+    {
+      "_comment": "Draws a regular 3-sided polygon using radius 2. No automatic dimension labels are shown. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 3,
+      "radius": 2
+    },
+    {
+      "_comment": "Draws a regular 4-sided polygon using radius 2. No automatic dimension labels are shown. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 4,
+      "radius": 2
+    },
+    {
+      "_comment": "Draws a regular 5-sided polygon using radius 3. Dimension labels are visible. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 5,
+      "radius": 3,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a regular 6-sided polygon using radius 3. Dimension labels are visible. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 6,
+      "radius": 3,
+      "showLabels": true
+    },
+    {
+      "_comment": "Draws a regular 7-sided polygon using radius 4. Dimension labels are visible. It uses 20px per unit. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 7,
+      "radius": 4,
+      "showLabels": true,
+      "unitScale": 20
+    },
+    {
+      "_comment": "Draws a regular 8-sided polygon using radius 4. Dimension labels are visible. It uses 19px per unit. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 8,
+      "radius": 4,
+      "showLabels": true,
+      "unitScale": 19
+    },
+    {
+      "_comment": "Draws a regular 9-sided polygon using radius 5. Dimension labels are visible. It uses 18px per unit. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 9,
+      "radius": 5,
+      "showLabels": true,
+      "unitScale": 18
+    },
+    {
+      "_comment": "Draws a regular 10-sided polygon using radius 5. Dimension labels are visible. It uses 17px per unit. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 10,
+      "radius": 5,
+      "showLabels": true,
+      "unitScale": 17
+    },
+    {
+      "_comment": "Draws a regular 11-sided polygon using radius 6. Dimension labels are visible. It uses 16px per unit. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 11,
+      "radius": 6,
+      "showLabels": true,
+      "unitScale": 16
+    },
+    {
+      "_comment": "Draws a regular 12-sided polygon using radius 6. Dimension labels are visible. It uses 15px per unit. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 12,
+      "radius": 6,
+      "showLabels": true,
+      "unitScale": 15
+    },
+    {
+      "_comment": "Draws a regular 13-sided polygon using radius 7. Dimension labels are visible. It uses 14px per unit. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 13,
+      "radius": 7,
+      "showLabels": true,
+      "unitScale": 14
+    },
+    {
+      "_comment": "Draws a regular 14-sided polygon using radius 7. Dimension labels are visible. It uses 13px per unit. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 14,
+      "radius": 7,
+      "showLabels": true,
+      "unitScale": 13
+    },
+    {
+      "_comment": "Draws a regular 15-sided polygon using radius 8. Dimension labels are visible. It uses 12px per unit. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 15,
+      "radius": 8,
+      "showLabels": true,
+      "unitScale": 12
+    },
+    {
+      "_comment": "Draws a regular 16-sided polygon using radius 8. Dimension labels are visible. It uses 11px per unit. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 16,
+      "radius": 8,
+      "showLabels": true,
+      "unitScale": 11
+    },
+    {
+      "_comment": "Draws a regular 17-sided polygon using radius 9. Dimension labels are visible. It uses 10px per unit. All vertices are evenly spaced around the center.",
+      "omdType": "regularPolygon",
+      "numberOfSides": 17,
+      "radius": 9,
+      "showLabels": true,
+      "unitScale": 10
+    }
+  ],
+  "spinner": [
+    {
+      "_comment": "Draws a spinner split into 2 equal sectors. The pointer uses its default angle.",
+      "omdType": "spinner",
+      "divisions": 2
+    },
+    {
+      "_comment": "Draws a spinner split into 3 equal sectors. The pointer is at 23°.",
+      "omdType": "spinner",
+      "divisions": 3,
+      "arrowPosition": 23
+    },
+    {
+      "_comment": "Draws a spinner split into 4 equal sectors. The pointer is at 46°.",
+      "omdType": "spinner",
+      "divisions": 4,
+      "arrowPosition": 46
+    },
+    {
+      "_comment": "Draws a spinner split into 5 equal sectors. The pointer is at 69°. Size preset is small.",
+      "omdType": "spinner",
+      "divisions": 5,
+      "arrowPosition": 69,
+      "size": "small"
+    },
+    {
+      "_comment": "Draws a spinner split into 6 equal sectors. The pointer is at 92°. Size preset is medium.",
+      "omdType": "spinner",
+      "divisions": 6,
+      "arrowPosition": 92,
+      "size": "medium"
+    },
+    {
+      "_comment": "Draws a spinner split into 7 equal sectors. The pointer is at 115°. Size preset is large.",
+      "omdType": "spinner",
+      "divisions": 7,
+      "arrowPosition": 115,
+      "size": "large"
+    },
+    {
+      "_comment": "Draws a spinner split into 8 equal sectors. The pointer is at 138°. Size preset is small.",
+      "omdType": "spinner",
+      "divisions": 8,
+      "arrowPosition": 138,
+      "size": "small"
+    },
+    {
+      "_comment": "Draws a spinner split into 9 equal sectors. The pointer is at 161°. Size preset is medium.",
+      "omdType": "spinner",
+      "divisions": 9,
+      "arrowPosition": 161,
+      "size": "medium"
+    },
+    {
+      "_comment": "Draws a spinner split into 10 equal sectors. The pointer is at 184°. Size preset is large.",
+      "omdType": "spinner",
+      "divisions": 10,
+      "arrowPosition": 184,
+      "size": "large"
+    },
+    {
+      "_comment": "Draws a spinner split into 11 equal sectors. The pointer is at 207°. Size preset is small.",
+      "omdType": "spinner",
+      "divisions": 11,
+      "arrowPosition": 207,
+      "size": "small"
+    },
+    {
+      "_comment": "Draws a spinner split into 12 equal sectors. The pointer is at 230°. Size preset is medium.",
+      "omdType": "spinner",
+      "divisions": 12,
+      "arrowPosition": 230,
+      "size": "medium"
+    },
+    {
+      "_comment": "Draws a spinner split into 13 equal sectors. The pointer is at 253°. Size preset is large.",
+      "omdType": "spinner",
+      "divisions": 13,
+      "arrowPosition": 253,
+      "size": "large"
+    },
+    {
+      "_comment": "Draws a spinner split into 14 equal sectors. The pointer is at 276°. Size preset is small.",
+      "omdType": "spinner",
+      "divisions": 14,
+      "arrowPosition": 276,
+      "size": "small"
+    },
+    {
+      "_comment": "Draws a spinner split into 15 equal sectors. The pointer is at 299°. Size preset is medium.",
+      "omdType": "spinner",
+      "divisions": 15,
+      "arrowPosition": 299,
+      "size": "medium"
+    },
+    {
+      "_comment": "Draws a spinner split into 16 equal sectors. The pointer is at 322°. Size preset is large.",
+      "omdType": "spinner",
+      "divisions": 16,
+      "arrowPosition": 322,
+      "size": "large"
+    }
+  ],
+  "label": [
+    {
+      "_comment": "Renders standalone text: Solve for x. Default label size is used.",
+      "omdType": "label",
+      "text": "Solve for x"
+    },
+    {
+      "_comment": "Renders standalone text: Check your work. Default label size is used.",
+      "omdType": "label",
+      "text": "Check your work"
+    },
+    {
+      "_comment": "Renders standalone text: Equivalent expressions. Size preset is large.",
+      "omdType": "label",
+      "text": "Equivalent expressions",
+      "size": "large"
+    },
+    {
+      "_comment": "Renders standalone text: Use inverse operations. Size preset is small.",
+      "omdType": "label",
+      "text": "Use inverse operations",
+      "size": "small"
+    },
+    {
+      "_comment": "Renders standalone text: Area model. Size preset is medium.",
+      "omdType": "label",
+      "text": "Area model",
+      "size": "medium"
+    },
+    {
+      "_comment": "Renders standalone text: Constant of proportionality. Size preset is large. Text color is #ea580c.",
+      "omdType": "label",
+      "text": "Constant of proportionality",
+      "size": "large",
+      "color": "#ea580c"
+    },
+    {
+      "_comment": "Renders standalone text: Slope = rise/run. Size preset is small. Text color is #0891b2.",
+      "omdType": "label",
+      "text": "Slope = rise/run",
+      "size": "small",
+      "color": "#0891b2"
+    },
+    {
+      "_comment": "Renders standalone text: Remember units. Size preset is medium. Text color is #111827.",
+      "omdType": "label",
+      "text": "Remember units",
+      "size": "medium",
+      "color": "#111827"
+    },
+    {
+      "_comment": "Renders standalone text: Factor the expression. Size preset is large. Text color is #2563eb.",
+      "omdType": "label",
+      "text": "Factor the expression",
+      "size": "large",
+      "color": "#2563eb"
+    },
+    {
+      "_comment": "Renders standalone text: Distribute first. Size preset is small. Text color is #dc2626.",
+      "omdType": "label",
+      "text": "Distribute first",
+      "size": "small",
+      "color": "#dc2626"
+    },
+    {
+      "_comment": "Renders standalone text: Combine like terms. Size preset is medium. Text color is #16a34a.",
+      "omdType": "label",
+      "text": "Combine like terms",
+      "size": "medium",
+      "color": "#16a34a"
+    },
+    {
+      "_comment": "Renders standalone text: Evaluate at x = 2. Size preset is large. Text color is #9333ea.",
+      "omdType": "label",
+      "text": "Evaluate at x = 2",
+      "size": "large",
+      "color": "#9333ea"
+    },
+    {
+      "_comment": "Renders standalone text: Compare both sides. Size preset is small. Text color is #ea580c.",
+      "omdType": "label",
+      "text": "Compare both sides",
+      "size": "small",
+      "color": "#ea580c"
+    },
+    {
+      "_comment": "Renders standalone text: Explain your reasoning. Size preset is medium. Text color is #0891b2.",
+      "omdType": "label",
+      "text": "Explain your reasoning",
+      "size": "medium",
+      "color": "#0891b2"
+    },
+    {
+      "_comment": "Renders standalone text: General solution. Size preset is large. Text color is #111827.",
+      "omdType": "label",
+      "text": "General solution",
+      "size": "large",
+      "color": "#111827"
+    }
+  ]
+}

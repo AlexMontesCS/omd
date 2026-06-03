@@ -1,4 +1,5 @@
 import { jsvgGroup, jsvgLine, jsvgTextBox } from "@teachinglab/jsvg";
+import { getTextBounds } from "../equations/omdTextMetrics.js";
 import { getNodeForAST } from "../equations/omdUtilities.js";
 import { math } from "../math.js";
 
@@ -346,6 +347,7 @@ export class omdEquationWork extends jsvgGroup {
         this.equationLeftAlign = 'end';
         this.equationRightAlign = 'end';
         this.expressionAlign = 'end';
+        this.hasExplicitExpressionAlign = false;
 
         this.drawLineBeforeRows = new Set();
         this.drawLineAfterRows = new Set();
@@ -391,7 +393,8 @@ export class omdEquationWork extends jsvgGroup {
         if (typeof data.operationRightAlign !== 'undefined') this.operationRightAlign = data.operationRightAlign;
         if (typeof data.equationLeftAlign !== 'undefined') this.equationLeftAlign = data.equationLeftAlign;
         if (typeof data.equationRightAlign !== 'undefined') this.equationRightAlign = data.equationRightAlign;
-        if (typeof data.expressionAlign !== 'undefined') this.expressionAlign = data.expressionAlign;
+        this.hasExplicitExpressionAlign = typeof data.expressionAlign !== 'undefined';
+        this.expressionAlign = this.hasExplicitExpressionAlign ? data.expressionAlign : 'end';
 
         this.drawLineAfterRows = new Set(
             Array.isArray(data.drawLineAfterRows)
@@ -437,6 +440,11 @@ export class omdEquationWork extends jsvgGroup {
 
         if (row.kind === 'expression') {
             const explicitExpressionAlign = normalizeAlignment(this.expressionAlign, side);
+            if (this.hasExplicitExpressionAlign && explicitExpressionAlign) return explicitExpressionAlign;
+
+            const shared = normalizeAlignment(this.operationLineUp, side);
+            if (shared === 'decimal') return 'decimal';
+
             if (explicitExpressionAlign) return explicitExpressionAlign;
             return side === 'left' ? 'end' : 'start';
         }
@@ -446,6 +454,11 @@ export class omdEquationWork extends jsvgGroup {
 
     _getDecimalAlignmentInfo(visual) {
         if (!visual) return null;
+
+        if (visual.kind === 'math') {
+            const mathInfo = this._getMathDecimalAlignmentInfo(visual);
+            if (mathInfo) return mathInfo;
+        }
 
         const text = normalizeMathText(visual.text);
         const dotIndex = text.indexOf('.');
@@ -462,6 +475,49 @@ export class omdEquationWork extends jsvgGroup {
         return {
             widthBefore
         };
+    }
+
+    _getMathDecimalAlignmentInfo(visual) {
+        if (!visual?.node) return null;
+
+        const candidates = [];
+        this._walkMathNodes(visual.node, (node) => {
+            const textElement = node?.textElement;
+            if (!textElement) return;
+
+            const text = normalizeMathText(
+                typeof textElement.getText === 'function'
+                    ? textElement.getText()
+                    : textElement.text
+            );
+            const dotIndex = text.indexOf('.');
+            if (dotIndex < 0) return;
+
+            const fontSize = typeof node.getFontSize === 'function'
+                ? node.getFontSize()
+                : (visual.fontSize || this.fontSize);
+            const fullTextWidth = getTextBounds(text, fontSize).width;
+            const beforeDecimalWidth = getTextBounds(text.slice(0, dotIndex), fontSize).width;
+
+            const anchor = textElement.svgObject?.getAttribute?.('text-anchor') || 'start';
+            const textX = toFiniteNumber(textElement.xpos, (node.width || 0) / 2);
+            let textStartX = textX;
+            if (anchor === 'middle') {
+                textStartX -= fullTextWidth / 2;
+            } else if (anchor === 'end') {
+                textStartX -= fullTextWidth;
+            }
+
+            candidates.push({
+                widthBefore: this._absoluteX(node, visual.node) + textStartX + beforeDecimalWidth
+            });
+        });
+
+        if (!candidates.length) return null;
+
+        return candidates.reduce((leftmost, candidate) => (
+            candidate.widthBefore < leftmost.widthBefore ? candidate : leftmost
+        ));
     }
 
     _walkMathNodes(rootNode, visitor) {

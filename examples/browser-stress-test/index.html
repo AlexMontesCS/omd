@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD Browser Stress Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f6f8;
+            color: #172033;
+            font-family: "Albert Sans", system-ui, sans-serif;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: minmax(220px, 1fr) auto;
+            gap: 18px;
+            align-items: center;
+            padding: 16px 22px;
+            background: #ffffff;
+            border-bottom: 1px solid #d8dee8;
+        }
+
+        h1 {
+            margin: 0 0 5px;
+            font-size: 20px;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: #60708a;
+            font-size: 13px;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        button,
+        select {
+            height: 34px;
+            border: 1px solid #c8d0dc;
+            border-radius: 7px;
+            background: #ffffff;
+            color: #172033;
+            font: inherit;
+            font-size: 13px;
+        }
+
+        button {
+            padding: 0 12px;
+            cursor: pointer;
+        }
+
+        button.primary {
+            border-color: #166534;
+            background: #166534;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        select {
+            min-width: 150px;
+            padding: 0 10px;
+        }
+
+        main {
+            padding: 16px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(110px, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .stat {
+            min-height: 58px;
+            padding: 10px 12px;
+            background: #ffffff;
+            border: 1px solid #d8dee8;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            color: #60708a;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            margin-top: 5px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+        }
+
+        .card {
+            display: grid;
+            grid-template-rows: auto 146px auto;
+            min-height: 245px;
+            overflow: hidden;
+            background: #ffffff;
+            border: 1px solid #ccd5e0;
+            border-left: 5px solid #6b7280;
+            border-radius: 8px;
+        }
+
+        .card.pass {
+            border-left-color: #15803d;
+        }
+
+        .card.fail {
+            border-left-color: #dc2626;
+        }
+
+        .card.warn {
+            border-left-color: #d97706;
+        }
+
+        .card.hidden {
+            display: none;
+        }
+
+        .card-head {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: baseline;
+            padding: 11px 12px;
+            border-bottom: 1px solid #e8edf3;
+        }
+
+        .card-title {
+            overflow: hidden;
+            font-size: 13px;
+            font-weight: 700;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .card-status {
+            color: #60708a;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .render-target {
+            min-width: 0;
+            min-height: 0;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #e8edf3;
+        }
+
+        .error {
+            align-self: stretch;
+            width: 100%;
+            overflow: auto;
+            color: #991b1b;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 11px;
+            line-height: 1.35;
+            white-space: pre-wrap;
+        }
+
+        details {
+            padding: 9px 12px 12px;
+        }
+
+        summary {
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            color: #2b3b52;
+        }
+
+        pre {
+            max-height: 220px;
+            margin: 9px 0 0;
+            overflow: auto;
+            color: #25334a;
+            font-size: 11px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 860px) {
+            header {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar {
+                justify-content: flex-start;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>OMD Browser Stress Test</h1>
+            <p class="subtitle">Local source, real DOM, sample catalog plus sharp math-rendering cases.</p>
+        </div>
+        <div class="toolbar">
+            <select id="type-filter" aria-label="Filter by type">
+                <option value="all">All types</option>
+            </select>
+            <button id="failures-only" type="button">Failures only</button>
+            <button id="run-again" class="primary" type="button">Run</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="stats" aria-label="Stress test summary">
+            <div class="stat">
+                <div class="stat-label">Status</div>
+                <div class="stat-value" id="stat-status">Ready</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Total</div>
+                <div class="stat-value" id="stat-total">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Passed</div>
+                <div class="stat-value" id="stat-passed">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Failed</div>
+                <div class="stat-value" id="stat-failed">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Warnings</div>
+                <div class="stat-value" id="stat-warnings">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Duration</div>
+                <div class="stat-value" id="stat-duration">0 ms</div>
+            </div>
+        </section>
+
+        <section class="grid" id="stress-grid" aria-label="Stress test cases"></section>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

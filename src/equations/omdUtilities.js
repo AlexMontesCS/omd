@@ -22,8 +22,8 @@ export function astToOmdType(type, ast) {
         case "AssignmentNode":
             return omdEquationNode;
         case "OperatorNode":
-            // Check for unary minus: op is '-' and there's only one argument.
-            if (ast?.op === '-' && ast.args.length === 1 && !ast.implicit) {
+            // Check for unary signs: op is '-' or '+' and there's only one argument.
+            if ((ast?.op === '-' || ast?.op === '+') && ast.args.length === 1 && !ast.implicit) {
                 return omdUnaryExpressionNode;
             }
             if (ast?.op === '=') return omdEquationNode;

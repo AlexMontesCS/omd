@@ -3,6 +3,7 @@ import { omdColor } from "../omdConstants.js";
 import { omdMetaExpression } from "./omdMetaExpression.js"
 import { omdExpression } from "./omdExpression.js"
 import { omdTerm } from "./omdTerm.js"
+import { jsvgGroup, jsvgLine } from "@teachinglab/jsvg";
 
 export class omdRationalExpression extends omdMetaExpression
 {

@@ -591,34 +591,64 @@ export interface OmdCircleJson {
 }
 
 export interface OmdAngleRay {
+  name?: string;
   angle: number;
   length?: number;
   label?: string;
   labelDistance?: number;
   color?: string;
   strokeWidth?: number;
+  fontSize?: number;
+  italic?: boolean;
+}
+
+export interface OmdAngleLabelPosition {
+  x: number;
+  y: number;
 }
 
 export interface OmdAngleMarker {
-  from: number;
-  to: number;
+  from: number | string;
+  to: number | string;
   label?: string;
-  marker?: "arc" | "square" | "right" | "full-circle" | string;
+  marker?: "arc" | "right" | "full" | "circle" | string;
+  type?: "arc" | "right" | "full" | "circle" | string;
   color?: string;
-  radius?: number;
+  strokeWidth?: number;
+  arcRadius?: number;
+  size?: number;
+  labelRadius?: number;
+  labelPosition?: OmdAngleLabelPosition;
+  labelMode?: "auto" | "inline" | "callout" | string;
+  tickCount?: number;
+  arcCount?: number;
+  tickLength?: number;
+  reflex?: boolean;
+  useReflexAngle?: boolean;
+  fontSize?: number;
+  italic?: boolean;
 }
 
 export interface OmdAngleJson {
   omdType: "angle";
   rays?: OmdAngleRay[];
   angles?: OmdAngleMarker[];
+  showRayNames?: boolean;
   vertexLabel?: string;
   rayLength?: number;
   strokeColor?: string;
   strokeWidth?: number;
   arcRadius?: number;
+  showAngleTicks?: boolean;
+  angleTickGap?: number;
+  angleTickLength?: number;
+  angleTickTolerance?: number;
   dotRadius?: number;
   fontSize?: number;
+  padding?: number;
+  startAngle?: number;
+  endAngle?: number;
+  label?: string;
 }
 
 export interface OmdRegularPolygonJson {
@@ -892,6 +922,8 @@ export interface OmdSchemaDefinition {
 }
 
 export type OmdSchemas = Partial<Record<OmdType, OmdSchemaDefinition>>;
+export type OmdSampleJson = OmdJson & { _comment?: string };
+export type OmdSamples = Partial<Record<OmdType, OmdSampleJson[]>>;
 
 export declare const omdColor: {
   readonly lightGray: "#EEEEEE";
@@ -911,5 +943,6 @@ export declare function getSupportedTypes(): OmdConstructibleType[];
 export declare function isTypeSupported(omdType: string): omdType is OmdConstructibleType;
 
 declare const omdSchemas: OmdSchemas;
+declare const omdSamples: OmdSamples;
 export default omdSchemas;
-export { omdSchemas };
+export { omdSchemas, omdSamples };

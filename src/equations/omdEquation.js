@@ -19,6 +19,10 @@ export class omdEquation extends omdMetaExpression {
         if (!equationStr.trim()) return;
 
         const node = omdEquationNode.fromString(equationStr);
+        const fontSize = Number(data?.fontSize);
+        if (Number.isFinite(fontSize) && typeof node.setFontSize === 'function') {
+            node.setFontSize(fontSize);
+        }
         if (node.hideBackgroundByDefault) node.hideBackgroundByDefault();
         if (node.computeDimensions) node.computeDimensions();
         if (node.updateLayout) node.updateLayout();
