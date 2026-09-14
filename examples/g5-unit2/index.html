@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OMD — Grade 5 Unit 2 · Fractions as Quotients and Fraction Multiplication</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#FBFBFA;
+  --surface:#FFFFFF;
+  --surface-2:#F9F9F8;
+  --line:#EAEAEA;
+  --ink:#111111;
+  --ink-2:#2F3437;
+  --ink-3:#787774;
+  --blue-bg:#E1F3FE; --blue-fg:#1F6C9F;
+  --green-bg:#EDF3EC; --green-fg:#346538;
+  --yellow-bg:#FBF3DB; --yellow-fg:#956400;
+  --red-bg:#FDEBEC;  --red-fg:#9F2F2D;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--canvas);
+  color:var(--ink-2);
+  font-family:'Albert Sans','SF Pro Display','Helvetica Neue',sans-serif;
+  font-size:15px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+/* ambient warm spot — depth without a gradient surface */
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(760px 460px at 82% -6%,rgba(31,108,159,.05),transparent 62%),
+             radial-gradient(620px 380px at 4% 42%,rgba(149,100,0,.035),transparent 60%);}
+.wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 40px}
+@media(max-width:820px){.wrap{padding:0 20px}}
+
+/* ---------- nav ---------- */
+nav{position:sticky;top:0;z-index:30;background:rgba(251,251,250,.82);
+  backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+nav .row{display:flex;align-items:center;gap:26px;height:56px}
+nav .mark{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+nav a{font-size:13px;color:var(--ink-3);text-decoration:none;transition:color .2s var(--ease)}
+nav a:hover,nav a.on{color:var(--ink)}
+nav .spacer{flex:1}
+@media(max-width:820px){nav .hideable{display:none}}
+
+/* ---------- type ---------- */
+h1{font-family:'Instrument Serif',Georgia,serif;font-weight:400;
+  font-size:clamp(2.6rem,6vw,4.5rem);line-height:1.04;letter-spacing:-.028em;color:var(--ink)}
+h1 em{font-style:italic;color:var(--ink-3)}
+h2{font-family:'Instrument Serif',Georgia,serif;font-weight:400;
+  font-size:clamp(1.7rem,3vw,2.5rem);line-height:1.1;letter-spacing:-.02em;color:var(--ink)}
+h3{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
+.lede{font-size:1.06rem;font-weight:300;line-height:1.66;color:var(--ink-3);max-width:62ch}
+.mono{font-family:'JetBrains Mono',monospace}
+
+header{padding:104px 0 72px}
+header .kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--blue-fg);margin-bottom:26px;display:block}
+header .lede{margin-top:28px}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:56px;
+  background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.facts div{background:var(--surface);padding:22px 24px}
+.facts dt{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+.facts dd{font-family:'Instrument Serif',Georgia,serif;font-size:2rem;line-height:1;color:var(--ink)}
+.facts dd small{font-family:'Albert Sans',sans-serif;font-size:12px;color:var(--ink-3);margin-left:6px}
+@media(max-width:820px){.facts{grid-template-columns:repeat(2,1fr)}}
+
+section{padding:76px 0 8px;border-top:1px solid var(--line)}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;margin-bottom:12px}
+.sec-head .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3)}
+.sec-blurb{max-width:56ch;font-weight:300;color:var(--ink-3);margin:16px 0 40px}
+
+/* ---------- tags ---------- */
+.tag{display:inline-block;border-radius:9999px;padding:3px 10px;font-size:10px;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.tag.blue{background:var(--blue-bg);color:var(--blue-fg)}
+.tag.green{background:var(--green-bg);color:var(--green-fg)}
+.tag.yellow{background:var(--yellow-bg);color:var(--yellow-fg)}
+.tag.plain{background:var(--surface-2);color:var(--ink-3);border:1px solid var(--line)}
+
+/* ---------- cards ---------- */
+.grid{display:grid;gap:20px}
+.grid.two{grid-template-columns:repeat(2,1fr)}
+.grid.three{grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.grid.two,.grid.three{grid-template-columns:1fr}}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:26px 26px 22px;transition:box-shadow .2s var(--ease),border-color .2s var(--ease)}
+.card:hover{box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.card .cap{font-size:13.5px;color:var(--ink-2);font-weight:500;margin-bottom:2px}
+.card .sub{font-size:12px;color:var(--ink-3);font-weight:300}
+
+.stage{margin:20px -6px 0;padding:18px 6px 6px;display:flex;justify-content:center;
+  align-items:flex-start;overflow-x:auto}
+.stage svg{max-width:100%;height:auto;display:block}
+
+/* wide figures span the row */
+.card.span2{grid-column:span 2}
+@media(max-width:900px){.card.span2{grid-column:span 1}}
+
+/* ---------- accordion ---------- */
+details{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+details summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3)}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"+";width:13px;font-size:13px;color:var(--ink);line-height:1}
+details[open] summary::before{content:"\2212"}
+details pre{margin-top:12px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:8px;padding:14px 16px;overflow-x:auto;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.65;color:var(--ink-2)}
+
+/* ---------- interactive bento ---------- */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:20px}
+.bento > *{grid-column:span 3}
+.bento .wide{grid-column:span 6}
+.bento .third{grid-column:span 2}
+@media(max-width:900px){.bento{grid-template-columns:1fr}.bento > *{grid-column:span 1!important}}
+
+.window{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  transition:box-shadow .2s var(--ease)}
+.window:hover{box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.window .chrome{display:flex;align-items:center;gap:7px;padding:11px 16px;
+  border-bottom:1px solid var(--line);background:var(--surface)}
+.window .chrome i{width:9px;height:9px;border-radius:9999px;background:#E4E4E2;display:block}
+.window .chrome span{margin-left:8px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.window .body{padding:24px 26px 22px}
+.window .how{font-size:13px;font-weight:300;color:var(--ink-3);margin-top:6px;max-width:54ch}
+
+.readout{margin-top:18px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);
+  padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-2);
+  display:flex;flex-wrap:wrap;gap:6px 20px;min-height:42px;align-items:center}
+.readout b{font-weight:500;color:var(--ink-3)}
+.readout .val{color:var(--blue-fg);font-weight:500}
+.readout.empty{color:var(--ink-3)}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+button.act{font:500 12.5px 'Albert Sans',sans-serif;padding:7px 14px;border:1px solid var(--line);
+  border-radius:6px;background:var(--surface);color:var(--ink-2);cursor:pointer;
+  transition:background .2s var(--ease),transform .12s var(--ease)}
+button.act:hover{background:var(--surface-2)}
+button.act:active{transform:scale(.98)}
+button.act.solid{background:var(--ink);border-color:var(--ink);color:#fff}
+button.act.solid:hover{background:#333}
+kbd{font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid var(--line);
+  border-radius:4px;background:var(--surface-2);padding:1px 6px;color:var(--ink-2)}
+
+/* ---------- reference table ---------- */
+.ref{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.ref .r{display:grid;grid-template-columns:190px 130px 1fr;gap:20px;padding:15px 24px;
+  border-bottom:1px solid var(--line);font-size:13px}
+.ref .r:last-child{border-bottom:none}
+.ref .r.head{background:var(--surface-2);font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.ref .r code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink)}
+.ref .r .t{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-3)}
+.ref .r .d{font-weight:300;color:var(--ink-3)}
+@media(max-width:820px){.ref .r{grid-template-columns:1fr;gap:4px}}
+
+footer{padding:72px 0 96px;border-top:1px solid var(--line);margin-top:76px;
+  font-size:12.5px;color:var(--ink-3);font-weight:300}
+
+/* ---------- scroll entry ---------- */
+.enter{opacity:0;transform:translateY(12px);
+  transition:opacity .6s var(--ease),transform .6s var(--ease);
+  transition-delay:calc(var(--i,0) * 70ms)}
+.enter.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.enter{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+
+<nav>
+  <div class="wrap row">
+    <span class="mark">OMD / G5.U2</span>
+    <span class="spacer"></span>
+    <a href="#interactive" class="hideable">Interactive</a>
+    <a href="#narrative" class="hideable">Narrative</a>
+    <a href="#section-a" class="hideable">Section A</a>
+    <a href="#section-b" class="hideable">Section B</a>
+    <a href="#section-c" class="hideable">Section C</a>
+    <a href="#assessment" class="hideable">Assessment</a>
+    <a href="#reference">Reference</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <header>
+    <span class="kicker">Grade 5 · Unit 2 · 15 lessons</span>
+    <h1>Fractions as quotients,<br>fractions as <em>multiplication</em>.</h1>
+    <p class="lede">
+      Every diagram in the Unit&nbsp;2 plan and the end-of-unit assessment, rebuilt as OMD JSON —
+      area models with fractional side lengths, equal-sharing strips, and circle models.
+      Side lengths are exact rationals, so a 3&nbsp;1/4 by 4 rectangle reports an area of 13,
+      not 12.999999999999998. The area diagrams take student input: shade them, drag them, answer them.
+    </p>
+    <dl class="facts">
+      <div><dt>Figures</dt><dd id="fact-figures">—</dd></div>
+      <div><dt>New omdTypes</dt><dd>3<small>areaDiagram · strips · circle</small></dd></div>
+      <div><dt>Interactive modes</dt><dd>4<small>paint · drag · type · check</small></dd></div>
+      <div><dt>Exact-value checks</dt><dd>48<small>node smoke run</small></dd></div>
+    </dl>
+  </header>
+
+  <section id="interactive">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow">01 — Student input</span>
+        <h2 style="margin-top:10px">Interactive area diagrams</h2>
+      </div>
+      <span class="tag blue">omd-areadiagram-change</span>
+    </div>
+    <p class="sec-blurb">
+      The same components, with input switched on. Every gesture emits an exact payload —
+      the shaded area as a reduced fraction, the side lengths, the typed answers and their grading.
+      The live payload for each panel is printed under it.
+    </p>
+    <div class="bento" id="bento"></div>
+  </section>
+
+  <div id="gallery"></div>
+
+  <section id="reference">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow">06 — API</span>
+        <h2 style="margin-top:10px">Component reference</h2>
+      </div>
+    </div>
+    <p class="sec-blurb">
+      Three new <code class="mono">omdType</code> values. Lengths accept numbers, fraction strings
+      (<code class="mono">'2/3'</code>) and mixed numbers (<code class="mono">'3 1/4'</code>) everywhere.
+    </p>
+    <div class="ref" id="ref"></div>
+  </section>
+
+  <footer>
+    Rendered from <span class="mono">examples/g5-unit2/unit2-cases.mjs</span> — the same catalog the
+    Node smoke renderer walks. Source documents: Gr5_Math_UnitPlan_Unit2_v2.docx and
+    MAT.05.UNIT.N02.26-27.USI_student_DRAFT.docx.
+  </footer>
+</div>
+
+<script type="module">
+import { createFromJSON } from '/src/index.js';
+import { unit2, unit2Interactives } from './unit2-cases.mjs';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/**
+ * Mounts a component at its natural size inside a responsive <svg>.
+ * max-width:100% + height:auto lets the figure shrink on narrow screens while
+ * getScreenCTM keeps pointer math correct at any CSS scale.
+ */
+function mount(host, json) {
+    const component = createFromJSON(json);
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.style.overflow = 'visible';
+
+    // Interactions relayout the component in place, so the wrapper has to be
+    // re-sized whenever the figure's natural size changes.
+    component.syncFrame = () => {
+        svg.setAttribute('width', component.width);
+        svg.setAttribute('height', component.height);
+        svg.setAttribute('viewBox', `0 0 ${component.width} ${component.height}`);
+    };
+    component.syncFrame();
+
+    svg.appendChild(component.svgObject);
+    host.replaceChildren(svg);
+    return component;
+}
+
+function el(tag, cls, text) {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined) node.textContent = text;
+    return node;
+}
+
+function jsonBlock(json) {
+    const details = el('details');
+    details.appendChild(el('summary', null, 'omd json'));
+    const pre = el('pre', null, JSON.stringify(json, null, 2));
+    details.appendChild(pre);
+    return details;
+}
+
+/* ---------------- interactive bento ---------------- */
+
+const bento = document.getElementById('bento');
+const WIDE = new Set(['garden-grid', 'paint-area']);
+
+unit2Interactives.forEach((item, index) => {
+    const win = el('div', 'window enter' + (WIDE.has(item.id) ? ' wide' : ''));
+    win.style.setProperty('--i', index);
+
+    const chrome = el('div', 'chrome');
+    chrome.append(el('i'), el('i'), el('i'), el('span', null, item.id));
+    win.appendChild(chrome);
+
+    const body = el('div', 'body');
+    body.appendChild(el('h3', null, item.title));
+    const lesson = el('div', 'sub', item.lesson);
+    lesson.style.marginTop = '4px';
+    body.appendChild(lesson);
+    body.appendChild(el('p', 'how', item.instructions));
+
+    const stage = el('div', 'stage');
+    body.appendChild(stage);
+
+    const readout = el('div', 'readout empty', 'No input yet.');
+    body.appendChild(readout);
+
+    const toolbar = el('div', 'toolbar');
+    body.appendChild(toolbar);
+
+    body.appendChild(jsonBlock(item.json));
+    win.appendChild(body);
+    bento.appendChild(win);
+
+    const component = mount(stage, item.json);
+    window.__omdCases = window.__omdCases || {};
+    window.__omdCases[item.id] = component;
+
+    const paint = (payload) => {
+        component.syncFrame();
+        readout.classList.remove('empty');
+        readout.replaceChildren();
+        const fields = [];
+        if (payload.expression) fields.push(['expression', payload.expression]);
+        if (payload.area !== undefined) fields.push(['area', payload.area]);
+        if (payload.total !== undefined) fields.push(['total', payload.total]);
+        if (payload.shadedCount !== undefined) fields.push(['cells', String(payload.shadedCount)]);
+        if (payload.shadeWidth) fields.push(['w × h', `${payload.shadeWidth} × ${payload.shadeHeight}`]);
+        for (const [key, value] of Object.entries(payload.feedback || {})) {
+            if (value) fields.push([`${key} check`, value]);
+        }
+        fields.push(['event', payload.type]);
+        for (const [key, value] of fields) {
+            const group = el('span');
+            group.append(el('b', null, key + ' '), el('span', 'val', value));
+            readout.appendChild(group);
+        }
+    };
+
+    component.onChange = paint;
+
+    // Resize panels stay rectangles — clearing them into cell mode would
+    // strip the drag handles, so they reset to a 1 by 1 rectangle instead.
+    const resettable = item.json.allowResize === true;
+    const reset = el('button', 'act', resettable ? 'Reset' : 'Clear');
+    reset.onclick = () => {
+        if (resettable) component.setShadeSize(1, 1);
+        else if (typeof component.clearShading === 'function') component.clearShading();
+        else component.setShadedCells([]);
+        paint({ ...component.getState(), type: resettable ? 'resize' : 'clear' });
+    };
+    toolbar.appendChild(reset);
+
+    const gradable = (item.json.inputs || []).some((input) => input.answer !== undefined);
+    if (gradable && component.checkAll) {
+        const check = el('button', 'act solid', 'Check answers');
+        check.onclick = () => component.checkAll();
+        toolbar.appendChild(check);
+    }
+
+    const dump = el('button', 'act', 'Log state');
+    dump.onclick = () => paint({ ...component.getState(), type: 'read' });
+    toolbar.appendChild(dump);
+});
+
+/* ---------------- static gallery ---------------- */
+
+const gallery = document.getElementById('gallery');
+let figureCount = 0;
+const WIDE_FIGURES = new Set([
+    'narrative-distributive', 'l13-greater-than-one', 'l13-ip-b', 'l14-garden-grid',
+    'l14-noah-garden', 'l14-priya-garden', 'l13-exit-ticket', 'l15-holly', 'l2-sandwich-table',
+    'l3-dancers-table', 'l14-decompose', 'l15-trevor',
+]);
+
+unit2.forEach((group, groupIndex) => {
+    const section = el('section');
+    section.id = group.id;
+
+    const head = el('div', 'sec-head');
+    const left = el('div');
+    left.appendChild(el('span', 'eyebrow', `0${groupIndex + 2} — ${group.section}`));
+    const h2 = el('h2', null, group.title);
+    h2.style.marginTop = '10px';
+    left.appendChild(h2);
+    head.appendChild(left);
+    head.appendChild(el('span', 'tag plain', `${group.figures.length} figures`));
+    section.appendChild(head);
+    section.appendChild(el('p', 'sec-blurb', group.blurb));
+
+    const grid = el('div', 'grid two');
+    section.appendChild(grid);
+
+    group.figures.forEach((figure, index) => {
+        figureCount += 1;
+        const card = el('div', 'card enter' + (WIDE_FIGURES.has(figure.id) ? ' span2' : ''));
+        card.style.setProperty('--i', index % 6);
+        card.id = 'fig-' + figure.id;
+
+        const meta = el('div', 'meta');
+        if (figure.lesson) meta.appendChild(el('span', 'tag blue', figure.lesson));
+        if (figure.source) meta.appendChild(el('span', 'tag plain', 'replaces ' + figure.source));
+        meta.appendChild(el('span', 'tag green', figure.json.omdType));
+        card.appendChild(meta);
+
+        card.appendChild(el('div', 'cap', figure.caption));
+
+        const stage = el('div', 'stage');
+        card.appendChild(stage);
+        card.appendChild(jsonBlock(figure.json));
+        grid.appendChild(card);
+
+        try {
+            mount(stage, figure.json);
+        } catch (error) {
+            stage.appendChild(el('div', 'sub', 'render failed: ' + error.message));
+            console.error(figure.id, error);
+        }
+    });
+
+    gallery.appendChild(section);
+});
+
+document.getElementById('fact-figures').textContent = figureCount;
+
+/* ---------------- reference ---------------- */
+
+const REFERENCE = [
+    ['areaDiagram', 'columns / rows', 'Drawn grid extent in whole units; accepts fractions for a partial last column.'],
+    ['areaDiagram', 'columnParts / rowParts', 'Dashed partitions per unit square — the denominator of the side length.'],
+    ['areaDiagram', 'shadeWidth / shadeHeight', "Shaded extent, e.g. 4 or '2 1/4'. Defaults to the whole grid."],
+    ['areaDiagram', 'topBrace / leftBrace', "'unit' | 'shaded' | 'grid' | false, or { from, to, label, style }."],
+    ['areaDiagram', 'topBraces / leftBraces', 'Array of spans — used for the whole part and the fractional part of a mixed number.'],
+    ['areaDiagram', 'braceStyle', "'brace' (default) or 'arrow' for double-headed measurement arrows."],
+    ['areaDiagram', 'decompose', 'Tints the fractional part, rules the split, prints the partial products.'],
+    ['areaDiagram', 'interactive', 'Enables paint; pair with allowResize for drag handles.'],
+    ['areaDiagram', 'inputs', 'Answer fields ({ key, label, answer, suffix }) or live readouts ({ readout: "area" }).'],
+    ['areaDiagram', 'checkAnswers', 'Grades on input; numbers compare as exact rationals, expressions as normalized text.'],
+    ['fractionStrips', 'strips / parts / shaded', 'Wholes, partitions per whole, shaded partitions per whole.'],
+    ['fractionStrips', 'orientation', "'horizontal' sharing strips, or 'vertical' bars with a separator."],
+    ['fractionStrips', 'brace / braceEvery', 'Label under the whole; braceEvery repeats it under every strip.'],
+    ['fractionCircle', 'count / parts / shaded', 'Circles, wedges per circle, shaded wedges per circle.'],
+];
+
+const ref = document.getElementById('ref');
+const headRow = el('div', 'r head');
+headRow.append(el('span', null, 'omdType'), el('span', null, 'field'), el('span', null, 'meaning'));
+ref.appendChild(headRow);
+for (const [type, field, description] of REFERENCE) {
+    const row = el('div', 'r');
+    const a = el('span'); a.appendChild(el('code', null, type));
+    row.append(a, el('span', 't', field), el('span', 'd', description));
+    ref.appendChild(row);
+}
+
+/* ---------------- scroll entry + nav ---------------- */
+
+const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            observer.unobserve(entry.target);
+        }
+    }
+}, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+document.querySelectorAll('.enter').forEach((node) => observer.observe(node));
+
+const links = [...document.querySelectorAll('nav a')];
+const navObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        links.forEach((link) => link.classList.toggle('on', link.getAttribute('href') === '#' + entry.target.id));
+    }
+}, { rootMargin: '-45% 0px -50% 0px' });
+document.querySelectorAll('section[id]').forEach((node) => navObserver.observe(node));
+
+window.__omdReady = true;
+</script>
+</body>
+</html>

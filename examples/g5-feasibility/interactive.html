@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD — Interactive Playground</title>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #101418;
+            --ink-soft: #5c646d;
+            --ink-faint: #9aa2ab;
+            --shell: rgba(16, 20, 24, 0.04);
+            --hairline: rgba(16, 20, 24, 0.07);
+            --core: #ffffff;
+            --accent: #1b4965;
+            --accent-soft: #e0f2fe;
+            --ease: cubic-bezier(0.32, 0.72, 0, 1);
+            --r-shell: 1.75rem;
+            --r-core: calc(1.75rem - 0.375rem);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Albert Sans', sans-serif;
+            background:
+                radial-gradient(1100px 520px at 90% -8%, rgba(159,218,255,0.15), transparent 60%),
+                #fbfbfc;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 0 40px; }
+        @media (max-width: 820px) { .wrap { padding: 0 16px; } }
+
+        /* island nav */
+        .island {
+            position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
+            z-index: 20; display: flex; align-items: center; gap: 4px;
+            padding: 7px 8px 7px 14px; border-radius: 999px;
+            background: rgba(255,255,255,0.72); border: 1px solid var(--hairline);
+            backdrop-filter: blur(24px); box-shadow: 0 12px 40px rgba(16,20,24,0.09);
+            font-size: 13px; font-weight: 600;
+        }
+        .island .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--accent); margin-right: 6px; }
+        .island a { padding: 5px 13px; border-radius: 999px; text-decoration: none; color: var(--ink-soft); font-weight: 500; transition: background 400ms var(--ease), color 400ms var(--ease); }
+        .island a:hover { background: var(--shell); color: var(--ink); }
+        .island a.active { background: var(--ink); color: #fff; }
+
+        header { padding: 148px 0 48px; max-width: 62ch; }
+        .eyebrow { display: inline-flex; padding: 6px 14px; border-radius: 999px; background: var(--shell); border: 1px solid var(--hairline); font-size: 10px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+        h1 { margin-top: 26px; font-size: clamp(2.4rem, 5.4vw, 4rem); font-weight: 600; letter-spacing: -0.042em; line-height: 1; }
+        h1 span { color: var(--ink-faint); }
+        .lede { margin-top: 26px; font-size: 1.06rem; font-weight: 300; line-height: 1.65; color: var(--ink-soft); }
+
+        .section { padding: 32px 0 24px; }
+        .section-head { display: flex; align-items: baseline; gap: 14px; padding-bottom: 12px; margin-bottom: 22px; border-bottom: 1px solid var(--hairline); }
+        .section-head h2 { font-size: 12.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #3c4249; }
+        .section-head span { font-size: 12px; color: var(--ink-faint); }
+
+        /* card */
+        .card { background: var(--shell); border: 1px solid var(--hairline); border-radius: var(--r-shell); padding: 7px; margin-bottom: 22px; }
+        .card-core { background: var(--core); border-radius: var(--r-core); box-shadow: inset 0 1px 1px rgba(255,255,255,0.7); padding: 28px 28px 24px; }
+        @media (max-width: 820px) { .card-core { padding: 20px 18px; } }
+        .card-core h3 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+        .card-core .desc { margin-top: 6px; font-size: 13px; font-weight: 300; line-height: 1.5; color: var(--ink-soft); }
+        .card-core .desc code { font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--shell); padding: 1px 5px; border-radius: 4px; color: var(--accent); }
+
+        /* controls */
+        .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 18px 0 18px; }
+        .segmented { display: inline-flex; background: var(--shell); border: 1px solid var(--hairline); border-radius: 999px; padding: 4px; gap: 4px; }
+        .segmented button { padding: 6px 14px; border-radius: 999px; border: none; background: transparent; font: 600 12px 'Albert Sans', sans-serif; color: var(--ink-soft); cursor: pointer; transition: all 300ms var(--ease); }
+        .segmented button.active { background: var(--ink); color: #fff; box-shadow: 0 2px 8px rgba(16,20,24,0.12); }
+        .segmented button:hover:not(.active) { background: rgba(16,20,24,0.06); color: var(--ink); }
+
+        .btn { font: 600 12.5px 'Albert Sans', sans-serif; padding: 7px 7px 7px 15px; border: none; border-radius: 999px; background: var(--ink); color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 9px; transition: transform 300ms var(--ease), background 300ms var(--ease), opacity 300ms var(--ease); }
+        .btn:hover { transform: translateY(-1px); }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.4; pointer-events: none; }
+        .btn .orb { width: 26px; height: 26px; border-radius: 999px; background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 13px; transition: transform 300ms var(--ease); }
+        .btn:hover .orb { transform: translateX(2px); }
+        .btn.ghost { background: var(--shell); color: var(--ink); border: 1px solid var(--hairline); padding: 7px 15px; }
+        .btn.ghost:hover { background: #fff; }
+
+        .slider-row { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-soft); }
+        .slider-row label { min-width: 68px; font-weight: 600; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+        .slider-row output { min-width: 28px; font: 600 12px 'JetBrains Mono', monospace; color: var(--ink); background: var(--shell); padding: 3px 7px; border-radius: 999px; text-align: center; }
+        input[type="range"] { -webkit-appearance: none; appearance: none; flex: 1; height: 4px; background: var(--hairline); border-radius: 999px; cursor: pointer; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 999px; background: var(--ink); border: 3px solid #fff; box-shadow: 0 1px 6px rgba(16,20,24,0.18); transition: transform 200ms var(--ease), box-shadow 200ms var(--ease); }
+        input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.12); box-shadow: 0 2px 10px rgba(16,20,24,0.22); }
+        input[type="range"]:active::-webkit-slider-thumb { transform: scale(0.95); }
+
+        textarea, input[type="text"] { width: 100%; font: 13px 'JetBrains Mono', monospace; line-height: 1.5; padding: 12px 14px; border: 1px solid var(--hairline); border-radius: 12px; background: #f8fafb; color: var(--ink); outline: none; transition: border-color 200ms var(--ease), background 200ms var(--ease); resize: vertical; }
+        textarea:focus, input[type="text"]:focus { border-color: rgba(27,73,101,0.22); background: #fff; }
+        textarea { min-height: 72px; }
+
+        .hint { font-size: 11.5px; color: var(--ink-faint); margin-top: 6px; }
+        .hint code { font-family: 'JetBrains Mono', monospace; background: var(--shell); padding: 1px 5px; border-radius: 4px; color: var(--accent); }
+
+        /* stage */
+        .stage { display: flex; align-items: center; justify-content: center; min-height: 140px; padding: 18px 8px; background: linear-gradient(0deg, rgba(16,20,24,0.012), rgba(16,20,24,0.012)), repeating-linear-gradient(45deg, transparent 0 12px, rgba(16,20,24,0.014) 12px 13px); border: 1px solid var(--hairline); border-radius: 16px; margin-top: 16px; transition: opacity 280ms var(--ease), transform 280ms var(--ease); }
+        .stage.updating { opacity: 0.55; transform: scale(0.995); }
+        .stage svg { max-width: 100%; height: auto; }
+        .stage:empty::before { content: 'rendering…'; font-size: 12px; color: var(--ink-faint); }
+
+        .progress { height: 3px; background: var(--hairline); border-radius: 999px; overflow: hidden; margin-top: 12px; }
+        .progress span { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width 400ms var(--ease); }
+
+        .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin-top: 14px; }
+        .pill::before { content: ''; width: 6px; height: 6px; border-radius: 999px; background: var(--accent); opacity: 0.7; }
+
+        footer { padding: 48px 0 40px; font-size: 12.5px; font-weight: 300; color: var(--ink-faint); }
+        .reveal { opacity: 0; transform: translateY(28px); filter: blur(6px); transition: opacity 700ms var(--ease), transform 700ms var(--ease), filter 700ms var(--ease); }
+        .reveal.in { opacity: 1; transform: translateY(0); filter: blur(0); }
+        @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; filter: none; transition: none; } }
+    </style>
+</head>
+<body>
+    <nav class="island">
+        <span class="dot"></span>
+        <a href="./demo.html">Overview</a>
+        <a href="./cookbook.html">Cookbook</a>
+        <a href="./interactive.html" class="active">Interactive</a>
+    </nav>
+
+    <div class="wrap">
+        <header>
+            <span class="eyebrow reveal">Playground · live OMD</span>
+            <h1 class="reveal">Touch it <span>and watch the math change.</span></h1>
+            <p class="lede reveal">Every visual below is the same component from the cookbook — now with sliders, steps and live text. Micro-animations are intentionally subtle: a soft fade on update, a thumb that grows on hover, a button that nudges.</p>
+        </header>
+
+        <!-- 1 — Algorithms -->
+        <section class="section">
+            <div class="card reveal">
+                <div class="card-core">
+                    <h3>Standard algorithms — step through</h3>
+                    <p class="desc">Switch operations. Use the slider or buttons to reveal one step at a time. The JSON updates in lockstep with the picture.</p>
+
+                    <div class="controls">
+                        <div class="segmented" id="algo-tabs">
+                            <button data-op="addition" class="active">Addition</button>
+                            <button data-op="subtraction">Subtraction</button>
+                            <button data-op="division">Division</button>
+                            <button data-op="multiplication">Multiplication</button>
+                        </div>
+                    </div>
+
+                    <div class="stage" id="stage-algo"></div>
+                    <div class="progress"><span id="algo-progress"></span></div>
+
+                    <div class="controls" style="justify-content: space-between;">
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <button class="btn ghost" id="algo-prev">← Prev</button>
+                            <button class="btn" id="algo-next">Next <span class="orb">→</span></button>
+                        </div>
+                        <div class="slider-row" style="flex:1; max-width: 260px; margin-left: 16px;">
+                            <input type="range" id="algo-slider" min="0" value="0">
+                            <output id="algo-out">Setup</output>
+                        </div>
+                    </div>
+                    <div class="pill" id="algo-pill">Setup — the unworked problem</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2 — Volume -->
+        <section class="section">
+            <div class="card reveal">
+                <div class="card-core">
+                    <h3>Volume — unit-cube explorer</h3>
+                    <p class="desc">Drag to change the prism. <code>highlightLayer</code> is 1-based from the bottom; set to 0 for no highlight.</p>
+
+                    <div class="controls" style="gap:18px; flex-wrap: wrap;">
+                        <div class="slider-row"><label>Length</label><input type="range" id="vol-l" min="1" max="6" value="5"><output id="vol-l-out">5</output></div>
+                        <div class="slider-row"><label>Width</label><input type="range" id="vol-w" min="1" max="5" value="3"><output id="vol-w-out">3</output></div>
+                        <div class="slider-row"><label>Height</label><input type="range" id="vol-h" min="1" max="6" value="4"><output id="vol-h-out">4</output></div>
+                        <div class="slider-row"><label>Highlight</label><input type="range" id="vol-hl" min="0" max="6" value="1"><output id="vol-hl-out">1</output></div>
+                    </div>
+
+                    <div class="stage" id="stage-vol"></div>
+                    <div class="pill" id="vol-pill">—</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3 — MathText -->
+        <section class="section">
+            <div class="card reveal">
+                <div class="card-core">
+                    <h3>Fractions inline — live editor</h3>
+                    <p class="desc">Type markup: <code>[3/4]</code> fraction · <code>[2 1/2]</code> mixed · <code>[6]</code> plain number · <code>**bold**</code></p>
+
+                    <textarea id="math-input">**11** A baker has [3/4] of a box of muffin mix. He pours it equally into [6] bowls — what fraction is in each bowl?</textarea>
+                    <div class="hint">Try: <code>[1/2]</code> <code>[7/8]</code> <code>[12 3/4]</code> — wraps at the card width.</div>
+
+                    <div class="controls">
+                        <div class="slider-row"><label>Size</label><input type="range" id="math-size" min="14" max="24" value="18"><output id="math-size-out">18</output></div>
+                        <div class="slider-row"><label>Width</label><input type="range" id="math-width" min="280" max="760" value="520" step="20"><output id="math-width-out">520</output></div>
+                    </div>
+
+                    <div class="stage" id="stage-math"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4 — Line plot -->
+        <section class="section">
+            <div class="card reveal">
+                <div class="card-core">
+                    <h3>Line plot — data playground</h3>
+                    <p class="desc">Enter values as decimals or fractions like <code>9 1/4, 10 1/2, 11</code>. Change the axis and watch ticks relabel as mixed numbers.</p>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <textarea id="plot-values" style="min-height: 92px;">9, 9.25, 9.5, 9.5, 9.75, 9.75, 9.75, 10, 10, 10.25, 10.5, 10.5, 11, 11.25, 12</textarea>
+                            <div class="hint">One value per observation. Fractions like <code>10 1/4</code> or <code>9.5</code> both work.</div>
+                        </div>
+                        <div style="display:flex; flex-direction: column; gap: 10px;">
+                            <div class="slider-row"><label>Min</label><input type="range" id="plot-min" min="0" max="10" value="9" step="0.25"><output id="plot-min-out">9</output></div>
+                            <div class="slider-row"><label>Max</label><input type="range" id="plot-max" min="2" max="14" value="12" step="0.25"><output id="plot-max-out">12</output></div>
+                            <div class="slider-row"><label>Step</label><input type="range" id="plot-step" min="1" max="4" value="1" step="1"><output id="plot-step-out">0.25</output></div>
+                            <div class="controls">
+                                <div class="segmented" id="plot-marker">
+                                    <button data-m="x" class="active">X marks</button>
+                                    <button data-m="dot">Dots</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stage" id="stage-plot"></div>
+                    <div class="pill" id="plot-pill">—</div>
+                </div>
+            </div>
+        </section>
+
+        <footer>Every card above renders the same <code>omdLinePlot</code> / <code>omdMathText</code> / <code>omdAlgorithmWork</code> / <code>rectangularPrism</code> you saw in the cookbook — just with controls bound to their JSON.</footer>
+    </div>
+
+    <script type="module">
+        import { createFromJSON } from '../../dist/omd.browser.js';
+        const NS = 'http://www.w3.org/2000/svg';
+        const $ = (s, r=document) => r.querySelector(s);
+
+        const mount = (host, json) => {
+            host.classList.add('updating');
+            host.innerHTML = '';
+            const v = createFromJSON(json);
+            const svg = document.createElementNS(NS, 'svg');
+            svg.setAttribute('viewBox', `0 0 ${Math.ceil(v.width)} ${Math.ceil(v.height)}`);
+            svg.setAttribute('width', String(Math.round(v.width)));
+            svg.setAttribute('height', String(Math.round(v.height)));
+            svg.appendChild(v.svgObject);
+            host.appendChild(svg);
+            requestAnimationFrame(() => requestAnimationFrame(() => host.classList.remove('updating')));
+            return v;
+        };
+
+        // reveal
+        const io = new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }, { threshold: 0.1, rootMargin: '0px 0px 200px 0px' });
+        document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+        requestAnimationFrame(() => document.querySelectorAll('header .reveal').forEach(el => el.classList.add('in')));
+        setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('in')), 2200);
+
+        /* ---- 1 — Algorithms ---- */
+        const ALGOS = {
+            addition: {
+                json: {
+                    omdType: 'algorithmWork', operation: 'addition',
+                    columns: ['1000s','100s','10s','1s'],
+                    rows: [
+                        { kind: 'carry', cells: ['1','1','1',''] },
+                        { kind: 'given', cells: ['3','5','7','6'] },
+                        { kind: 'given', cells: ['+','2','4','8','9'] },
+                        { kind: 'rule' },
+                        { kind: 'answer', cells: ['6','0','6','5'] },
+                    ],
+                }, steps: 0,
+            },
+            subtraction: {
+                json: {
+                    omdType: 'algorithmWork', operation: 'subtraction',
+                    columns: ['1000s','100s','10s','1s'],
+                    rows: [
+                        { kind: 'carry', step: 2, cells: ['', { text:'12', step:3, color:'#2386DB' }, { text:'11', step:2, color:'#2386DB' }, ''] },
+                        { kind: 'carry', step: 1, cells: [{ text:'5', step:3, color:'#2386DB' }, { text:'2', step:2, color:'#2386DB', strikeStep:3 }, { text:'1', step:1, color:'#2386DB', strikeStep:2 }, { text:'10', step:1, color:'#2386DB' }] },
+                        { kind: 'given', cells: [{text:'6',strikeStep:3},{text:'3',strikeStep:2},{text:'2',strikeStep:1},{text:'0',strikeStep:1}] },
+                        { kind: 'given', cells: ['−','2','7','5','6'] },
+                        { kind: 'rule' },
+                        { kind: 'answer', cells: [{text:'3',step:4},{text:'5',step:3},{text:'6',step:2},{text:'4',step:1}] },
+                    ],
+                    steps: [
+                        { description: 'Regroup a ten: 10 − 6 = 4' },
+                        { description: 'Regroup a hundred: 11 − 5 = 6' },
+                        { description: 'Regroup a thousand: 12 − 7 = 5' },
+                        { description: 'Subtract thousands: 5 − 2 = 3' },
+                    ],
+                    showStepsList: true, stepIndex: 0,
+                }, steps: 4,
+            },
+            multiplication: {
+                json: {
+                    omdType: 'algorithmWork', operation: 'multiplication',
+                    columns: ['100s','10s','1s'],
+                    rows: [
+                        { kind: 'carry', cells: ['2',''] },
+                        { kind: 'given', cells: ['2','4'] },
+                        { kind: 'given', cells: ['×','','3','6'] },
+                        { kind: 'rule' },
+                        { kind: 'work', cells: ['1','4','4'], annotation: '24 × 6' },
+                        { kind: 'work', cells: ['7','2',''], annotation: '24 × 30' },
+                        { kind: 'rule', gapAfter: 3 },
+                        { kind: 'answer', cells: ['8','6','4'] },
+                    ],
+                }, steps: 0,
+            },
+            division: {
+                json: {
+                    omdType: 'algorithmWork', operation: 'division', divisor: '12',
+                    columns: ['100s','10s','1s'],
+                    rows: [
+                        { kind: 'answer', cells: ['',{text:'6',step:1},{text:'8',step:3}] },
+                        { kind: 'given', cells: ['8','1','6'] },
+                        { kind: 'work', cells: ['','7','2'], step:1, annotation: '12 × 6 tens' },
+                        { kind: 'rule', step:2 },
+                        { kind: 'work', cells: ['','9','6'], step:2, annotation: 'bring down the 6' },
+                        { kind: 'work', cells: ['','9','6'], step:3, annotation: '12 × 8 ones' },
+                        { kind: 'rule', step:4 },
+                        { kind: 'work', cells: ['','','0'], step:4, annotation: 'remainder 0' },
+                    ],
+                    steps: [
+                        { description: 'Divide the tens' },
+                        { description: 'Bring down the ones' },
+                        { description: 'Divide the ones' },
+                        { description: 'Subtract to check' },
+                    ],
+                    showStepsList: true, stepIndex: 0,
+                }, steps: 4,
+            },
+        };
+
+        let op = 'addition';
+        let step = 0;
+        const stageAlgo = $('#stage-algo');
+        const sliderAlgo = $('#algo-slider');
+        const outAlgo = $('#algo-out');
+        const pillAlgo = $('#algo-pill');
+        const progressAlgo = $('#algo-progress');
+
+        const renderAlgo = () => {
+            const def = ALGOS[op];
+            const total = def.steps;
+            sliderAlgo.max = String(total);
+            sliderAlgo.value = String(step);
+            outAlgo.textContent = step === 0 ? 'Setup' : `Step ${step} of ${total || 1}`;
+            pillAlgo.textContent = total === 0 ? 'Static — no steps' : (step === 0 ? 'Setup — the unworked problem' : def.json.steps[step - 1].description);
+            progressAlgo.style.width = total ? `${(step / total) * 100}%` : '100%';
+            $('#algo-prev').disabled = step === 0;
+            $('#algo-next').disabled = total !== 0 && step >= total;
+            const json = total ? { ...def.json, stepIndex: step } : def.json;
+            mount(stageAlgo, json);
+        };
+
+        $('#algo-tabs').addEventListener('click', (e) => {
+            const b = e.target.closest('button[data-op]');
+            if (!b) return;
+            op = b.dataset.op;
+            step = 0;
+            for (const x of $('#algo-tabs').querySelectorAll('button')) x.classList.toggle('active', x.dataset.op === op);
+            renderAlgo();
+        });
+        $('#algo-prev').addEventListener('click', () => { step = Math.max(0, step - 1); renderAlgo(); });
+        $('#algo-next').addEventListener('click', () => { const t = ALGOS[op].steps; step = Math.min(t, step + 1); if (t === 0) step = 0; renderAlgo(); });
+        sliderAlgo.addEventListener('input', () => { step = +sliderAlgo.value; renderAlgo(); });
+        renderAlgo();
+
+        /* ---- 2 — Volume ---- */
+        const stageVol = $('#stage-vol');
+        const pillVol = $('#vol-pill');
+        const vol = { l: 5, w: 3, h: 4, hl: 1 };
+        const renderVol = () => {
+            const v = vol.l * vol.w * vol.h;
+            const perLayer = vol.l * vol.w;
+            mount(stageVol, { omdType: 'rectangularPrism', length: vol.l, width: vol.w, height: vol.h, unitScale: 19, showUnitCubes: true, highlightLayer: vol.hl || -1 });
+            pillVol.textContent = `${vol.l} × ${vol.w} × ${vol.h} = ${v} cubes  ·  ${perLayer} per layer  ·  ${vol.hl ? `layer ${vol.hl} highlighted` : 'no highlight'}`;
+            // keep highlight max in sync with height
+            const hl = $('#vol-hl'); hl.max = String(vol.h); if (vol.hl > vol.h) { vol.hl = vol.h; hl.value = String(vol.hl); $('#vol-hl-out').textContent = String(vol.hl); }
+        };
+        for (const k of ['l','w','h','hl']) {
+            const el = $(`#vol-${k}`), out = $(`#vol-${k}-out`);
+            el.addEventListener('input', () => { vol[k] = +el.value; out.textContent = el.value; renderVol(); });
+        }
+        renderVol();
+
+        /* ---- 3 — MathText ---- */
+        const stageMath = $('#stage-math');
+        const inputMath = $('#math-input');
+        const sizeMath = $('#math-size'), outSizeMath = $('#math-size-out');
+        const widthMath = $('#math-width'), outWidthMath = $('#math-width-out');
+        let tMath;
+        const renderMath = () => {
+            clearTimeout(tMath);
+            tMath = setTimeout(() => {
+                mount(stageMath, { omdType: 'mathText', text: inputMath.value, fontSize: +sizeMath.value, width: +widthMath.value });
+            }, 120);
+        };
+        inputMath.addEventListener('input', renderMath);
+        sizeMath.addEventListener('input', () => { outSizeMath.textContent = sizeMath.value; renderMath(); });
+        widthMath.addEventListener('input', () => { outWidthMath.textContent = widthMath.value; renderMath(); });
+        renderMath();
+
+        /* ---- 4 — Line plot ---- */
+        const stagePlot = $('#stage-plot');
+        const pillPlot = $('#plot-pill');
+        const inputPlot = $('#plot-values');
+        const plotMin = $('#plot-min'), plotMax = $('#plot-max'), plotStep = $('#plot-step');
+        const outMin = $('#plot-min-out'), outMax = $('#plot-max-out'), outStep = $('#plot-step-out');
+        let marker = 'x';
+        const stepLabels = ['0.125','0.25','0.5','1'];
+
+        const parseValues = (s) => {
+            const out = [];
+            for (const tok of s.split(',')) {
+                const t = tok.trim();
+                if (!t) continue;
+                // supports "9 1/4" and decimals
+                const m = t.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+                if (m) { out.push(+m[1] + +m[2] / +m[3]); continue; }
+                const v = Number(t);
+                if (Number.isFinite(v)) out.push(v);
+            }
+            return out;
+        };
+
+        const renderPlot = () => {
+            const values = parseValues(inputPlot.value);
+            const step = [0.125, 0.25, 0.5, 1][+plotStep.value - 1];
+            outMin.textContent = plotMin.value;
+            outMax.textContent = plotMax.value;
+            outStep.textContent = stepLabels[+plotStep.value - 1];
+            if (+plotMin.value >= +plotMax.value) { pillPlot.textContent = 'Min must be less than max'; return; }
+            mount(stagePlot, {
+                omdType: 'linePlot',
+                min: +plotMin.value, max: +plotMax.value, step,
+                values, title: 'PAPER AIRPLANE FLIGHTS', axisLabel: 'Distance (yards)',
+                marker, width: 560, fontSize: 15,
+            });
+            const ticks = Math.round((+plotMax.value - +plotMin.value) / step) + 1;
+            pillPlot.textContent = `${values.length} points  ·  ${ticks} ticks  ·  marker: '${marker}'`;
+        };
+
+        inputPlot.addEventListener('input', renderPlot);
+        for (const el of [plotMin, plotMax, plotStep]) el.addEventListener('input', renderPlot);
+        $('#plot-marker').addEventListener('click', (e) => {
+            const b = e.target.closest('button[data-m]');
+            if (!b) return;
+            marker = b.dataset.m;
+            for (const x of $('#plot-marker').querySelectorAll('button')) x.classList.toggle('active', x.dataset.m === marker);
+            renderPlot();
+        });
+        renderPlot();
+    </script>
+</body>
+</html>

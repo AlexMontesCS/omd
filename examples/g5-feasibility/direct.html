@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD — Direct Interaction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #101418;
+            --ink-soft: #5c646d;
+            --ink-faint: #9aa2ab;
+            --shell: rgba(16, 20, 24, 0.04);
+            --hairline: rgba(16, 20, 24, 0.07);
+            --core: #ffffff;
+            --accent: #1b4965;
+            --ease: cubic-bezier(0.32, 0.72, 0, 1);
+            --r-shell: 1.75rem;
+            --r-core: calc(1.75rem - 0.375rem);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Albert Sans', sans-serif;
+            background:
+                radial-gradient(1100px 520px at 90% -8%, rgba(159,218,255,0.15), transparent 60%),
+                #fbfbfc;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 0 40px; }
+        @media (max-width: 820px) { .wrap { padding: 0 16px; } }
+
+        .island {
+            position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
+            z-index: 20; display: flex; align-items: center; gap: 4px;
+            padding: 7px 8px 7px 14px; border-radius: 999px;
+            background: rgba(255,255,255,0.72); border: 1px solid var(--hairline);
+            backdrop-filter: blur(24px); box-shadow: 0 12px 40px rgba(16,20,24,0.09);
+            font-size: 13px; font-weight: 600;
+        }
+        .island .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--accent); margin-right: 6px; }
+        .island a { padding: 5px 13px; border-radius: 999px; text-decoration: none; color: var(--ink-soft); font-weight: 500; transition: background 400ms var(--ease), color 400ms var(--ease); }
+        .island a:hover { background: var(--shell); color: var(--ink); }
+        .island a.active { background: var(--ink); color: #fff; }
+
+        header { padding: 148px 0 48px; max-width: 64ch; }
+        .eyebrow { display: inline-flex; padding: 6px 14px; border-radius: 999px; background: var(--shell); border: 1px solid var(--hairline); font-size: 10px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+        h1 { margin-top: 26px; font-size: clamp(2.4rem, 5.4vw, 4rem); font-weight: 600; letter-spacing: -0.042em; line-height: 1; }
+        h1 span { color: var(--ink-faint); }
+        .lede { margin-top: 26px; font-size: 1.06rem; font-weight: 300; line-height: 1.65; color: var(--ink-soft); }
+
+        .section { padding: 28px 0 20px; }
+        .card { background: var(--shell); border: 1px solid var(--hairline); border-radius: var(--r-shell); padding: 7px; margin-bottom: 22px; }
+        .card-core { background: var(--core); border-radius: var(--r-core); box-shadow: inset 0 1px 1px rgba(255,255,255,0.7); padding: 28px 28px 22px; }
+        @media (max-width: 820px) { .card-core { padding: 20px 18px; } }
+        .card-core h3 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; display:flex; align-items:center; gap:10px; }
+        .card-core h3 .badge { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: var(--shell); border: 1px solid var(--hairline); padding: 3px 8px; border-radius: 999px; }
+        .card-core .desc { margin-top: 6px; font-size: 13px; font-weight: 300; line-height: 1.5; color: var(--ink-soft); }
+        .card-core .desc code { font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--shell); padding: 1px 5px; border-radius: 4px; color: var(--accent); }
+
+        .stage { display: flex; align-items: center; justify-content: center; min-height: 140px; padding: 18px 8px; background: linear-gradient(0deg, rgba(16,20,24,0.012), rgba(16,20,24,0.012)), repeating-linear-gradient(45deg, transparent 0 12px, rgba(16,20,24,0.014) 12px 13px); border: 1px solid var(--hairline); border-radius: 16px; margin-top: 16px; transition: opacity 280ms var(--ease), transform 280ms var(--ease); position: relative; }
+        .stage.updating { opacity: 0.55; transform: scale(0.995); }
+        .stage svg { max-width: 100%; height: auto; }
+        .stage.interactive { cursor: pointer; position: relative; }
+        /* direct interaction micro-animations — restrained */
+        .stage svg [data-layer] { cursor: pointer; transition: filter 180ms var(--ease), transform 180ms var(--ease), fill 180ms var(--ease); }
+        .stage svg [data-layer]:hover { filter: brightness(1.08); }
+        .stage svg [data-layer].selected { fill: #9FDAFF !important; filter: brightness(1.02) drop-shadow(0 2px 8px rgba(27,73,101,0.18)); }
+        .stage svg [data-layer].pulse { animation: pulse 320ms var(--ease); }
+        @keyframes pulse { 0% { filter: brightness(1); } 50% { filter: brightness(1.18); } 100% { filter: brightness(1); } }
+        .stage svg g[data-value], .stage svg ellipse[data-value] { cursor: grab; transition: filter 180ms var(--ease), transform 180ms var(--ease), opacity 180ms var(--ease); }
+        .stage svg g[data-value]:hover, .stage svg ellipse[data-value]:hover { filter: brightness(1.05); }
+        .stage svg g[data-value].dragging, .stage svg ellipse[data-value].dragging { cursor: grabbing; filter: drop-shadow(0 6px 14px rgba(27,73,101,0.28)); transform: scale(1.06); }
+        .stage svg g[data-value] line { transition: stroke-width 180ms var(--ease); }
+        .stage svg [data-step-index] { cursor: pointer; transition: filter 180ms var(--ease), opacity 180ms var(--ease); }
+        .stage svg [data-step-index]:hover { filter: brightness(0.85); opacity: 1 !important; }
+        .drag-ghost { position: absolute; pointer-events: none; background: var(--ink); color: #fff; font: 600 11px 'JetBrains Mono', monospace; padding: 4px 8px; border-radius: 999px; transform: translate(-50%, -140%); opacity: 0; transition: opacity 150ms var(--ease); white-space: nowrap; }
+        .drag-ghost.visible { opacity: 1; }
+        .hint { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--ink-faint); }
+        .hint::before { content: '↗'; width: 20px; height: 20px; border-radius: 999px; background: var(--shell); border: 1px solid var(--hairline); display: inline-flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+
+        .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+        .segmented { display: inline-flex; background: var(--shell); border: 1px solid var(--hairline); border-radius: 999px; padding: 4px; gap: 4px; }
+        .segmented button { padding: 6px 14px; border-radius: 999px; border: none; background: transparent; font: 600 12px 'Albert Sans', sans-serif; color: var(--ink-soft); cursor: pointer; transition: all 300ms var(--ease); }
+        .segmented button.active { background: var(--ink); color: #fff; box-shadow: 0 2px 8px rgba(16,20,24,0.12); }
+        .segmented button:hover:not(.active) { background: rgba(16,20,24,0.06); color: var(--ink); }
+
+        .btn { font: 600 12.5px 'Albert Sans', sans-serif; padding: 7px 7px 7px 15px; border: none; border-radius: 999px; background: var(--ink); color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 9px; transition: transform 200ms var(--ease), background 200ms var(--ease), …
+        .btn:hover { transform: translateY(-1px); }
+        .btn:active { transform: scale(0.97); }
+        .btn .orb { width: 26px; height: 26px; border-radius: 999px; background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 13px; transition: transform 200ms var(--ease); }
+        .btn:hover .orb { transform: translateX(2px); }
+        .btn.ghost { background: var(--shell); color: var(--ink); border: 1px solid var(--hairline); padding: 7px 15px; }
+
+        .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin-top: 12px; }
+        .pill::before { content: ''; width: 6px; height: 6px; border-radius: 999px; background: var(--accent); opacity: 0.7; }
+
+        footer { padding: 48px 0 40px; font-size: 12.5px; font-weight: 300; color: var(--ink-faint); }
+        .reveal { opacity: 0; transform: translateY(28px); filter: blur(6px); transition: opacity 700ms var(--ease), transform 700ms var(--ease), filter 700ms var(--ease); }
+        .reveal.in { opacity: 1; transform: translateY(0); filter: blur(0); }
+        @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; filter: none; transition: none; } }
+    </style>
+</head>
+<body>
+    <nav class="island">
+        <span class="dot"></span>
+        <a href="./demo.html">Overview</a>
+        <a href="./cookbook.html">Cookbook</a>
+        <a href="./interactive.html">Interactive</a>
+        <a href="./direct.html" class="active">Direct</a>
+    </nav>
+
+    <div class="wrap">
+        <header>
+            <span class="eyebrow reveal">Direct manipulation · live OMD</span>
+            <h1 class="reveal">Grab the math <span>itself.</span></h1>
+            <p class="lede reveal">Sliders are fine — but these visuals respond to touch on the ink. Tap a layer, drag an X, tap a digit to step. Micro-animations stay subtle: a face brightens on hover, a mark lifts while you drag, a digit nudges when it appears.</p>
+        </header>
+
+        <!-- Volume — click the prism -->
+        <section class="section">
+                    <h3>Volume <span class="badge">tap a layer</span></h3>
+                    <p class="desc">Click any visible cube face — its whole layer highlights. Hover previews before you tap.</p>
+                    <div class="controls" style="margin-bottom: 0;">
+                        <div class="segmented" id="vol-mode">
+                            <button data-mode="layer" class="active">Layer</button>
+                            <button data-mode="cube">Single cube</button>
+                        </div>
+                        <span style="font-size: 11px; color: var(--ink-faint);">per-layer vs per-cube</span>
+                    </div>
+                    <div class="stage interactive" id="stage-vol-direct"></div>
+                    <div class="hint">Tap a layer · hover to preview</div>
+                    <div class="pill" id="vol-direct-pill">—</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Line plot — drag the X's -->
+        <section class="section">
+            <div class="card reveal">
+                <div class="card-core">
+                    <h3>Line plot <span class="badge">drag & tap</span></h3>
+                    <p class="desc">Drag an <code>X</code> to another tick — it snaps. Click an X to remove it; click near the axis to add one.</p>
+                    <div class="stage interactive" id="stage-plot-direct"></div>
+                    <div class="hint">Drag X horizontally · click X to remove · click axis to add</div>
+                    <div class="pill" id="plot-direct-pill">—</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Algorithm — tap the digits -->
+        <section class="section">
+            <div class="card reveal">
+                <div class="card-core">
+                    <h3>Long division <span class="badge">tap the visual</span></h3>
+                    <p class="desc">Tap anywhere on the division to step — or tap a faded step in the list to jump there. The digit you reveal nudges in.</p>
+                    <div class="stage interactive" id="stage-algo-direct"></div>
+                    <div class="hint">Tap the visual to step · tap a step label to jump</div>
+                    <div class="pill" id="algo-direct-pill">Setup</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MathText — tap the fraction -->
+        <section class="section">
+            <div class="card reveal">
+                <div class="card-core">
+                    <h3>Fractions <span class="badge">tap the bar</span></h3>
+                    <p class="desc">Tap any fraction bar — it toggles between stacked and inline decimal, with a quick cross-fade.</p>
+                    <div class="stage interactive" id="stage-math-direct"></div>
+                    <div class="hint">Tap a fraction bar to toggle</div>
+                </div>
+            </div>
+        </section>
+
+        <footer>Same components as the other pages — the only difference is listeners on the SVG ink.</footer>
+    </div>
+
+    <script type="module">
+        import { createFromJSON } from '../../dist/omd.browser.js';
+        const NS = 'http://www.w3.org/2000/svg';
+        const $ = (s, r=document) => r.querySelector(s);
+
+        const mount = (host, json) => {
+            host.classList.add('updating');
+            host.innerHTML = '';
+            const v = createFromJSON(json);
+            const svg = document.createElementNS(NS, 'svg');
+            svg.setAttribute('viewBox', `0 0 ${Math.ceil(v.width)} ${Math.ceil(v.height)}`);
+            svg.setAttribute('width', String(Math.round(v.width)));
+            svg.setAttribute('height', String(Math.round(v.height)));
+            svg.appendChild(v.svgObject);
+            host.appendChild(svg);
+            requestAnimationFrame(() => requestAnimationFrame(() => host.classList.remove('updating')));
+            return v;
+        };
+
+        const io = new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }, { threshold: 0.1, rootMargin: '0px 0px 200px 0px' });
+        document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+        requestAnimationFrame(() => document.querySelectorAll('header .reveal').forEach(el => el.classList.add('in')));
+        setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('in')), 2200);
+
+        /* ---- Volume: click cube face -> highlight its layer (granular: layer vs single cube) ---- */
+        (() => {
+            const host = $('#stage-vol-direct');
+            const pill = $('#vol-direct-pill');
+            const modeEl = $('#vol-mode');
+            let dims = { l: 5, w: 3, h: 4, hl: 1 };
+            let mode = 'layer';
+            let selectedCube = null;
+
+            if (modeEl) {
+                modeEl.addEventListener('click', (e) => {
+                    const b = e.target.closest('button[data-mode]');
+                    if (!b) return;
+                    mode = b.dataset.mode;
+                    modeEl.querySelectorAll('button').forEach(x => x.classList.toggle('active', x.dataset.mode === mode));
+                    selectedCube = null;
+                    render();
+                });
+            }
+
+            const render = () => {
+                mount(host, { omdType: 'rectangularPrism', length: dims.l, width: dims.w, height: dims.h, unitScale: 19, showUnitCubes: true, highlightLayer: mode === 'layer' ? (dims.hl || -1) : -1 });
+                pill.textContent = mode === 'layer'
+                    ? `${dims.l} × ${dims.w} × ${dims.h} = ${dims.l * dims.w * dims.h} cubes  ·  ${dims.hl ? `layer ${dims.hl} selected — tap another` : 'tap any face'}`
+                    : (selectedCube ? `cube at layer ${selectedCube.layer}, col ${selectedCube.col}, row ${selectedCube.row} — tap another` : `${dims.l} × ${dims.w} × ${dims.h} = ${dims.l * dims.w * dims.h} cubes  ·  tap a single cube`);
+
+                // re-apply single-cube selection highlight if in cube mode
+                if (mode === 'cube' && selectedCube) {
+                    host.querySelectorAll(`[data-layer="${selectedCube.layer}"][data-col="${selectedCube.col}"][data-row="${selectedCube.row}"]`).forEach(n => {
+                        n.classList.add('selected');
+                        n.setAttribute('fill', '#9FDAFF');
+                        n.style.fill = '#9FDAFF';
+                    });
+                }
+
+                host.querySelectorAll('[data-layer]').forEach(el => {
+                    el.style.cursor = 'pointer';
+                    el.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const layer = +el.getAttribute('data-layer');
+                        const col = el.getAttribute('data-col');
+                        const row = el.getAttribute('data-row');
+                        el.classList.add('pulse'); setTimeout(() => el.classList.remove('pulse'), 340);
+                        if (mode === 'layer') {
+                            if (dims.hl === layer) dims.hl = 0; else dims.hl = layer;
+                            selectedCube = null;
+                        } else {
+                            selectedCube = { layer, col, row };
+                            dims.hl = 0;
+                        }
+                        render();
+                    });
+                    el.addEventListener('mouseenter', () => {
+                        if (mode === 'layer') {
+                            const layer = el.getAttribute('data-layer');
+                            host.querySelectorAll(`[data-layer="${layer}"]`).forEach(n => n.style.filter = 'brightness(1.12)');
+                        } else {
+                            const layer = el.getAttribute('data-layer'), col = el.getAttribute('data-col'), row = el.getAttribute('data-row');
+                            host.querySelectorAll(`[data-layer="${layer}"][data-col="${col}"][data-row="${row}"]`).forEach(n => n.style.filter = 'brightness(1.15) drop-shadow(0 2px 6px rgba(27,73,101,0.15))');
+                        }
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        host.querySelectorAll('[data-layer]').forEach(n => n.style.filter = '');
+                        // re-apply single-cube selection
+                        if (mode === 'cube' && selectedCube) {
+                            host.querySelectorAll(`[data-layer="${selectedCube.layer}"][data-col="${selectedCube.col}"][data-row="${selectedCube.row}"]`).forEach(n => n.classList.add('selected'));
+                        }
+                    });
+                });
+            };
+            render();
+        })();
+
+        /* ---- Line plot: drag X (obvious), click X to remove, click axis to add ---- */
+        (() => {
+            const host = $('#stage-plot-direct');
+            const pill = $('#plot-direct-pill');
+            let cfg = { min: 9, max: 12, step: 0.25, title: 'PAPER AIRPLANE FLIGHTS', axisLabel: 'Distance (yards)', marker: 'x', values: [9, 9.25, 9.5, 9.5, 9.75, 9.75, 9.75, 10, 10, 10.25, 10.5, 11, 11.25, 12] };
+
+            let dragState = null;
+            let ghost = null;
+
+            const valueAtX = (clientX) => {
+                const svg = host.querySelector('svg');
+                const rect = svg.getBoundingClientRect();
+                const vbW = svg.viewBox.baseVal.width;
+                const padX = 36;
+                const innerW = 560 - padX * 2;
+                const x = (clientX - rect.left) / (rect.width / vbW);
+                const tickCount = Math.round((cfg.max - cfg.min) / cfg.step);
+                const idx = Math.round((x - padX) / innerW * tickCount);
+                const clamped = Math.max(0, Math.min(tickCount, idx));
+                return cfg.min + clamped * cfg.step;
+            };
+
+            const xForValue = (v) => {
+                const padX = 36, innerW = 560 - padX * 2;
+                const tickCount = Math.round((cfg.max - cfg.min) / cfg.step);
+                const idx = Math.round((v - cfg.min) / cfg.step);
+                return padX + innerW * idx / tickCount;
+            };
+
+            const render = () => {
+                mount(host, { omdType: 'linePlot', ...cfg, width: 560, fontSize: 15 });
+                pill.textContent = `${cfg.values.length} marks  ·  drag an X to move (snaps) · click X to remove · click axis to add`;
+                wire();
+            };
+
+            const wire = () => {
+                const svg = host.querySelector('svg');
+                if (!ghost) {
+                    ghost = document.createElement('div');
+                    ghost.className = 'drag-ghost';
+                    host.appendChild(ghost);
+                }
+                // snap guide line
+                let snapLine = svg.querySelector('.snap-line');
+                if (!snapLine) {
+                    snapLine = document.createElementNS(NS, 'line');
+                    snapLine.setAttribute('class', 'snap-line');
+                    snapLine.setAttribute('stroke', '#1b4965');
+                    snapLine.setAttribute('stroke-width', '1.2');
+                    snapLine.setAttribute('stroke-dasharray', '4 3');
+                    snapLine.setAttribute('opacity', '0');
+                    svg.appendChild(snapLine);
+                }
+
+                svg.querySelectorAll('[data-value]').forEach(el => {
+                    el.style.cursor = 'grab';
+                    const onDown = (e) => {
+                        const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+                        dragState = { el, startVal: +el.getAttribute('data-value'), startX: clientX, hasMoved: false, curVal: +el.getAttribute('data-value') };
+                        el.classList.add('dragging');
+                        el.style.filter = 'drop-shadow(0 6px 14px rgba(27,73,101,0.28))';
+                        ghost.textContent = String(dragState.curVal);
+                        ghost.classList.add('visible');
+                        const rect = svg.getBoundingClientRect();
+                        ghost.style.left = (clientX - rect.left) + 'px';
+                        ghost.style.top = '14px';
+                        if (e.cancelable) e.preventDefault();
+                    };
+                    el.addEventListener('pointerdown', onDown);
+                    el.addEventListener('touchstart', onDown, { passive: false });
+                });
+
+                const onMove = (e) => {
+                    if (!dragState) return;
+                    const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+                    if (clientX == null) return;
+                    if (Math.abs(clientX - dragState.startX) > 4) dragState.hasMoved = true;
+                    if (!dragState.hasMoved) return;
+                    const v = valueAtX(clientX);
+                    dragState.curVal = v;
+                    const rect = svg.getBoundingClientRect();
+                    const x = xForValue(v);
+                    const startXPos = xForValue(dragState.startVal);
+                    dragState.el.setAttribute('transform', `translate(${x - startXPos},0)`);
+                    dragState.el.classList.add('dragging');
+                    ghost.textContent = Number.isInteger(v) ? String(v) : v.toFixed(2).replace(/\.?0+$/, '');
+                    ghost.style.left = (clientX - rect.left) + 'px';
+                    snapLine.setAttribute('x1', x); snapLine.setAttribute('x2', x);
+                    snapLine.setAttribute('y1', '0'); snapLine.setAttribute('y2', svg.viewBox.baseVal.height);
+                    snapLine.setAttribute('opacity', '0.35');
+                };
+
+                const onUp = (e) => {
+                    if (!dragState) return;
+                    const el = dragState.el;
+                    el.classList.remove('dragging');
+                    el.style.filter = '';
+                    el.removeAttribute('transform');
+                    ghost.classList.remove('visible');
+                    snapLine.setAttribute('opacity', '0');
+                    const clientX = e.clientX ?? e.changedTouches?.[0]?.clientX ?? dragState.startX;
+                    if (dragState.hasMoved) {
+                        const v = valueAtX(clientX);
+                        const idx = cfg.values.indexOf(dragState.startVal);
+                        if (idx !== -1) { cfg.values.splice(idx, 1, v); cfg.values.sort((a,b) => a-b); }
+                    } else {
+                        // click without drag = remove
+                        const v = +el.getAttribute('data-value');
+                        const idx = cfg.values.indexOf(v);
+                        if (idx !== -1) { cfg.values.splice(idx, 1); el.style.transition = 'opacity 180ms, transform 180ms'; el.style.opacity = '0'; el.style.transform = 'scale(0.7)'; setTimeout(render, 180); dragState = null; return; }
+                    }
+                    dragState = null;
+                    render();
+                };
+
+                // use pointer events on the svg for move/up so drag stays smooth even off the mark
+                const moveHandler = (e) => onMove(e);
+                const upHandler = (e) => onUp(e);
+                svg.addEventListener('pointermove', moveHandler);
+                svg.addEventListener('pointerup', upHandler);
+                svg.addEventListener('pointercancel', upHandler);
+                // fallback window listeners for when pointer leaves svg
+                window.addEventListener('pointermove', onMove);
+                window.addEventListener('pointerup', onUp);
+
+                // click empty area near axis to add (ignore if we just dragged)
+                svg.addEventListener('click', (e) => {
+                    if (dragState && dragState.hasMoved) return;
+                    if (e.target.closest('[data-value]')) return;
+                    const v = valueAtX(e.clientX);
+                    cfg.values.push(v);
+                    cfg.values.sort((a,b) => a-b);
+                    render();
+                });
+            };
+
+            render();
+        })();
+
+        /* ---- Algorithm: tap visual or step list to navigate (fixed) ---- */
+        (() => {
+            const host = $('#stage-algo-direct');
+            const pill = $('#algo-direct-pill');
+            const base = {
+                omdType: 'algorithmWork', operation: 'division', divisor: '12',
+                columns: ['100s','10s','1s'],
+                rows: [
+                    { kind: 'answer', cells: ['',{text:'6',step:1},{text:'8',step:3}] },
+                    { kind: 'given', cells: ['8','1','6'] },
+                    { kind: 'work', cells: ['','7','2'], step:1, annotation: '12 × 6 tens' },
+                    { kind: 'rule', step:2 },
+                    { kind: 'work', cells: ['','9','6'], step:2, annotation: 'bring down the 6' },
+                    { kind: 'work', cells: ['','9','6'], step:3, annotation: '12 × 8 ones' },
+                    { kind: 'rule', step:4 },
+                    { kind: 'work', cells: ['','','0'], step:4, annotation: 'remainder 0' },
+                ],
+                steps: [
+                    { description: 'Divide the tens' },
+                    { description: 'Bring down the ones' },
+                    { description: 'Divide the ones' },
+                    { description: 'Subtract to check' },
+                ],
+                showStepsList: true,
+            };
+            let step = 0;
+            const render = () => {
+                mount(host, { ...base, stepIndex: step });
+                pill.textContent = step === 0 ? 'Setup — tap to begin' : `Step ${step} of 4 — ${base.steps[step-1].description}`;
+                const svg = host.querySelector('svg');
+                svg.style.cursor = 'pointer';
+                // whole visual tap to advance (unless you tapped a step chip/label)
+                svg.addEventListener('click', (e) => {
+                    if (e.target.closest('[data-step-index]')) return;
+                    if (e.target.closest('[data-step]')) {
+                        const s = +e.target.closest('[data-step]').getAttribute('data-step');
+                        step = s;
+                    } else {
+                        step = step >= 4 ? 0 : step + 1;
+                    }
+                    render();
+                });
+                // step list: chips, numbers, and labels all jump to their step
+                svg.querySelectorAll('[data-step-index]').forEach(el => {
+                    el.style.cursor = 'pointer';
+                    el.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const idx = +el.getAttribute('data-step-index');
+                        step = idx;
+                        render();
+                    });
+                    el.addEventListener('mouseenter', () => el.style.filter = 'brightness(1.08)');
+                    el.addEventListener('mouseleave', () => el.style.filter = '');
+                });
+                // per-cell digits with data-step also jump
+                svg.querySelectorAll('text[data-step]').forEach(el => {
+                    el.style.cursor = 'pointer';
+                    el.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const s = +el.getAttribute('data-step');
+                        step = s;
+                        render();
+                    });
+                });
+            };
+            render();
+        })();
+
+        /* ---- Fractions: tap bar to toggle stacked <-> decimal ---- */
+        (() => {
+            const host = $('#stage-math-direct');
+            const data = { text: '**11** A baker has [3/4] of a box of muffin mix. He pours it equally into [6] bowls.', fontSize: 19, width: 520 };
+            let asDecimal = false;
+            const toDecimal = (t) => t.replace(/\[(\d+)\/(\d+)\]/g, (_, n, d) => (Number(n)/Number(d)).toString())
+                                       .replace(/\[(\d+)\s+(\d+)\/(\d+)\]/g, (_, w, n, d) => (Number(w) + Number(n)/Number(d)).toString());
+            const render = () => {
+                const json = asDecimal
+                    ? { omdType: 'mathText', text: toDecimal(data.text), fontSize: 19, width: 520 }
+                    : { omdType: 'mathText', text: data.text, fontSize: 19, width: 520 };
+                mount(host, json);
+                host.style.cursor = 'pointer';
+                host.title = asDecimal ? 'Click to show fractions' : 'Click a fraction bar to show decimals';
+                // whole stage toggles either direction
+                host.onclick = () => { asDecimal = !asDecimal; host.classList.add('updating'); setTimeout(render, 120); };
+                // fraction bars also toggle but stop propagation so host doesn't double-toggle
+                host.querySelectorAll('line').forEach(line => {
+                    const g = line.closest('g');
+                    if (!g) return;
+                    const x1 = +line.getAttribute('x1'), x2 = +line.getAttribute('x2');
+                    if (Math.abs(x2 - x1) < 5 || Math.abs(x2 - x1) > 40) return;
+                    g.style.cursor = 'pointer';
+                    g.addEventListener('click', (e) => { e.stopPropagation(); asDecimal = !asDecimal; host.classList.add('updating'); setTimeout(render, 120); });
+                    g.addEventListener('mouseenter', () => line.setAttribute('stroke-width', '2'));
+                    g.addEventListener('mouseleave', () => line.setAttribute('stroke-width', '1.4'));
+                });
+            };
+            render();
+        })();
+    </script>
+</body>
+</html>

@@ -44,6 +44,19 @@ export class omdTable extends jsvgGroup
         this.oddRowColor = "transparent";
         this.alternatingRowOpacity = 1.0;
 
+        // --- Interactive editable cells (student input) ---------------------
+        // When `editable` is true, blank cells (value === null/"" or matching
+        // `editableToken`) render as text inputs. An explicit `editableCells`
+        // list of [row, col] pairs overrides the blank-detection heuristic.
+        // Student entries are written straight back into `this.data` and flow
+        // out via `onChange` + the `omd-table-change` event.
+        this.editable = false;
+        this.editableCells = null;        // optional [[row, col], ...]
+        this.editableToken = null;        // value that marks a blank editable cell
+        this.onChange = null;             // optional callback(payload)
+        this._editableCellKeys = new Set(); // "row,col" of cells rendered as inputs
+        this._configuredEditableCellKeys = new Set();
+
         this.updateLayout();
     }
 
@@ -64,7 +77,9 @@ export class omdTable extends jsvgGroup
             this.equation = data.equation;
 
         if ( typeof data.data != "undefined" )
-            this.data = data.data;
+            this.data = Array.isArray(data.data)
+                ? data.data.map((row) => Array.isArray(row) ? row.slice() : row)
+                : data.data;
 
         if ( typeof data.headers != "undefined" )
             this.headers = data.headers;
@@ -80,7 +95,6 @@ export class omdTable extends jsvgGroup
 
         if ( typeof data.title != "undefined" )
             this.title = data.title;
-
 
         if ( typeof data.fontSize != "undefined" )
             this.fontSize = data.fontSize;
@@ -120,16 +134,56 @@ export class omdTable extends jsvgGroup
             this.showBackground = data.showBackground;
 
         // Load alternating row color properties
-        if ( typeof data.alternatingRowColors != "undefined" ) {
+        if ( typeof data.alternatingRowColors != "undefined" )
             this.alternatingRowColors = data.alternatingRowColors;
-            console.log('LoadFromJSON - Setting alternatingRowColors to:', this.alternatingRowColors);
-        }
         if ( typeof data.evenRowColor != "undefined" )
             this.evenRowColor = data.evenRowColor;
         if ( typeof data.oddRowColor != "undefined" )
             this.oddRowColor = data.oddRowColor;
         if ( typeof data.alternatingRowOpacity != "undefined" )
             this.alternatingRowOpacity = data.alternatingRowOpacity;
+
+        // Interactive editable-cell config.
+        if ( typeof data.editable != "undefined" )
+            this.editable = data.editable === true || data.editable === "true";
+        if ( Array.isArray(data.editableCells) )
+            this.editableCells = data.editableCells;
+        if ( typeof data.editableToken != "undefined" )
+            this.editableToken = data.editableToken;
+
+        // Keep editability separate from entered values. This prevents the
+        // first keystroke from turning a formerly blank cell into static text.
+        this._configuredEditableCellKeys = new Set();
+        if (this.editable) {
+            if (Array.isArray(this.editableCells)) {
+                for (const cell of this.editableCells) {
+                    if (Array.isArray(cell) && cell.length >= 2) {
+                        this._configuredEditableCellKeys.add(`${cell[0]},${cell[1]}`);
+                    }
+                }
+            } else {
+                for (let row = 0; row < this.data.length; row++) {
+                    const rowData = this.data[row];
+                    if (!Array.isArray(rowData)) continue;
+                    for (let col = 0; col < rowData.length; col++) {
+                        const value = rowData[col];
+                        if (value === null || value === "" || value === this.editableToken) {
+                            this._configuredEditableCellKeys.add(`${row},${col}`);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (data.editableValues && typeof data.editableValues === "object") {
+            for (const [key, value] of Object.entries(data.editableValues)) {
+                if (!this._configuredEditableCellKeys.has(key)) continue;
+                const [row, col] = key.split(",").map(Number);
+                if (Array.isArray(this.data[row])) {
+                    this.data[row][col] = value === "" ? null : value;
+                }
+            }
+        }
 
         this.updateLayout();
     }
@@ -204,11 +258,18 @@ export class omdTable extends jsvgGroup
 
     updateLayout()
     {
-        console.log('updateLayout called - alternatingRowColors:', this.alternatingRowColors);
-        console.log('alternatingRowColors type:', typeof this.alternatingRowColors);
-        console.log('alternatingRowColors isArray:', Array.isArray(this.alternatingRowColors));
         
         this.removeAllChildren();
+        // removeAllChildren() only clears jsvg-tracked children; editable-cell
+        // inputs are raw SVG appended to a content group, so clear any strays
+        // to avoid duplicates across re-layouts.
+        if (this.svgObject && this.svgObject.querySelectorAll) {
+            this.svgObject
+                .querySelectorAll("[data-omd-cell-input]")
+                .forEach((el) => el.remove());
+        }
+        // Recomputed below as cells are rendered.
+        this._editableCellKeys = new Set();
 
         // If an equation is provided, generate data before measuring/layout
         if (this.equation && this.equation.length > 0) {
@@ -309,7 +370,6 @@ export class omdTable extends jsvgGroup
         
         // First create a full-width header background if using alternating colors
         if (this.alternatingRowColors && Array.isArray(this.alternatingRowColors) && this.alternatingRowColors.length > 0) {
-            console.log('Creating header background with color:', this.alternatingRowColors[0]);
             const headerBg = new jsvgRect();
             headerBg.setWidthAndHeight(this.width, this.headerHeight);
             headerBg.setFillColor(this.alternatingRowColors[0]); // Headers use first color
@@ -317,8 +377,6 @@ export class omdTable extends jsvgGroup
             headerBg.setStrokeWidth(0);
             headerBg.setPosition(0, headerY);
             tableContentGroup.addChild(headerBg);
-        } else {
-            console.log('NOT creating header background - alternatingRowColors:', this.alternatingRowColors);
         }
         
         for (let col = 0; col < numCols; col++) {
@@ -357,7 +415,6 @@ export class omdTable extends jsvgGroup
                 const colorIndex = (row + 1) % this.alternatingRowColors.length; // +1 to account for header
                 const rowColor = this.alternatingRowColors[colorIndex];
                 
-                console.log(`Creating row ${row} background with color:`, rowColor, 'at position:', 0, rowY);
                 
                 var barRect = new jsvgRect();
                 barRect.setWidthAndHeight(this.width, this.cellHeight);
@@ -370,17 +427,29 @@ export class omdTable extends jsvgGroup
                 barRect.setStrokeWidth(0);
                 barRect.setPosition(0, rowY);
                 tableContentGroup.addChild(barRect);
-            } else {
-                console.log(`Row ${row}: No alternating colors - alternatingRowColors:`, this.alternatingRowColors);
             }
             
             for (let col = 0; col < numCols; col++) {
                 const cellWidth = cellWidths[col];
-                const cellText = this.createBodyTextBox(cellWidth, this.cellHeight, "");
                 const cellValue = rowData[col];
-                cellText.setText((cellValue ?? '').toString());
-                cellText.setPosition(currentX, rowY);
-                tableContentGroup.addChild(cellText);
+                if (this.isCellEditable(row, col, cellValue)) {
+                    this._editableCellKeys.add(`${row},${col}`);
+                    this.createCellInput(
+                        tableContentGroup,
+                        row,
+                        col,
+                        currentX,
+                        rowY,
+                        cellWidth,
+                        this.cellHeight,
+                        cellValue,
+                    );
+                } else {
+                    const cellText = this.createBodyTextBox(cellWidth, this.cellHeight, "");
+                    cellText.setText((cellValue ?? '').toString());
+                    cellText.setPosition(currentX, rowY);
+                    tableContentGroup.addChild(cellText);
+                }
                 currentX += cellWidth;
             }
             currentY += this.cellHeight;
@@ -461,6 +530,143 @@ export class omdTable extends jsvgGroup
         this.updateLayout();
     }
 
+    // ===== Interactive editable cells (student input) =====
+
+    isCellEditable(row, col, value) {
+        if (!this.editable) return false;
+        return this._configuredEditableCellKeys.has(`${row},${col}`);
+    }
+
+    _createSvgElement(tagName, attributes = {}) {
+        const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
+        for (const [key, value] of Object.entries(attributes)) {
+            if (value !== undefined && value !== null) {
+                element.setAttribute(key, String(value));
+            }
+        }
+        return element;
+    }
+
+    createCellInput(group, row, col, x, y, width, height, currentValue) {
+        const fo = this._createSvgElement("foreignObject", {
+            x, y, width, height,
+            "data-omd-cell-input": `${row},${col}`,
+        });
+
+        const input = document.createElementNS(
+            "http://www.w3.org/1999/xhtml",
+            "input"
+        );
+        input.setAttribute("type", "text");
+        input.setAttribute("inputmode", "decimal");
+        input.setAttribute("data-omd-cell", `${row},${col}`);
+        const initial =
+            currentValue === null || currentValue === this.editableToken
+                ? ""
+                : String(currentValue ?? "");
+        input.value = initial;
+        this._editableCellKeys.add(`${row},${col}`);
+        Object.assign(input.style, {
+            width: "100%",
+            height: "100%",
+            boxSizing: "border-box",
+            border: "none",
+            borderRadius: "0",
+            background: "transparent",
+            textAlign: "center",
+            fontFamily: this.fontFamily,
+            fontSize: `${this.fontSize}px`,
+            fontWeight: "600",
+            color: "#111827",
+            outline: "none",
+            padding: "0 4px",
+            caretColor: "#2563eb",
+        });
+
+        input.addEventListener("focus", () => {
+            input.style.background = "rgba(37,99,235,0.10)";
+            input.style.boxShadow = "inset 0 0 0 2px #2563eb";
+        });
+        input.addEventListener("blur", () => {
+            input.style.background = "transparent";
+            input.style.boxShadow = "none";
+        });
+        input.addEventListener("input", () => {
+            const raw = input.value;
+            // Keep the data grid as the single source of truth.
+            if (!Array.isArray(this.data[row])) return;
+            this.data[row][col] = raw === "" ? null : raw;
+            this.emitTableChange("celledit", { row, col, value: raw });
+        });
+
+        fo.appendChild(input);
+        // Append to the content group's svgObject so it inherits the group's
+        // transform (clip-mask offset) and is torn down with it on re-layout.
+        const host = group && group.svgObject ? group.svgObject : this.svgObject;
+        host.appendChild(fo);
+    }
+
+    /** Full data grid including any student-entered values. */
+    getCellValues() {
+        return this.data.map((row) =>
+            Array.isArray(row) ? row.slice() : row
+        );
+    }
+
+    /** Map of "row,col" → entered value for every editable cell. */
+    getEditableValues() {
+        const out = {};
+        for (const key of this._editableCellKeys) {
+            const [r, c] = key.split(",").map(Number);
+            const row = this.data[r];
+            out[key] = Array.isArray(row) ? row[c] ?? null : null;
+        }
+        return out;
+    }
+
+    /** Update editable cells without rebuilding the table or losing focus. */
+    setEditableValues(values, emitChange = true) {
+        if (!values || typeof values !== "object") return;
+        for (const [key, value] of Object.entries(values)) {
+            if (!this._configuredEditableCellKeys.has(key)) continue;
+            const [row, col] = key.split(",").map(Number);
+            if (!Array.isArray(this.data[row])) continue;
+            this.data[row][col] = value === "" ? null : value;
+            const input = this.svgObject?.querySelector?.(
+                `[data-omd-cell="${key}"]`
+            );
+            if (input && input.value !== String(value ?? "")) {
+                input.value = String(value ?? "");
+            }
+        }
+        if (emitChange) this.emitTableChange("set");
+    }
+
+    emitTableChange(type, detail = {}) {
+        const payload = {
+            type,
+            data: this.getCellValues(),
+            editableValues: this.getEditableValues(),
+            values: this.getEditableValues(),
+            ...detail,
+        };
+        if (typeof this.onChange === "function") {
+            this.onChange(payload);
+        }
+        if (
+            typeof CustomEvent !== "undefined" &&
+            this.svgObject &&
+            typeof this.svgObject.dispatchEvent === "function"
+        ) {
+            this.svgObject.dispatchEvent(
+                new CustomEvent("omd-table-change", {
+                    bubbles: true,
+                    detail: payload,
+                })
+            );
+        }
+    }
+
     // Background customization methods
     setBackgroundColor(color) {
         this.backgroundColor = color;
@@ -492,9 +698,7 @@ export class omdTable extends jsvgGroup
 
     // Alternating row colors methods
     setAlternatingRowColors(colors) {
-        console.log('setAlternatingRowColors called with:', colors);
         this.alternatingRowColors = colors;
-        console.log('alternatingRowColors set to:', this.alternatingRowColors);
         this.updateLayout();
     }
 

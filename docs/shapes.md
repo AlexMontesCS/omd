@@ -111,8 +111,16 @@ A 3D rectangular prism drawn in oblique projection with optional dimension annot
 | `heightLabel` | string | no | `''` | Override the height dimension label text |
 | `insideLabel` | string | no | `''` | Text rendered below the front face (useful for volume expressions) |
 | `outsideTopLabel` | string | no | `''` | Text above the top face |
-| `showHiddenEdges` | boolean | no | `true` | Render back edges as dashed lines |
+| `showHiddenEdges` | boolean | no | `true` | Render back edges as dashed lines (ignored when `showUnitCubes` is on) |
 | `labelFontSize` | number | no | `12` | Font size in pixels for all labels |
+| `showUnitCubes` | boolean | no | `false` | Render the prism as stacked unit cubes instead of smooth faces |
+| `highlightLayer` | number | no | `-1` | 1-based layer counted from the bottom to recolor; `-1` highlights nothing |
+| `layerColors` | object | no | — | Face color overrides for the unit cubes: `{ top, side, front }`, defaulting to `#e6edf7`, `#d5dfef` and the OMD light gray |
+| `cubeGapRatio` | number | no | `0.08` | Gap between unit cubes as a fraction of one unit, clamped to 0–0.4 |
+
+Unit-cube mode draws the outer shell only, so the solid still reads as solid, and dimension
+labels compose over the cube grid unchanged. `length`, `width` and `height` are the cube
+counts along each axis. Smooth-prism output is unchanged when `showUnitCubes` is `false`.
 
 ```js
 import { omdRectangularPrism } from '@teachinglab/omd';
@@ -124,6 +132,21 @@ prism.loadFromJSON({
   unitScale: 30,
   showLabels: true,
   insideLabel: 'V = 24 units³'
+});
+```
+
+```js
+// Grade 5 volume: 5 x 3 x 6 in unit cubes with the bottom layer picked out
+const layered = new omdRectangularPrism();
+layered.loadFromJSON({
+  length: 5,
+  width: 3,
+  height: 6,
+  unitScale: 20,
+  showUnitCubes: true,
+  highlightLayer: 1,
+  sideLabels: { l: '5 ft', w: '3 ft', h: '6 ft' },
+  insideLabel: 'V = 90 cubic feet'
 });
 ```
 

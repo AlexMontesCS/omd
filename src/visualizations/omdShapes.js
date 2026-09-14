@@ -697,6 +697,18 @@ export class omdRectangularPrism extends jsvgGroup
         this.showHiddenEdges = true;
         this.labelFontSize = 12;
 
+        // Unit-cube rendering (Grade 5 volume work).
+        this.showUnitCubes = false;
+        this.highlightLayer = -1;          // 1-based layer index counted from the bottom
+        this.layerColors = {               // per-layer face colors; falls back to defaults
+            top: "#e6edf7",
+            side: "#d5dfef",
+            front: omdColor.lightGray,
+        };
+        this.cubeGapRatio = 0.08;          // gap between cubes as a fraction of a unit
+        
+        this._cubeStrokeColor = "#3B5578";
+
         this.topFacePath = new jsvgPath();
         this.topFacePath.setStrokeColor("black");
         this.topFacePath.setStrokeWidth(2);
@@ -714,6 +726,11 @@ export class omdRectangularPrism extends jsvgGroup
         this.frontFacePath.setStrokeWidth(2);
         this.frontFacePath.setFillColor(omdColor.lightGray);
         this.addChild(this.frontFacePath);
+
+        // Cubes paint after the faces but BEFORE hidden edges and labels so
+        // dimension lines, dashed edges, and text always sit on top.
+        this.cubeHolder = new jsvgGroup();
+        this.addChild(this.cubeHolder);
 
         this.hiddenEdgeHolder = new jsvgGroup();
         this.addChild(this.hiddenEdgeHolder);
@@ -764,6 +781,18 @@ export class omdRectangularPrism extends jsvgGroup
 
         if ( typeof data.labelFontSize === "number" )
             this.labelFontSize = data.labelFontSize;
+
+        if ( typeof data.showUnitCubes != "undefined" )
+            this.showUnitCubes = data.showUnitCubes !== false;
+
+        if ( typeof data.highlightLayer != "undefined" && data.highlightLayer !== null )
+            this.highlightLayer = Math.floor(Number(data.highlightLayer));
+
+        if ( data.layerColors && typeof data.layerColors === "object" )
+            this.layerColors = { ...this.layerColors, ...data.layerColors };
+
+        if ( typeof data.cubeGapRatio == "number" )
+            this.cubeGapRatio = Math.min(0.4, Math.max(0, data.cubeGapRatio));
 
         this.updateLayout();
     }
@@ -919,8 +948,12 @@ export class omdRectangularPrism extends jsvgGroup
         this.frontFacePath.addPoint(frontTL.x, frontTL.y);
         this.frontFacePath.updatePath();
 
+        this._drawUnitCubeLayers(frontTL, frontTR, frontBR, frontBL, backTL, backTR, backBR, backBL, prismLength, prismWidth, prismHeight);
+
         this.hiddenEdgeHolder.removeAllChildren();
-        if ( this.showHiddenEdges )
+        // Unit cubes already describe the solid — dashed rear edges would read
+        // as lines cutting through the cubes.
+        if ( this.showHiddenEdges && !this.showUnitCubes )
         {
             const hiddenEdges = [
                 [backTL, backBL],
@@ -1049,6 +1082,124 @@ export class omdRectangularPrism extends jsvgGroup
         this.width = Math.max(frontBR.x, backBR.x) + rightPad;
         this.height = Math.max(frontBR.y, backBR.y) + bottomPad;
         this.svgObject.setAttribute("viewBox", `0 0 ${this.width} ${this.height}`);
+    }
+    /**
+     * Draws the prism as stacked unit cubes (Grade 5 volume work). Layers are
+     * counted bottom-up; `highlightLayer` recolors one layer so a lesson can
+     * walk through "volume = layers × cubes-per-layer" step by step.
+     */
+    _drawUnitCubeLayers(frontTL, frontTR, frontBR, frontBL, backTL, backTR, backBR, backBL, prismLength, prismWidth, prismHeight)
+    {
+        this.cubeHolder.removeAllChildren();
+
+        if ( !this.showUnitCubes )
+            return;
+
+        const scale = Math.max(1, Number(this.unitScale) || 1);
+        // Cube grid is pinned to the prism faces: pitch equals one unit exactly,
+        // the gap becomes an inset inside each unit cell so stacks never drift.
+        const inset = Math.min(0.4, Math.max(0, this.cubeGapRatio)) * scale * 0.5;
+        const cell = scale;
+        // Recession unit vector along the depth axis (matches the face geometry).
+        const dx = (backTL.x - frontTL.x) / prismWidth;
+        const dy = (backTL.y - frontTL.y) / prismWidth;
+
+        for ( let layer = 0; layer < prismHeight; layer++ )
+        {
+            const isHighlighted = layer === this.highlightLayer - 1;
+            const topColor = isHighlighted ? "#BFD9F2" : this.layerColors.top;
+            const sideColor = isHighlighted ? "#A8C8E8" : this.layerColors.side;
+            const frontColor = isHighlighted ? omdColor.stepColor : this.layerColors.front;
+
+            // Paint back-to-front: rear rows first, then higher layers, so a
+            // front cube's opaque faces cover the ones behind it. Front-to-back
+            // order makes rear edges bleed through and reads as transparent.
+            for ( let row = prismWidth - 1; row >= 0; row-- )
+            {
+                for ( let col = 0; col < prismLength; col++ )
+                {
+                    // Only the OUTER SHELL is drawn. An interior cube's faces
+                    // are hidden by its neighbours in a solid prism, so drawing
+                    // them would show edges "through" the solid.
+                    const showFront = row === 0;
+                    const showTop = layer === prismHeight - 1;
+                    const showSide = col === prismLength - 1;
+                    if ( !showFront && !showTop && !showSide )
+                        continue;
+
+                    const x0 = frontBL.x + col * cell + inset + row * dx;
+                    const yBase = frontBL.y - layer * cell - inset + row * dy;
+                    const size = scale - inset * 2;
+
+                    // Front square of this cube.
+                    const p0 = { x: x0, y: yBase };
+                    const p1 = { x: x0 + size, y: yBase };
+                    const p2 = { x: x0 + size, y: yBase - size };
+                    const p3 = { x: x0, y: yBase - size };
+                    // Corners pushed back one unit along the recession axis.
+                    const p1b = { x: p1.x + dx, y: p1.y + dy };
+                    const p2b = { x: p2.x + dx, y: p2.y + dy };
+                    const p3b = { x: p3.x + dx, y: p3.y + dy };
+
+                    if ( showFront )
+                    {
+                        const frontPath = new jsvgPath();
+                        frontPath.setStrokeColor(this._cubeStrokeColor);
+                        frontPath.setStrokeWidth(1);
+                        frontPath.setFillColor(frontColor);
+                        frontPath.svgObject.setAttribute('data-layer', String(layer + 1));
+                        frontPath.svgObject.setAttribute('data-col', String(col));
+                        frontPath.svgObject.setAttribute('data-row', String(row));
+                        frontPath.svgObject.setAttribute('data-face', 'front');
+                        frontPath.addPoint(p0.x, p0.y);
+                        frontPath.addPoint(p1.x, p1.y);
+                        frontPath.addPoint(p2.x, p2.y);
+                        frontPath.addPoint(p3.x, p3.y);
+                        frontPath.addPoint(p0.x, p0.y);
+                        frontPath.updatePath();
+                        this.cubeHolder.addChild(frontPath);
+                    }
+
+                    if ( showTop )
+                    {
+                        const topPath = new jsvgPath();
+                        topPath.setStrokeColor(this._cubeStrokeColor);
+                        topPath.setStrokeWidth(1);
+                        topPath.setFillColor(topColor);
+                        topPath.svgObject.setAttribute('data-layer', String(layer + 1));
+                        topPath.svgObject.setAttribute('data-col', String(col));
+                        topPath.svgObject.setAttribute('data-row', String(row));
+                        topPath.svgObject.setAttribute('data-face', 'top');
+                        topPath.addPoint(p3.x, p3.y);
+                        topPath.addPoint(p2.x, p2.y);
+                        topPath.addPoint(p2b.x, p2b.y);
+                        topPath.addPoint(p3b.x, p3b.y);
+                        topPath.addPoint(p3.x, p3.y);
+                        topPath.updatePath();
+                        this.cubeHolder.addChild(topPath);
+                    }
+
+                    if ( showSide )
+                    {
+                        const sidePath = new jsvgPath();
+                        sidePath.setStrokeColor(this._cubeStrokeColor);
+                        sidePath.setStrokeWidth(1);
+                        sidePath.setFillColor(sideColor);
+                        sidePath.svgObject.setAttribute('data-layer', String(layer + 1));
+                        sidePath.svgObject.setAttribute('data-col', String(col));
+                        sidePath.svgObject.setAttribute('data-row', String(row));
+                        sidePath.svgObject.setAttribute('data-face', 'side');
+                        sidePath.addPoint(p1.x, p1.y);
+                        sidePath.addPoint(p1b.x, p1b.y);
+                        sidePath.addPoint(p2b.x, p2b.y);
+                        sidePath.addPoint(p2.x, p2.y);
+                        sidePath.addPoint(p1.x, p1.y);
+                        sidePath.updatePath();
+                        this.cubeHolder.addChild(sidePath);
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -23,6 +23,7 @@ new omdDisplay(container, options)
 | `autoScale` | `boolean` | `true` | Scales the component to fit within the container, respecting `maxScale`. |
 | `maxScale` | `number` | `1` | Upper bound on the scale factor. `1` means the content will never render larger than its natural size — only shrink to fit. Set higher (e.g. `2`) to allow upscaling. |
 | `padding` | `number` | `8` | Pixel padding added around the content inside the SVG. |
+| `onChange` | `(payload) => void` | `null` | Receives change payloads from interactive components such as editable tables and point-plotting coordinate planes. |
 
 ### Methods
 

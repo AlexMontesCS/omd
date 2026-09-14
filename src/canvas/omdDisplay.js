@@ -15,6 +15,7 @@ export class omdDisplay {
             autoScale: true,
             maxScale: 1,
             padding: 8,
+            onChange: null,
             ...options
         };
 
@@ -112,6 +113,9 @@ export class omdDisplay {
     _setComponent(component) {
         this._clearComponent();
         this._component = component;
+        if (typeof this.options.onChange === "function") {
+            component.onChange = (payload) => this.options.onChange(payload);
+        }
         this.svg.addChild(component);
         this._layout();
     }

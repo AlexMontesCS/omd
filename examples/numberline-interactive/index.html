@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Number Line Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #172033;
+            --muted: #62708a;
+            --paper: #f8fafc;
+            --card: rgba(255, 255, 255, 0.92);
+            --line: #d8dee8;
+            --blue: #2386db;
+            --gold: #f3b44b;
+            --rose: #db2323;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Albert Sans", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 12% 10%, rgba(159, 218, 255, 0.5), transparent 28rem),
+                radial-gradient(circle at 88% 4%, rgba(255, 217, 179, 0.48), transparent 25rem),
+                linear-gradient(135deg, #fbfdff 0%, #f7f9fc 58%, #fff9f1 100%);
+        }
+
+        header {
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 46px 24px 22px;
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            color: var(--rose);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            max-width: 760px;
+            margin: 0;
+            font-size: clamp(38px, 8vw, 82px);
+            line-height: 0.9;
+            letter-spacing: -0.07em;
+        }
+
+        header p {
+            max-width: 720px;
+            margin: 20px 0 0;
+            color: var(--muted);
+            font-size: 17px;
+            line-height: 1.55;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 22px;
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 18px 24px 48px;
+        }
+
+        .stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .card,
+        .panel {
+            border: 1px solid rgba(23, 32, 51, 0.12);
+            border-radius: 28px;
+            background: var(--card);
+            box-shadow: 0 24px 70px rgba(23, 32, 51, 0.1);
+            backdrop-filter: blur(18px);
+        }
+
+        .card {
+            padding: 22px;
+            animation: rise 520ms ease both;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 90ms;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 180ms;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 18px;
+            letter-spacing: -0.03em;
+        }
+
+        .hint {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .demo-target {
+            min-height: 154px;
+            display: grid;
+            place-items: center;
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            background: rgba(248, 250, 252, 0.72);
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        button {
+            border: 0;
+            border-radius: 999px;
+            padding: 10px 14px;
+            color: white;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            background: var(--ink);
+            cursor: pointer;
+            transition: transform 160ms ease, box-shadow 160ms ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(23, 32, 51, 0.16);
+        }
+
+        button.secondary {
+            color: var(--ink);
+            background: #f7e7c6;
+        }
+
+        .panel {
+            position: sticky;
+            top: 20px;
+            align-self: start;
+            padding: 20px;
+        }
+
+        .panel h2 {
+            margin-bottom: 10px;
+        }
+
+        .instructions {
+            display: grid;
+            gap: 10px;
+            margin: 0 0 18px;
+            padding: 0;
+            list-style: none;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.42;
+        }
+
+        .instructions strong {
+            color: var(--ink);
+        }
+
+        #event-log {
+            display: grid;
+            gap: 8px;
+            max-height: 360px;
+            overflow: auto;
+            padding-right: 4px;
+        }
+
+        .event {
+            padding: 10px 12px;
+            border-radius: 14px;
+            color: #25324a;
+            background: rgba(37, 99, 235, 0.08);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .event b {
+            color: var(--blue);
+        }
+
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 880px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <p class="eyebrow">OMD playground</p>
+        <h1>Interactive number lines</h1>
+                <p>Drag dots, click the track to add values, double-click dots to remove them, move focused dots with the keyboard, and adjust the interval handles.</p>
+    </header>
+
+    <main>
+        <div class="stack">
+            <section class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>Full interaction sandbox</h2>
+                        <p class="hint">Everything is turned on: click-to-add, drag, delete, hover preview, snapping, and range handles.</p>
+                    </div>
+                </div>
+                <div class="demo-target" id="sandbox-line"></div>
+                <div class="actions">
+                    <button id="add-random">Add Random Dot</button>
+                    <button class="secondary" id="reset-sandbox">Reset Sandbox</button>
+                    <button class="secondary" id="clear-sandbox">Clear Dots</button>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>Range selector</h2>
+                        <p class="hint">Use the handles to model an interval on the line. Arrow keys work after a handle receives focus.</p>
+                    </div>
+                </div>
+                <div class="demo-target" id="range-line"></div>
+                <div class="actions">
+                    <button id="add-range">Add Range</button>
+                    <button class="secondary" id="remove-range">Remove Range</button>
+                    <button class="secondary" id="cycle-start">Cycle Left Endpoint</button>
+                    <button class="secondary" id="cycle-end">Cycle Right Endpoint</button>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>Constrained dots</h2>
+                        <p class="hint">No click-to-add here. The red dot is locked, while the blue dots can be dragged or nudged by keyboard.</p>
+                    </div>
+                </div>
+                <div class="demo-target" id="locked-line"></div>
+            </section>
+        </div>
+
+        <aside class="panel">
+            <h2>How to Test</h2>
+            <ul class="instructions">
+                <li><strong>Pointer:</strong> drag dots or range handles.</li>
+                <li><strong>Add:</strong> click empty space on the first line.</li>
+                <li><strong>Remove:</strong> double-click a dot, or focus it and press Delete.</li>
+                <li><strong>Keyboard:</strong> Tab to a dot/handle, use arrow keys, Shift+arrow for bigger jumps, Home/End for bounds.</li>
+                <li><strong>Endpoint:</strong> double-click a range endpoint, or use the buttons, to cycle closed, open, and arrow.</li>
+            </ul>
+            <h2>Event Log</h2>
+            <div id="event-log"></div>
+        </aside>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

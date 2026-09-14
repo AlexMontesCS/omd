@@ -4708,6 +4708,16 @@
       "heightLabel": "h",
       "outsideTopLabel": "rectangular prism",
       "labelFontSize": 17
+    },
+    {
+      "_comment": "Volume with unit cubes: a 5x3x6 prism whose bottom layer is highlighted for layer-by-layer counting.",
+      "omdType": "rectangularPrism",
+      "length": 5,
+      "width": 3,
+      "height": 6,
+      "unitScale": 19,
+      "showUnitCubes": true,
+      "highlightLayer": 1
     }
   ],
   "cylinder": [
@@ -6156,6 +6166,425 @@
       "text": "General solution",
       "size": "large",
       "color": "#111827"
+    }
+  ],
+  "algorithmWork": [
+    {
+      "_comment": "Addition with regrouping. Carry digits sit in their own row above the operands.",
+      "omdType": "algorithmWork",
+      "operation": "addition",
+      "columns": [
+        "1000s",
+        "100s",
+        "10s",
+        "1s"
+      ],
+      "rows": [
+        {
+          "kind": "carry",
+          "cells": [
+            "1",
+            "1",
+            "1",
+            ""
+          ]
+        },
+        {
+          "kind": "given",
+          "cells": [
+            "",
+            "3",
+            "5",
+            "7",
+            "6"
+          ]
+        },
+        {
+          "kind": "given",
+          "cells": [
+            "+",
+            "",
+            "2",
+            "4",
+            "8",
+            "9"
+          ]
+        },
+        {
+          "kind": "rule"
+        },
+        {
+          "kind": "answer",
+          "cells": [
+            "",
+            "6",
+            "0",
+            "6",
+            "5"
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "Long division 816 / 12 revealed step by step: quotient digits appear above the bracket on their own steps. Omit stepIndex for the finished work, or set 0 to start at setup.",
+      "omdType": "algorithmWork",
+      "operation": "division",
+      "divisor": "12",
+      "columns": [
+        "100s",
+        "10s",
+        "1s"
+      ],
+      "rows": [
+        {
+          "kind": "answer",
+          "cells": [
+            "",
+            {
+              "text": "6",
+              "step": 1
+            },
+            {
+              "text": "8",
+              "step": 3
+            }
+          ]
+        },
+        {
+          "kind": "given",
+          "cells": [
+            "8",
+            "1",
+            "6"
+          ]
+        },
+        {
+          "kind": "work",
+          "cells": [
+            "",
+            "7",
+            "2"
+          ],
+          "step": 1,
+          "annotation": "12 x 6 tens = 72"
+        },
+        {
+          "kind": "rule",
+          "step": 2
+        },
+        {
+          "kind": "work",
+          "cells": [
+            "",
+            "9",
+            "6"
+          ],
+          "step": 2,
+          "annotation": "subtract, bring down the 6"
+        }
+      ],
+      "steps": [
+        {
+          "label": "Step 1",
+          "description": "Divide the tens"
+        },
+        {
+          "label": "Step 2",
+          "description": "Bring down the ones"
+        },
+        {
+          "label": "Step 3",
+          "description": "Divide the ones"
+        }
+      ],
+      "showStepsList": true
+    },
+    {
+      "_comment": "Subtraction across zeros with a cascading borrow (6320 - 2756). Each column's regrouped value sits directly above its digit; the upper tier holds only values that replaced a struck one. Add stepIndex: 0 to start at setup and step through.",
+      "omdType": "algorithmWork",
+      "operation": "subtraction",
+      "columns": [
+        "1000s",
+        "100s",
+        "10s",
+        "1s"
+      ],
+      "rows": [
+        {
+          "kind": "carry",
+          "step": 2,
+          "cells": [
+            "",
+            {
+              "text": "12",
+              "step": 3,
+              "color": "#2386DB"
+            },
+            {
+              "text": "11",
+              "step": 2,
+              "color": "#2386DB"
+            },
+            ""
+          ]
+        },
+        {
+          "kind": "carry",
+          "step": 1,
+          "cells": [
+            {
+              "text": "5",
+              "step": 3,
+              "color": "#2386DB"
+            },
+            {
+              "text": "2",
+              "step": 2,
+              "color": "#2386DB",
+              "strikeStep": 3
+            },
+            {
+              "text": "1",
+              "step": 1,
+              "color": "#2386DB",
+              "strikeStep": 2
+            },
+            {
+              "text": "10",
+              "step": 1,
+              "color": "#2386DB"
+            }
+          ]
+        },
+        {
+          "kind": "given",
+          "cells": [
+            {
+              "text": "6",
+              "strikeStep": 3
+            },
+            {
+              "text": "3",
+              "strikeStep": 2
+            },
+            {
+              "text": "2",
+              "strikeStep": 1
+            },
+            {
+              "text": "0",
+              "strikeStep": 1
+            }
+          ]
+        },
+        {
+          "kind": "given",
+          "cells": [
+            "-",
+            "2",
+            "7",
+            "5",
+            "6"
+          ]
+        },
+        {
+          "kind": "rule"
+        },
+        {
+          "kind": "answer",
+          "cells": [
+            {
+              "text": "3",
+              "step": 4
+            },
+            {
+              "text": "5",
+              "step": 3
+            },
+            {
+              "text": "6",
+              "step": 2
+            },
+            {
+              "text": "4",
+              "step": 1
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "description": "Regroup a ten: 10 - 6 = 4"
+        },
+        {
+          "description": "Regroup a hundred: 11 - 5 = 6"
+        },
+        {
+          "description": "Regroup a thousand: 12 - 7 = 5"
+        },
+        {
+          "description": "Subtract thousands: 5 - 2 = 3"
+        }
+      ],
+      "showStepsList": true
+    }
+  ],
+  "mathText": [
+    {
+      "_comment": "Word problem with a stacked fraction and a plain bracketed number inline.",
+      "omdType": "mathText",
+      "text": "**11** A baker has [3/4] of a box of muffin mix. He pours it equally into [6] bowls.",
+      "fontSize": 18,
+      "width": 460
+    }
+  ],
+  "linePlot": [
+    {
+      "_comment": "Line plot with a quarter-unit axis; ticks label themselves as mixed numbers and X marks stack per observation.",
+      "omdType": "linePlot",
+      "min": 9,
+      "max": 12,
+      "step": 0.25,
+      "values": [
+        9,
+        9.5,
+        9.5,
+        9.75,
+        10,
+        10,
+        10.25,
+        10.5,
+        10.5,
+        10.5,
+        11,
+        11.25,
+        12
+      ],
+      "title": "PAPER AIRPLANE FLIGHTS",
+      "axisLabel": "Distance (yards)",
+      "marker": "x",
+      "width": 560
+    }
+  ],
+  "areaDiagram": [
+    {
+      "_comment": "Area of a rectangle with a non-unit fractional side length: 4 units by 2/3 unit.",
+      "omdType": "areaDiagram",
+      "columns": 4,
+      "rows": 1,
+      "rowParts": 3,
+      "shadeHeight": "2/3",
+      "topBrace": {
+        "scope": "grid",
+        "label": "4"
+      },
+      "leftBrace": {
+        "scope": "shaded"
+      },
+      "expressionLine": true
+    },
+    {
+      "_comment": "Fractional side length greater than 1, with the unit square called out: 2 1/4 by 2.",
+      "omdType": "areaDiagram",
+      "columns": 3,
+      "rows": 2,
+      "columnParts": 4,
+      "shadeWidth": "2 1/4",
+      "topBrace": "unit",
+      "leftBrace": "unit",
+      "expressionLine": true
+    },
+    {
+      "_comment": "Distributive property: 2 x 3 2/5 decomposed into whole and fractional partial products.",
+      "omdType": "areaDiagram",
+      "columns": 4,
+      "rows": 2,
+      "columnParts": 5,
+      "shadeWidth": "3 2/5",
+      "partitionScope": "last",
+      "topBraces": [
+        {
+          "from": 0,
+          "to": 3,
+          "label": "3"
+        },
+        {
+          "from": 3,
+          "to": "3 2/5"
+        }
+      ],
+      "leftBrace": {
+        "scope": "grid",
+        "label": "2"
+      },
+      "decompose": true
+    },
+    {
+      "_comment": "Interactive: students shade the grid and type the area, which is graded as an exact rational.",
+      "omdType": "areaDiagram",
+      "columns": 6,
+      "rows": 1,
+      "rowParts": 4,
+      "shadeWidth": 0,
+      "shadeHeight": 0,
+      "topBrace": {
+        "scope": "grid",
+        "label": "6"
+      },
+      "leftBrace": {
+        "scope": "grid",
+        "label": "1"
+      },
+      "interactive": true,
+      "checkAnswers": true,
+      "inputs": [
+        {
+          "label": "Shaded area:",
+          "readout": "area"
+        },
+        {
+          "key": "area",
+          "label": "Answer:",
+          "suffix": "square units",
+          "answer": "1 1/2"
+        }
+      ]
+    }
+  ],
+  "fractionStrips": [
+    {
+      "_comment": "Three sandwiches shared equally by four people; each share is 3 x 1/4.",
+      "omdType": "fractionStrips",
+      "strips": 3,
+      "parts": 4,
+      "shaded": 1,
+      "brace": "1",
+      "expressionLine": true
+    },
+    {
+      "_comment": "Chocolate-bar model: four bars of fifths with three fifths eaten from each.",
+      "omdType": "fractionStrips",
+      "strips": 4,
+      "parts": 5,
+      "shaded": 3,
+      "orientation": "vertical",
+      "fillFrom": "end",
+      "separator": "+",
+      "brace": false,
+      "dividerDash": "none",
+      "stripLength": 210,
+      "stripThickness": 46,
+      "expressionLine": true
+    }
+  ],
+  "fractionCircle": [
+    {
+      "_comment": "Two circles in sixths with five sixths shaded on each: the model for 2 x 5/6.",
+      "omdType": "fractionCircle",
+      "count": 2,
+      "parts": 6,
+      "shaded": 5,
+      "expressionLine": true
     }
   ]
 }

@@ -2,3 +2,6 @@
 dist
 .vscode
 node_modules
+docs-built
+.release
+readme.html

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD — Grade 5 Component Cookbook</title>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #101418;
+            --ink-soft: #5c646d;
+            --ink-faint: #9aa2ab;
+            --shell: rgba(16, 20, 24, 0.04);
+            --hairline: rgba(16, 20, 24, 0.07);
+            --core: #ffffff;
+            --accent: #1b4965;
+            --code-bg: #0f1418;
+            --ease: cubic-bezier(0.32, 0.72, 0, 1);
+            --r-shell: 1.75rem;
+            --r-core: calc(1.75rem - 0.375rem);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Albert Sans', sans-serif;
+            background:
+                radial-gradient(1100px 520px at 90% -8%, rgba(159, 218, 255, 0.15), transparent 60%),
+                #fbfbfc;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrap { max-width: 1220px; margin: 0 auto; padding: 0 40px; }
+        @media (max-width: 820px) { .wrap { padding: 0 16px; } }
+
+        /* Floating island nav with page switch */
+        .island {
+            position: fixed;
+            top: 22px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex; align-items: center; gap: 4px;
+            padding: 7px 8px 7px 16px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--hairline);
+            backdrop-filter: blur(24px);
+            box-shadow: 0 12px 40px rgba(16, 20, 24, 0.09);
+            font-size: 13px; font-weight: 600;
+        }
+        .island .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--accent); margin-right: 8px; }
+        .island a {
+            padding: 5px 13px;
+            border-radius: 999px;
+            text-decoration: none;
+            color: var(--ink-soft);
+            font-weight: 500;
+            transition: background 400ms var(--ease), color 400ms var(--ease);
+        }
+        .island a:hover { background: var(--shell); color: var(--ink); }
+        .island a.active { background: var(--ink); color: #fff; }
+
+        header { padding: 148px 0 56px; max-width: 62ch; }
+        .eyebrow {
+            display: inline-flex; padding: 6px 14px; border-radius: 999px;
+            background: var(--shell); border: 1px solid var(--hairline);
+            font-size: 10px; font-weight: 600; letter-spacing: 0.22em;
+            text-transform: uppercase; color: var(--accent);
+        }
+        h1 {
+            margin-top: 26px;
+            font-size: clamp(2.4rem, 5.4vw, 4rem);
+            font-weight: 600; letter-spacing: -0.042em; line-height: 1;
+        }
+        h1 span { color: var(--ink-faint); }
+        .lede {
+            margin-top: 26px; font-size: 1.06rem; font-weight: 300;
+            line-height: 1.65; color: var(--ink-soft);
+        }
+
+        /* Section */
+        .section { padding: 30px 0 44px; }
+        .section-head {
+            display: flex; align-items: baseline; gap: 14px;
+            padding-bottom: 12px; margin-bottom: 26px;
+            border-bottom: 1px solid var(--hairline);
+            position: sticky; top: 0; background: rgba(251,251,252,0.86);
+            backdrop-filter: blur(8px); z-index: 5;
+        }
+        .section-head h2 {
+            font-size: 12.5px; font-weight: 600; letter-spacing: 0.09em;
+            text-transform: uppercase; color: #3c4249;
+        }
+        .section-head code {
+            font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+            color: var(--accent); background: var(--shell);
+            padding: 3px 8px; border-radius: 6px;
+        }
+
+        /* Example card: editorial split — spec left, render right */
+        .example { margin-bottom: 22px; }
+        .card { background: var(--shell); border: 1px solid var(--hairline); border-radius: var(--r-shell); padding: 7px; }
+        .card-core {
+            background: var(--core); border-radius: var(--r-core);
+            display: grid; grid-template-columns: minmax(300px, 0.95fr) 1.05fr;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.7);
+            overflow: hidden;
+        }
+        @media (max-width: 900px) { .card-core { grid-template-columns: 1fr; } }
+
+        .spec { padding: 24px 24px 26px; border-right: 1px solid var(--hairline); }
+        @media (max-width: 900px) { .spec { border-right: none; border-bottom: 1px solid var(--hairline); } }
+        .spec h3 { font-size: 1.02rem; font-weight: 600; letter-spacing: -0.01em; }
+        .spec p { margin-top: 8px; font-size: 13px; font-weight: 300; line-height: 1.55; color: var(--ink-soft); }
+        .spec .standard {
+            display: inline-block; margin-top: 12px; font-size: 10px; font-weight: 600;
+            letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint);
+        }
+        pre {
+            margin-top: 16px; padding: 14px 15px;
+            background: var(--code-bg); border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+            line-height: 1.55; color: #d6e2ea;
+            /* Wrap rather than scroll so no argument is ever hidden. */
+            white-space: pre-wrap; overflow-wrap: anywhere;
+        }
+        pre .k { color: #9FDAFF; }
+        pre .s { color: #ffd9b3; }
+        pre .n { color: #b6e59e; }
+
+        .render {
+            padding: 26px 24px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 14px;
+            background:
+                linear-gradient(0deg, rgba(16,20,24,0.012), rgba(16,20,24,0.012)),
+                repeating-linear-gradient(45deg, transparent 0 12px, rgba(16,20,24,0.014) 12px 13px);
+        }
+        .render svg { max-width: 100%; height: auto; }
+
+        .controls { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+        .btn {
+            font-family: inherit; font-size: 12.5px; font-weight: 600;
+            padding: 6px 6px 6px 15px; border: none; border-radius: 999px;
+            background: var(--ink); color: #fff; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 9px;
+            transition: transform 420ms var(--ease);
+        }
+        .btn:hover { transform: scale(1.03); }
+        .btn:active { transform: scale(0.97); }
+        .btn .orb {
+            width: 26px; height: 26px; border-radius: 999px;
+            background: rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn.ghost { background: var(--shell); color: var(--ink); padding: 7px 15px; }
+        .readout { font-size: 12px; font-weight: 500; color: var(--accent); }
+
+        footer { padding: 60px 0 48px; font-size: 12.5px; font-weight: 300; color: var(--ink-faint); }
+
+        .reveal {
+            opacity: 0; transform: translateY(40px); filter: blur(8px);
+            transition: opacity 800ms var(--ease), transform 800ms var(--ease), filter 800ms var(--ease);
+            will-change: transform, opacity;
+        }
+        .reveal.in { opacity: 1; transform: translateY(0); filter: blur(0); }
+        @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; filter: none; transition: none; } }
+    </style>
+</head>
+<body>
+
+    <nav class="island">
+        <span class="dot"></span>
+        <a href="./demo.html">Overview</a>
+        <a href="./cookbook.html" class="active">Cookbook</a>
+        <a href="./interactive.html">Interactive</a>
+        <a href="./direct.html">Direct</a>
+    </nav>
+
+    <div class="wrap">
+        <header>
+            <span class="eyebrow reveal">Usage · 4 components</span>
+            <h1 class="reveal">Every knob, <span>with the JSON that drew it.</span></h1>
+            <p class="lede reveal">
+                Worked examples for <code>algorithmWork</code>, <code>mathText</code>,
+                <code>linePlot</code>, and unit-cube <code>rectangularPrism</code> — each card's
+                code block is serialized from the exact object that rendered beside it, so the
+                snippet can never drift from the picture.
+            </p>
+        </header>
+
+        <div id="sections"></div>
+
+        <footer>omd · @teachinglab — Grade 5 component cookbook. Copy any block straight into <code>createFromJSON</code>.</footer>
+    </div>
+
+    <script type="module">
+        import { createFromJSON } from '../../dist/omd.browser.js';
+
+        const NS = 'http://www.w3.org/2000/svg';
+
+        const render = (host, json) => {
+            host.innerHTML = '';
+            const visual = createFromJSON(json);
+            const svg = document.createElementNS(NS, 'svg');
+            svg.setAttribute('viewBox', `0 0 ${Math.ceil(visual.width)} ${Math.ceil(visual.height)}`);
+            svg.setAttribute('width', String(Math.round(visual.width)));
+            svg.setAttribute('height', String(Math.round(visual.height)));
+            svg.appendChild(visual.svgObject);
+            host.appendChild(svg);
+            return visual;
+        };
+
+        // Compact serializer: arrays of primitives stay on one line so a digit
+        // grid reads like a grid instead of 40 lines of single characters.
+        const serialize = (value, pad = '') => {
+            if (Array.isArray(value)) {
+                const primitive = value.every(v => v === null || typeof v !== 'object');
+                if (primitive)
+                    return '[' + value.map(v => JSON.stringify(v)).join(', ') + ']';
+                const inner = pad + '  ';
+                return '[\n' + value.map(v => inner + serialize(v, inner)).join(',\n') + '\n' + pad + ']';
+            }
+            if (value && typeof value === 'object') {
+                const keys = Object.keys(value);
+                if (!keys.length) return '{}';
+                // Any object whose full form is short stays on one line — a
+                // digit row then reads as a row, e.g. { kind, cells: [...] }.
+                const oneLine = '{ ' + keys.map(k => `"${k}": ${serialize(value[k])}`).join(', ') + ' }';
+                if (!oneLine.includes('\n') && oneLine.length <= 66) return oneLine;
+                const inner = pad + '  ';
+                return '{\n' + keys.map(k => `${inner}"${k}": ${serialize(value[k], inner)}`).join(',\n') + '\n' + pad + '}';
+            }
+            return JSON.stringify(value);
+        };
+
+        // Minimal syntax highlight — keys, strings, numbers.
+        const highlight = (json) => serialize(json)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/"([\w]+)":/g, '<span class="k">"$1"</span>:')
+            .replace(/: "([^"]*)"/g, ': <span class="s">"$1"</span>')
+            .replace(/: (-?\d+\.?\d*)/g, ': <span class="n">$1</span>');
+
+        /* ------------------------------------------------------------ */
+        /* Examples                                                      */
+        /* ------------------------------------------------------------ */
+
+        const SECTIONS = [
+            {
+                title: 'Standard algorithms',
+                type: 'algorithmWork',
+                items: [
+                    {
+                        h: 'Addition with regrouping',
+                        p: 'Carry digits live in their own row above the operands, in the palette red so they read as annotations rather than answer digits.',
+                        std: '5.NBT.5',
+                        json: {
+                            omdType: 'algorithmWork',
+                            operation: 'addition',
+                            columns: ['1000s', '100s', '10s', '1s'],
+                            rows: [
+                                { kind: 'carry', cells: ['1', '1', '1', ''] },
+                                { kind: 'given', cells: ['', '3', '5', '7', '6'] },
+                                { kind: 'given', cells: ['+', '', '2', '4', '8', '9'] },
+                                { kind: 'rule' },
+                                { kind: 'answer', cells: ['', '6', '0', '6', '5'] },
+                            ],
+                        },
+                    },
+                    {
+                        h: 'Regrouping across zeros, step by step',
+                        p: 'Each borrow is its own step: the lending digit gets a diagonal strike and its new value is written directly above it. A second tier appears only when a value is itself regrouped away — 3 becomes 2, then that 2 becomes 12.',
+                        std: '5.NBT.5',
+                        interactive: 'steps',
+                        totalSteps: 4,
+                        json: {
+                            omdType: 'algorithmWork',
+                            operation: 'subtraction',
+                            columns: ['1000s', '100s', '10s', '1s'],
+                            stepIndex: 0,
+                            rows: [
+                                // Upper tier: only values that REPLACED a struck one.
+                                // Step-gated as a row so it reserves no space at setup.
+                                { kind: 'carry', step: 2, cells: [
+                                    '',
+                                    { text: '12', step: 3, color: '#2386DB' },
+                                    { text: '11', step: 2, color: '#2386DB' },
+                                    '',
+                                ] },
+                                // Lower tier: each column's first regrouped value,
+                                // sitting directly above its own digit.
+                                { kind: 'carry', step: 1, cells: [
+                                    { text: '5', step: 3, color: '#2386DB' },
+                                    { text: '2', step: 2, color: '#2386DB', strikeStep: 3 },
+                                    { text: '1', step: 1, color: '#2386DB', strikeStep: 2 },
+                                    { text: '10', step: 1, color: '#2386DB' },
+                                ] },
+                                { kind: 'given', cells: [
+                                    { text: '6', strikeStep: 3 },
+                                    { text: '3', strikeStep: 2 },
+                                    { text: '2', strikeStep: 1 },
+                                    { text: '0', strikeStep: 1 },
+                                ] },
+                                { kind: 'given', cells: ['−', '2', '7', '5', '6'] },
+                                { kind: 'rule' },
+                                { kind: 'answer', cells: [
+                                    { text: '3', step: 4 },
+                                    { text: '5', step: 3 },
+                                    { text: '6', step: 2 },
+                                    { text: '4', step: 1 },
+                                ] },
+                            ],
+                            steps: [
+                                { description: 'Regroup a ten: 10 − 6 = 4' },
+                                { description: 'Regroup a hundred: 11 − 5 = 6' },
+                                { description: 'Regroup a thousand: 12 − 7 = 5' },
+                                { description: 'Subtract thousands: 5 − 2 = 3' },
+                            ],
+                            showStepsList: true,
+                        },
+                    },
+                    {
+                        h: 'Partial products',
+                        p: 'Rows right-align on the ones column, so no padding is needed — a two-digit operand and a three-digit partial product share the grid automatically. The carry shown is the one from 6 × 4 = 24.',
+                        std: '5.NBT.5',
+                        json: {
+                            omdType: 'algorithmWork',
+                            operation: 'multiplication',
+                            columns: ['100s', '10s', '1s'],
+                            rows: [
+                                { kind: 'carry', cells: ['2', ''] },
+                                { kind: 'given', cells: ['2', '4'] },
+                                { kind: 'given', cells: ['×', '', '3', '6'] },
+                                { kind: 'rule' },
+                                { kind: 'work', cells: ['1', '4', '4'], annotation: '24 × 6' },
+                                { kind: 'work', cells: ['7', '2', ''], annotation: '24 × 30' },
+                                { kind: 'rule', gapAfter: 3 },
+                                { kind: 'answer', cells: ['8', '6', '4'] },
+                            ],
+                        },
+                    },
+                    {
+                        h: 'Money and decimal columns',
+                        p: 'A decimal point is just another column, so money needs no special mode — this is the multiplication half of the released candy question.',
+                        std: '5.NBT.7',
+                        json: {
+                            omdType: 'algorithmWork',
+                            operation: 'multiplication',
+                            rows: [
+                                { kind: 'carry', cells: ['', '3', '', '1', ''] },
+                                { kind: 'given', cells: ['', '0', '.', '6', '3'] },
+                                { kind: 'given', cells: ['×', '', '', '', '5'] },
+                                { kind: 'rule' },
+                                { kind: 'answer', cells: ['', '3', '.', '1', '5'], annotation: '5 pieces = $3.15' },
+                            ],
+                        },
+                    },
+                    {
+                        h: 'Long division, revealed',
+                        p: 'Quotient digits carry their own step numbers, so they land above the bracket one at a time while the work builds below.',
+                        std: '5.NBT.6',
+                        interactive: 'steps',
+                        totalSteps: 4,
+                        json: {
+                            omdType: 'algorithmWork',
+                            operation: 'division',
+                            divisor: '12',
+                            columns: ['100s', '10s', '1s'],
+                            stepIndex: 0,
+                            rows: [
+                                { kind: 'answer', cells: ['', { text: '6', step: 1 }, { text: '8', step: 3 }] },
+                                { kind: 'given', cells: ['8', '1', '6'] },
+                                { kind: 'work', cells: ['', '7', '2'], step: 1, annotation: '12 × 6 tens' },
+                                { kind: 'rule', step: 2 },
+                                { kind: 'work', cells: ['', '9', '6'], step: 2, annotation: 'bring down the 6' },
+                                { kind: 'work', cells: ['', '9', '6'], step: 3, annotation: '12 × 8 ones' },
+                                { kind: 'rule', step: 4 },
+                                { kind: 'work', cells: ['', '', '0'], step: 4, annotation: 'remainder 0' },
+                            ],
+                            steps: [
+                                { description: 'Divide the tens' },
+                                { description: 'Bring down the ones' },
+                                { description: 'Divide the ones' },
+                                { description: 'Subtract to check' },
+                            ],
+                            showStepsList: true,
+                        },
+                    },
+                ],
+            },
+            {
+                title: 'Fractions inline with text',
+                type: 'mathText',
+                items: [
+                    {
+                        h: 'Fraction ÷ whole number',
+                        p: 'A bracketed fraction becomes real stacked math on the reading line; a bracketed integer stays a plain numeral.',
+                        std: '5.NF.7c',
+                        json: {
+                            omdType: 'mathText',
+                            text: '**11** A baker has [3/4] of a box of muffin mix. He pours all of the mix equally into [6] bowls.',
+                            fontSize: 18,
+                            width: 430,
+                        },
+                    },
+                    {
+                        h: 'Mixed numbers',
+                        p: 'A whole number and its fraction form one unbreakable inline token, so wrapping never splits them.',
+                        std: '5.NF.7c',
+                        json: {
+                            omdType: 'mathText',
+                            text: '**38** Leia has [2 1/2] pounds of chocolate. She puts [1/4] pound into each bag.',
+                            fontSize: 18,
+                            width: 430,
+                        },
+                    },
+                    {
+                        h: 'Comparison statements',
+                        p: 'Symbols are ordinary characters, so comparison prompts need no extra markup.',
+                        std: '5.NBT.3b',
+                        json: {
+                            omdType: 'mathText',
+                            text: 'Write a comparison using **<**, **>**, or **=** that shows how [3/8] and [2/5] are related.',
+                            fontSize: 18,
+                            width: 430,
+                        },
+                    },
+                    {
+                        h: 'Narrow measure + tall line height',
+                        p: 'Wrapping is greedy at `width`; `lineHeight` opens the leading up for dense fraction lines.',
+                        std: '5.NF.1',
+                        json: {
+                            omdType: 'mathText',
+                            text: 'Nancy hiked [3 3/4] miles, then swam [1/3] of that distance and biked [5/8] mile more.',
+                            fontSize: 18,
+                            width: 300,
+                            lineHeight: 42,
+                        },
+                    },
+                ],
+            },
+            {
+                title: 'Line plots',
+                type: 'linePlot',
+                items: [
+                    {
+                        h: 'Quarter-unit axis, X marks',
+                        p: 'Ticks on exact quarters label themselves as mixed numbers. Marks stack per observation, centered on the tick.',
+                        std: '5.MD.2',
+                        interactive: 'marker',
+                        json: {
+                            omdType: 'linePlot',
+                            min: 9, max: 12, step: 0.25,
+                            values: [9, 9.25, 9.5, 9.5, 9.75, 9.75, 9.75, 10, 10, 10.25, 10.25, 10.5, 10.75, 11, 11, 11.5, 12],
+                            title: 'PAPER AIRPLANE FLIGHTS',
+                            axisLabel: 'Distance (yards)',
+                            marker: 'x',
+                            width: 560,
+                            fontSize: 15,
+                        },
+                    },
+                    {
+                        h: 'Eighths with dot markers',
+                        p: 'Switch `marker` to `dot` for a modern data-display look; eighth ticks label as eighths.',
+                        std: '5.MD.2',
+                        json: {
+                            omdType: 'linePlot',
+                            min: 0, max: 1, step: 0.125,
+                            values: [0.25, 0.375, 0.375, 0.5, 0.5, 0.5, 0.625, 0.75, 0.875],
+                            title: 'RAINFALL LAST WEEK',
+                            axisLabel: 'Inches',
+                            marker: 'dot',
+                            width: 520,
+                            fontSize: 15,
+                        },
+                    },
+                    {
+                        h: 'Whole-number axis',
+                        p: 'Integer steps skip fraction rendering entirely — same component, no configuration change.',
+                        std: '5.MD.2',
+                        json: {
+                            omdType: 'linePlot',
+                            min: 0, max: 8, step: 1,
+                            values: [2, 3, 3, 4, 4, 4, 4, 5, 5, 6, 7],
+                            title: 'BOOKS READ THIS MONTH',
+                            axisLabel: 'Books',
+                            width: 500,
+                            fontSize: 15,
+                            dotRadius: 7,
+                        },
+                    },
+                ],
+            },
+            {
+                title: 'Volume with unit cubes',
+                type: 'rectangularPrism',
+                items: [
+                    {
+                        h: 'First layer highlighted',
+                        p: 'Only the outer shell is drawn, so the solid reads solid; `highlightLayer` counts from the bottom.',
+                        std: '5.MD.5a',
+                        json: {
+                            omdType: 'rectangularPrism',
+                            length: 5, width: 3, height: 6,
+                            unitScale: 19,
+                            showUnitCubes: true,
+                            highlightLayer: 1,
+                        },
+                    },
+                    {
+                        h: 'Top layer, identical layers',
+                        p: 'Highlighting the top layer supports "the bottom layer is identical to the top layer" reasoning.',
+                        std: '5.MD.4',
+                        json: {
+                            omdType: 'rectangularPrism',
+                            length: 4, width: 2, height: 4,
+                            unitScale: 22,
+                            showUnitCubes: true,
+                            highlightLayer: 4,
+                        },
+                    },
+                    {
+                        h: 'Labeled dimensions over cubes',
+                        p: 'Dimension lines and the inside label compose on top of the cube grid for find-the-missing-side work.',
+                        std: '5.MD.5b',
+                        json: {
+                            omdType: 'rectangularPrism',
+                            length: 5, width: 3, height: 6,
+                            unitScale: 17,
+                            showUnitCubes: true,
+                            highlightLayer: 1,
+                            sideLabels: { l: '5 ft', w: '3 ft', h: '6 ft' },
+                            insideLabel: 'V = 90 cubic feet',
+                        },
+                    },
+                    {
+                        h: 'Custom layer colors',
+                        p: 'Face fills are overridable per surface when a lesson needs its own palette.',
+                        std: '5.MD.3',
+                        json: {
+                            omdType: 'rectangularPrism',
+                            length: 3, width: 3, height: 3,
+                            unitScale: 24,
+                            showUnitCubes: true,
+                            cubeGapRatio: 0.14,
+                            layerColors: { top: '#fde9d0', side: '#f6d5ad', front: '#fff6ec' },
+                        },
+                    },
+                ],
+            },
+        ];
+
+        /* ------------------------------------------------------------ */
+        /* Build the page                                                */
+        /* ------------------------------------------------------------ */
+
+        const root = document.getElementById('sections');
+
+        for (const section of SECTIONS) {
+            const wrap = document.createElement('div');
+            wrap.className = 'section';
+            wrap.innerHTML = `
+                <div class="section-head">
+                    <h2>${section.title}</h2>
+                    <code>omdType: '${section.type}'</code>
+                </div>`;
+
+            for (const item of section.items) {
+                const card = document.createElement('div');
+                card.className = 'example reveal';
+                card.innerHTML = `
+                    <div class="card"><div class="card-core">
+                        <div class="spec">
+                            <h3>${item.h}</h3>
+                            <p>${item.p}</p>
+                            <span class="standard">${item.std}</span>
+                            <pre>${highlight(item.json)}</pre>
+                        </div>
+                        <div class="render"></div>
+                    </div></div>`;
+
+                const stage = card.querySelector('.render');
+                const host = document.createElement('div');
+                stage.appendChild(host);
+                render(host, item.json);
+
+                // Per-example controls
+                if (item.interactive === 'steps') {
+                    let step = item.json.stepIndex ?? 0;
+                    const bar = document.createElement('div');
+                    bar.className = 'controls';
+                    bar.innerHTML = `<button class="btn">Next step <span class="orb">→</span></button><span class="readout"></span>`;
+                    const readout = bar.querySelector('.readout');
+                    const paint = () => {
+                        render(host, { ...item.json, stepIndex: step });
+                        readout.textContent = step === 0 ? 'Setup' : `Step ${step} of ${item.totalSteps}`;
+                    };
+                    bar.querySelector('button').addEventListener('click', () => {
+                        step = step >= item.totalSteps ? 0 : step + 1;
+                        paint();
+                    });
+                    stage.appendChild(bar);
+                    paint();
+                }
+
+                if (item.interactive === 'marker') {
+                    let marker = item.json.marker || 'x';
+                    const bar = document.createElement('div');
+                    bar.className = 'controls';
+                    bar.innerHTML = `<button class="btn ghost">Toggle marker</button><span class="readout">marker: '${marker}'</span>`;
+                    const readout = bar.querySelector('.readout');
+                    bar.querySelector('button').addEventListener('click', () => {
+                        marker = marker === 'x' ? 'dot' : 'x';
+                        render(host, { ...item.json, marker });
+                        readout.textContent = `marker: '${marker}'`;
+                    });
+                    stage.appendChild(bar);
+                }
+
+                wrap.appendChild(card);
+            }
+
+            root.appendChild(wrap);
+        }
+
+        // Scroll choreography, with a safety net so nothing stays invisible.
+        const io = new IntersectionObserver((entries) => {
+            for (const entry of entries)
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in');
+                    io.unobserve(entry.target);
+                }
+        }, { threshold: 0.1, rootMargin: '0px 0px 200px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+        requestAnimationFrame(() => document.querySelectorAll('header .reveal').forEach(el => el.classList.add('in')));
+        setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('in')), 2200);
+    </script>
+</body>
+</html>

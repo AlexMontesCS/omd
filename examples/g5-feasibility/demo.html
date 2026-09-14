@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD — Grade 5 Feasibility</title>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ————— Soft Structuralism · Asymmetrical Bento ————— */
+        :root {
+            --ink: #101418;
+            --ink-soft: #5c646d;
+            --ink-faint: #9aa2ab;
+            --shell: rgba(16, 20, 24, 0.04);
+            --hairline: rgba(16, 20, 24, 0.07);
+            --core: #ffffff;
+            --accent: #1b4965;
+            --step: #9FDAFF;
+            --ease: cubic-bezier(0.32, 0.72, 0, 1);
+            --r-shell: 2rem;
+            --r-core: calc(2rem - 0.375rem);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Albert Sans', sans-serif;
+            background:
+                radial-gradient(1200px 600px at 85% -10%, rgba(159, 218, 255, 0.16), transparent 60%),
+                radial-gradient(900px 500px at -10% 30%, rgba(27, 73, 101, 0.06), transparent 55%),
+                #fbfbfc;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 0 40px; }
+        @media (max-width: 767px) { .wrap { padding: 0 16px; } }
+
+        /* ————— Floating island wordmark ————— */
+        .island {
+            position: fixed;
+            top: 24px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 999px;
+            padding: 7px 8px 7px 16px;
+            border: 1px solid var(--hairline);
+            backdrop-filter: blur(24px);
+            box-shadow: 0 12px 40px rgba(16, 20, 24, 0.08);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            transition: transform 700ms var(--ease), opacity 700ms var(--ease);
+        }
+        .island .dot {
+            width: 8px; height: 8px;
+            border-radius: 999px;
+            background: var(--accent);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
+        }
+        .island .dot { margin-right: 8px; }
+        .island a {
+            padding: 5px 13px;
+            border-radius: 999px;
+            text-decoration: none;
+            color: var(--ink-soft);
+            font-weight: 500;
+            transition: background 400ms var(--ease), color 400ms var(--ease);
+        }
+        .island a:hover { background: var(--shell); color: var(--ink); }
+        .island a.active { background: var(--ink); color: #fff; }
+
+        /* ————— Hero ————— */
+        header { min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; padding: 140px 0 80px; }
+
+        .eyebrow {
+            display: inline-flex;
+            width: fit-content;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: var(--shell);
+            border: 1px solid var(--hairline);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        h1 {
+            margin-top: 28px;
+            font-size: clamp(2.9rem, 7.2vw, 6rem);
+            font-weight: 600;
+            letter-spacing: -0.045em;
+            line-height: 0.98;
+            max-width: 14ch;
+        }
+        h1 span { color: var(--ink-faint); }
+
+        .lede {
+            margin-top: 32px;
+            max-width: 52ch;
+            font-size: clamp(1rem, 1.35vw, 1.185rem);
+            font-weight: 300;
+            line-height: 1.65;
+            color: var(--ink-soft);
+        }
+
+        .hero-cta {
+            margin-top: 44px;
+            display: inline-flex;
+            width: fit-content;
+            align-items: center;
+            gap: 14px;
+            padding: 8px 8px 8px 26px;
+            border-radius: 999px;
+            background: var(--core);
+            border: 1px solid var(--hairline);
+            box-shadow: 0 20px 50px rgba(16, 20, 24, 0.09), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ink);
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 500ms var(--ease), box-shadow 500ms var(--ease);
+        }
+        .hero-cta:hover { transform: scale(1.02); box-shadow: 0 26px 60px rgba(16, 20, 24, 0.12), inset 0 1px 1px rgba(255,255,255,0.6); }
+        .hero-cta:active { transform: scale(0.98); }
+        .hero-cta .orb {
+            width: 38px; height: 38px;
+            border-radius: 999px;
+            background: var(--shell);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 400;
+            transition: transform 500ms var(--ease);
+        }
+        .hero-cta:hover .orb { transform: translateX(3px) translateY(-2px); }
+
+        /* ————— Bento ————— */
+        section { padding: 56px 0 40px; }
+
+        .bento {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        @media (max-width: 767px) { .bento { grid-template-columns: 1fr; gap: 20px; } }
+
+        .cell { grid-column: span 12; }
+        @media (min-width: 768px) {
+            .cell-a { grid-column: span 7; }
+            .cell-b { grid-column: span 5; }
+            .cell-c { grid-column: span 12; }
+        }
+
+        /* Double-bezel: machined shell + inner core */
+        .card {
+            background: var(--shell);
+            border: 1px solid var(--hairline);
+            border-radius: var(--r-shell);
+            padding: 8px;
+            height: 100%;
+        }
+        .card-core {
+            position: relative;
+            background: var(--core);
+            border-radius: var(--r-core);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.65);
+            padding: 34px 34px 30px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        @media (max-width: 767px) { .card-core { padding: 22px 20px; } }
+
+        .card-kicker {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--ink-faint);
+        }
+        .card-title {
+            margin-top: 10px;
+            font-size: clamp(1.25rem, 2vw, 1.6rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        .card-note {
+            margin-top: auto;
+            padding-top: 22px;
+            font-size: 13.5px;
+            font-weight: 300;
+            line-height: 1.55;
+            color: var(--ink-soft);
+        }
+        .stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 18px 0 6px; min-height: 220px; }
+        .stage svg { max-width: 100%; height: auto; }
+
+        /* Step control — button-in-button */
+        .step-row { display: flex; align-items: center; gap: 14px; margin-top: 20px; }
+        .pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 6px 6px 20px;
+            border: none;
+            border-radius: 999px;
+            background: var(--ink);
+            color: #fff;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            cursor: pointer;
+            transition: transform 450ms var(--ease), background 450ms var(--ease);
+        }
+        .pill-btn:hover { transform: scale(1.03); }
+        .pill-btn:active { transform: scale(0.97); }
+        .pill-btn .orb {
+            width: 30px; height: 30px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 450ms var(--ease);
+        }
+        .pill-btn:hover .orb { transform: translateX(2px) scale(1.08); }
+        .readout {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--accent);
+            min-width: 150px;
+        }
+
+        footer {
+            padding: 72px 0 48px;
+            font-size: 12.5px;
+            font-weight: 300;
+            color: var(--ink-faint);
+        }
+
+        /* ————— Scroll choreography ————— */
+        .reveal {
+            opacity: 0;
+            transform: translateY(56px);
+            filter: blur(10px);
+            transition: opacity 900ms var(--ease), transform 900ms var(--ease), filter 900ms var(--ease);
+            will-change: transform, opacity;
+        }
+        .reveal.in { opacity: 1; transform: translateY(0); filter: blur(0); }
+        .reveal.d1 { transition-delay: 90ms; }
+        .reveal.d2 { transition-delay: 180ms; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { opacity: 1; transform: none; filter: none; transition: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="island">
+        <span class="dot"></span>
+        <a href="./demo.html" class="active">Overview</a>
+        <a href="./cookbook.html">Cookbook</a>
+        <a href="./interactive.html">Interactive</a>
+        <a href="./direct.html">Direct</a>
+    </nav>
+
+    <div class="wrap">
+        <header>
+            <span class="eyebrow reveal">Feasibility · NYST 2025</span>
+            <h1 class="reveal d1">State-test math, <span>rendered native.</span></h1>
+            <p class="lede reveal d2">
+                Three capability gaps surfaced by the released Grade 5 exam — step-connected
+                standard algorithms, unit-cube volume, and stacked fractions inside prose —
+                closed in OMD. Everything below is live SVG from the library, not an image.
+            </p>
+            <a class="hero-cta reveal d2" href="#proof">
+                See the proof
+                <span class="orb">↓</span>
+            </a>
+        </header>
+
+        <section id="proof">
+            <div class="bento">
+
+                <!-- Algorithms -->
+                <div class="cell cell-a reveal">
+                    <div class="card"><div class="card-core">
+                        <div class="card-kicker">Standard algorithms</div>
+                        <h2 class="card-title">Steps connected to parts</h2>
+                        <div class="stage" id="stage-division"></div>
+                        <div class="step-row">
+                            <button class="pill-btn" id="btn-step">
+                                Reveal next step
+                                <span class="orb">→</span>
+                            </button>
+                            <span class="readout" id="step-readout">Ready</span>
+                        </div>
+                        <p class="card-note">
+                            816 ÷ 12, revealed digit by digit. Rows carry step metadata; the highlighted
+                            band marks exactly which part the current step acts on.
+                        </p>
+                    </div></div>
+                </div>
+
+                <!-- Volume -->
+                <div class="cell cell-b reveal d1">
+                    <div class="card"><div class="card-core">
+                        <div class="card-kicker">Measurement</div>
+                        <h2 class="card-title">Volume in unit cubes</h2>
+                        <div class="stage" id="stage-prism"></div>
+                        <p class="card-note">
+                            The first layer glows; multiply by height. Dimension labels compose over the
+                            cube grid for find-the-missing-side problems.
+                        </p>
+                    </div></div>
+                </div>
+
+                <!-- Fractions inline -->
+                <div class="cell cell-c reveal d2">
+                    <div class="card"><div class="card-core">
+                        <div class="card-kicker">Number &amp; operations — fractions</div>
+                        <h2 class="card-title">Fractions that live inside the sentence</h2>
+                        <div class="stage" id="stage-text"></div>
+                        <p class="card-note">
+                            Word-for-word from question 11. Real stacked math on the prose baseline —
+                            mixed numbers too — wrapping like ordinary text.
+                        </p>
+                    </div></div>
+                </div>
+
+                <!-- Data / line plot -->
+                <div class="cell cell-c reveal">
+                    <div class="card"><div class="card-core">
+                        <div class="card-kicker">Measurement &amp; data</div>
+                        <h2 class="card-title">Dot plots with fraction axes</h2>
+                        <div class="stage" id="stage-plot"></div>
+                        <p class="card-note">
+                            NYST 2025 Q43 — airplane flight distances recorded on a line plot.
+                            Quarter-yard ticks label themselves as mixed numbers; X marks stack per observation.
+                        </p>
+                    </div></div>
+                </div>
+
+            </div>
+        </section>
+
+        <footer>
+            omd · @teachinglab — feasibility build, Aug 2025. Render matrix: 12/12 passing.
+        </footer>
+    </div>
+
+    <script type="module">
+        import { createFromJSON } from '../../dist/omd.browser.js';
+
+        const NS = 'http://www.w3.org/2000/svg';
+
+        const mount = (id, json) => {
+            const host = document.getElementById(id);
+            const visual = createFromJSON(json);
+            // jsvg components expose a <g>; wrap it in a real <svg> viewport.
+            const svg = document.createElementNS(NS, 'svg');
+            svg.setAttribute('viewBox', `0 0 ${Math.ceil(visual.width)} ${Math.ceil(visual.height)}`);
+            svg.setAttribute('width', String(Math.round(visual.width)));
+            svg.setAttribute('height', String(Math.round(visual.height)));
+            svg.appendChild(visual.svgObject);
+            host.appendChild(svg);
+            return visual;
+        };
+
+        const divisionJson = {
+            omdType: 'algorithmWork',
+            operation: 'division',
+            divisor: '12',
+            columns: ['100s', '10s', '1s'],
+            rows: [
+                // Quotient sits above the bar; each digit lands on its own step.
+                { kind: 'answer', cells: ['', { text: '6', step: 1 }, { text: '8', step: 3 }] },
+                { kind: 'given', cells: ['8', '1', '6'] },
+                { kind: 'work', cells: ['', '7', '2'], step: 1, annotation: '12 × 6 tens = 72' },
+                { kind: 'rule', gapAfter: 3, step: 2 },
+                { kind: 'work', cells: ['', '9', '6'], step: 2, annotation: 'subtract, bring down the 6' },
+                { kind: 'work', cells: ['', '9', '6'], step: 3, annotation: '12 × 8 ones = 96' },
+                { kind: 'rule', gapAfter: 3, step: 4 },
+                { kind: 'work', cells: ['', '', '0'], step: 4, annotation: 'remainder 0' },
+            ],
+        };
+
+        let step = 0;
+        let divisionVisual = null;
+        const readout = document.getElementById('step-readout');
+
+        function renderDivision() {
+            document.getElementById('stage-division').innerHTML = '';
+            divisionVisual = mount('stage-division', { ...divisionJson, stepIndex: step });
+            readout.textContent = step === 0 ? 'Setup' : `Step ${step} of 4`;
+        }
+
+        document.getElementById('btn-step').addEventListener('click', () => {
+            step = step >= 4 ? 0 : step + 1;
+            renderDivision();
+        });
+
+        renderDivision();
+
+        // Volume — first layer highlighted
+        mount('stage-prism', {
+            omdType: 'rectangularPrism',
+            length: 5, width: 3, height: 4,
+            showUnitCubes: true,
+            highlightLayer: 1,
+            unitScale: 17,
+        });
+
+        // Fractions inline with text
+        mount('stage-text', {
+            omdType: 'mathText',
+            text: '**11**  A baker has [3/4] of a box of muffin mix. He pours all of the muffin mix equally into [6] bowls.',
+            fontSize: 21,
+            width: 760,
+        });
+
+        // Line plot — NYST 2025 Q43: paper airplane flights, quarter-yard axis
+        mount('stage-plot', {
+            omdType: 'linePlot',
+            min: 9, max: 12, step: 0.25,
+            values: [
+                9, 9.25, 9.5, 9.5, 9.75, 9.75, 9.75,
+                10, 10, 10.25, 10.25, 10.25, 10.5, 10.5, 10.75, 10.75,
+                11, 11, 11.25, 11.5, 11.75, 12,
+            ],
+            title: 'PAPER AIRPLANE FLIGHTS',
+            axisLabel: 'Distance (yards)',
+            marker: 'x',
+            fontSize: 15,
+            width: 720,
+            dotRadius: 6,
+        });
+
+        // Scroll choreography — heavy fade-up through blur. rootMargin lets a
+        // card resolve just before it scrolls in.
+        const revealAll = () => document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+        const io = new IntersectionObserver((entries) => {
+            for (const entry of entries)
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in');
+                    io.unobserve(entry.target);
+                }
+        }, { threshold: 0.15, rootMargin: '0px 0px 200px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+        requestAnimationFrame(() => document.querySelectorAll('header .reveal').forEach(el => el.classList.add('in')));
+        // Safety net: never leave content invisible (print, screenshots, tall
+        // viewports where a card never triggers the observer).
+        setTimeout(revealAll, 2200);
+    </script>
+</body>
+</html>

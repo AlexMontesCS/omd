@@ -1126,6 +1126,143 @@
         "default": 320,
         "optional": true,
         "description": "Width in px"
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Enable pointer and keyboard interactions for dots and ranges"
+      },
+      {
+        "name": "allowAddDots",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Allow clicking the line to add dots when interactive"
+      },
+      {
+        "name": "allowDragDots",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Allow dragging dots when interactive"
+      },
+      {
+        "name": "allowRemoveDots",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Allow double-clicking or pressing Delete to remove dots"
+      },
+      {
+        "name": "allowKeyboard",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Allow keyboard nudging of focused dots and range handles"
+      },
+      {
+        "name": "snapToIncrement",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Snap interactive values to the configured increment or snapStep"
+      },
+      {
+        "name": "snapStep",
+        "type": "number",
+        "default": null,
+        "optional": true,
+        "description": "Override increment for interactive snapping"
+      },
+      {
+        "name": "showValueLabels",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Show live labels above interactive dots"
+      },
+      {
+        "name": "showHoverValue",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Show a snapped value preview while hovering the line"
+      },
+      {
+        "name": "maxInteractiveDots",
+        "type": "number",
+        "default": null,
+        "optional": true,
+        "description": "Maximum dots allowed when click-to-add is enabled"
+      },
+      {
+        "name": "interactiveDotColor",
+        "type": "string",
+        "default": "black",
+        "optional": true,
+        "description": "Default color for interactive dots"
+      },
+      {
+        "name": "selectedDotColor",
+        "type": "string",
+        "default": "#2386DB",
+        "optional": true,
+        "description": "Stroke color for focused interactive dots"
+      },
+      {
+        "name": "rangeColor",
+        "type": "string",
+        "default": "#2386DB",
+        "optional": true,
+        "description": "Color for the textbook-style interactive selected range"
+      },
+      {
+        "name": "interactiveRange",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Show draggable range handles for rangeValues"
+      },
+      {
+        "name": "rangeValues",
+        "type": "array",
+        "default": null,
+        "optional": true,
+        "description": "Two values defining the selected interval",
+        "itemSchema": {
+          "type": "number",
+          "description": "Start or end value for the selected interval"
+        }
+      },
+      {
+        "name": "rangeStartClosed",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Use a filled endpoint circle for the start of the interval"
+      },
+      {
+        "name": "rangeEndClosed",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Use a filled endpoint circle for the end of the interval"
+      },
+      {
+        "name": "rangeStartStyle",
+        "type": "string",
+        "default": "closed",
+        "optional": true,
+        "description": "Start endpoint style: closed, open, or arrow"
+      },
+      {
+        "name": "rangeEndStyle",
+        "type": "string",
+        "default": "closed",
+        "optional": true,
+        "description": "End endpoint style: closed, open, or arrow"
       }
     ]
   },
@@ -1914,8 +2051,14 @@
                   "name": "rays",
                   "type": "array",
                   "default": [
-                    { "name": "rayA", "angle": 0 },
-                    { "name": "rayB", "angle": 55 }
+                    {
+                      "name": "rayA",
+                      "angle": 0
+                    },
+                    {
+                      "name": "rayB",
+                      "angle": 55
+                    }
                   ],
                   "optional": false
                 },
@@ -1923,7 +2066,11 @@
                   "name": "angles",
                   "type": "array",
                   "default": [
-                    { "from": "rayA", "to": "rayB", "label": "a°" }
+                    {
+                      "from": "rayA",
+                      "to": "rayB",
+                      "label": "a°"
+                    }
                   ],
                   "optional": true
                 },
@@ -2127,6 +2274,55 @@
         "default": 1,
         "optional": true,
         "description": "Background opacity from 0 to 1"
+      },
+      {
+        "name": "plotMode",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Enable click-to-add and click-to-remove student points"
+      },
+      {
+        "name": "plottedPoints",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Student-created points as [x,y] tuples",
+        "itemSchema": {
+          "type": "array",
+          "description": "Student point [x,y]",
+          "tupleItems": [
+            {
+              "type": "number",
+              "description": "x coordinate"
+            },
+            {
+              "type": "number",
+              "description": "y coordinate"
+            }
+          ]
+        }
+      },
+      {
+        "name": "plotSnap",
+        "type": "number",
+        "default": 1,
+        "optional": true,
+        "description": "Grid increment used to snap student points"
+      },
+      {
+        "name": "maxPlottedPoints",
+        "type": "number",
+        "default": null,
+        "optional": true,
+        "description": "Optional maximum number of student-created points"
+      },
+      {
+        "name": "plotPointColor",
+        "type": "string",
+        "default": "#2563eb",
+        "optional": true,
+        "description": "Color used for student-created points"
       }
     ]
   },
@@ -3279,6 +3475,48 @@
         "default": 1,
         "optional": true,
         "description": "Legacy alternating-row opacity"
+      },
+      {
+        "name": "editable",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Render editable cells as native inputs inside the table"
+      },
+      {
+        "name": "editableCells",
+        "type": "array",
+        "default": null,
+        "optional": true,
+        "description": "Explicit editable cells as [row,column] tuples",
+        "itemSchema": {
+          "type": "array",
+          "description": "Editable cell [row,column]",
+          "tupleItems": [
+            {
+              "type": "number",
+              "description": "Zero-based row"
+            },
+            {
+              "type": "number",
+              "description": "Zero-based column"
+            }
+          ]
+        }
+      },
+      {
+        "name": "editableToken",
+        "type": "string",
+        "default": null,
+        "optional": true,
+        "description": "Optional cell value that marks a cell as editable"
+      },
+      {
+        "name": "editableValues",
+        "type": "object",
+        "default": {},
+        "optional": true,
+        "description": "Initial editable values keyed by row,column"
       }
     ]
   },
@@ -3681,6 +3919,59 @@
         "default": 12,
         "optional": true,
         "description": "Prism label font size"
+      },
+      {
+        "name": "showUnitCubes",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Render the prism as stacked unit cubes (outer shell only, so it reads solid)"
+      },
+      {
+        "name": "highlightLayer",
+        "type": "number",
+        "default": -1,
+        "optional": true,
+        "description": "1-based layer counted from the bottom to recolor; -1 for none"
+      },
+      {
+        "name": "cubeGapRatio",
+        "type": "number",
+        "default": 0.08,
+        "optional": true,
+        "description": "Gap between unit cubes as a fraction of one unit (0-0.4)"
+      },
+      {
+        "name": "layerColors",
+        "type": "object",
+        "default": null,
+        "optional": true,
+        "description": "Face color overrides for unit cubes",
+        "schema": {
+          "fields": [
+            {
+              "name": "top",
+              "type": "string",
+              "default": "#e6edf7",
+              "optional": true,
+              "description": "Top face fill"
+            },
+            {
+              "name": "side",
+              "type": "string",
+              "default": "#d5dfef",
+              "optional": true,
+              "description": "Right face fill"
+            },
+            {
+              "name": "front",
+              "type": "string",
+              "default": "#EEEEEE",
+              "optional": true,
+              "description": "Front face fill"
+            }
+          ]
+        }
       }
     ]
   },
@@ -4062,8 +4353,14 @@
         "name": "rays",
         "type": "array",
         "default": [
-          { "name": "rayA", "angle": 0 },
-          { "name": "rayB", "angle": 55 }
+          {
+            "name": "rayA",
+            "angle": 0
+          },
+          {
+            "name": "rayB",
+            "angle": 55
+          }
         ],
         "optional": false,
         "description": "Rays from the shared vertex. Give each ray a short name like rayA, rayB, or rayC, then use those names in angles.from and angles.to. Angles are degrees with 0 pointing right and 90 pointing up.",
@@ -4141,7 +4438,10 @@
         "name": "angles",
         "type": "array",
         "default": [
-          { "from": "rayA", "to": "rayB" }
+          {
+            "from": "rayA",
+            "to": "rayB"
+          }
         ],
         "optional": true,
         "description": "Angle markers between named rays. Use from/to ray names from the rays array, for example { from: 'rayA', to: 'rayB' }. When label is omitted for an arc marker, OMD defaults it to the smaller angle measure between the rays (for example 55° with the default rays). Set label to an empty string for no label or '?' for a question-mark label. The marker is drawn from the from ray toward the to ray; by default OMD uses the smaller angle unless reflex is true.",
@@ -4487,6 +4787,943 @@
         "default": "black",
         "optional": true,
         "description": "Text color (CSS color)"
+      }
+    ]
+  },
+  "algorithmWork": {
+    "notes": "US standard algorithms on a place-value grid. Rows and individual cells carry `step` numbers so one JSON object drives a whole step-by-step reveal: anything tagged above `stepIndex` stays hidden. For division, set `divisor` and the bracket is drawn automatically over the first `given` row. Regrouping is shown pencil-style: a lending digit gets a diagonal strike (`strike`/`strikeStep`) and its new value is written in a carry row above.",
+    "fields": [
+      {
+        "name": "operation",
+        "type": "string",
+        "default": "addition",
+        "optional": true,
+        "description": "Algorithm being shown",
+        "options": [
+          "addition",
+          "subtraction",
+          "multiplication",
+          "division"
+        ]
+      },
+      {
+        "name": "rows",
+        "type": "array",
+        "default": [],
+        "optional": false,
+        "description": "Rows top-to-bottom",
+        "schema": {
+          "fields": [
+            {
+              "name": "kind",
+              "type": "string",
+              "default": "given",
+              "optional": false,
+              "description": "Row type",
+              "options": [
+                "carry",
+                "given",
+                "work",
+                "answer",
+                "blank",
+                "rule"
+              ]
+            },
+            {
+              "name": "cells",
+              "type": "array",
+              "default": [],
+              "optional": true,
+              "description": "Digits left-to-right; the row RIGHT-aligns on the ones column. String/number, or {text, kind, color, step, strike, strikeStep} — `strike` draws the crossed-out regrouping mark, `strikeStep` makes that mark appear on a given step."
+            },
+            {
+              "name": "step",
+              "type": "number",
+              "default": null,
+              "optional": true,
+              "description": "Row stays hidden until stepIndex reaches this value"
+            },
+            {
+              "name": "annotation",
+              "type": "string",
+              "default": "",
+              "optional": true,
+              "description": "Explanatory text drawn to the right of the row"
+            },
+            {
+              "name": "color",
+              "type": "string",
+              "default": "",
+              "optional": true,
+              "description": "Color override for every cell in the row"
+            },
+            {
+              "name": "gapAfter",
+              "type": "number",
+              "default": 0,
+              "optional": true,
+              "description": "Extra vertical space; rule rows only"
+            }
+          ]
+        }
+      },
+      {
+        "name": "columns",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Place-value headers across the top, e.g. ['100s','10s','1s']"
+      },
+      {
+        "name": "divisor",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Division only: the divisor drawn outside the bracket"
+      },
+      {
+        "name": "steps",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Step descriptions for the optional steps list",
+        "schema": {
+          "fields": [
+            {
+              "name": "label",
+              "type": "string",
+              "default": "",
+              "optional": true,
+              "description": "Short step label"
+            },
+            {
+              "name": "description",
+              "type": "string",
+              "default": "",
+              "optional": true,
+              "description": "Step text shown in the steps list"
+            }
+          ]
+        }
+      },
+      {
+        "name": "stepIndex",
+        "type": "number",
+        "default": null,
+        "optional": true,
+        "description": "How many steps are revealed; omit to reveal everything"
+      },
+      {
+        "name": "activeRow",
+        "type": "number",
+        "default": -1,
+        "optional": true,
+        "description": "Row index to highlight as the current step"
+      },
+      {
+        "name": "showStepsList",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Draw the numbered step list beside the grid (requires steps)"
+      },
+      {
+        "name": "fontSize",
+        "type": "number",
+        "default": 26,
+        "optional": true,
+        "description": "Digit font size in px"
+      },
+      {
+        "name": "columnWidth",
+        "type": "number",
+        "default": 32,
+        "optional": true,
+        "description": "Width of one place-value column in px"
+      },
+      {
+        "name": "rowGap",
+        "type": "number",
+        "default": 4,
+        "optional": true,
+        "description": "Vertical gap between rows in px"
+      }
+    ]
+  },
+  "mathText": {
+    "notes": "Prose with real stacked math inline. Markup: [3/4] stacked fraction, [2 1/2] mixed number, [6] plain number, **bold** span. Text wraps at `width` and never splits a fraction across lines.",
+    "fields": [
+      {
+        "name": "text",
+        "type": "string",
+        "default": "",
+        "optional": false,
+        "description": "Sentence with [n/d], [w n/d], [n] and **bold** markup"
+      },
+      {
+        "name": "fontSize",
+        "type": "number",
+        "default": 18,
+        "optional": true,
+        "description": "Prose font size in px"
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "default": 0,
+        "optional": true,
+        "description": "Wrap width in px; 0 renders a single line"
+      },
+      {
+        "name": "lineHeight",
+        "type": "number",
+        "default": null,
+        "optional": true,
+        "description": "Line height in px; defaults to 1.85x fontSize"
+      },
+      {
+        "name": "fontFamily",
+        "type": "string",
+        "default": "Albert Sans, Arial, Helvetica, sans-serif",
+        "optional": true,
+        "description": "CSS font family"
+      }
+    ]
+  },
+  "linePlot": {
+    "notes": "Dot/line plot in state-test style: stacked marks above a labeled axis. Ticks landing on exact halves, thirds, quarters or eighths label themselves as fractions and mixed numbers (9, 9 1/4, 9 1/2); other values fall back to decimals.",
+    "fields": [
+      {
+        "name": "values",
+        "type": "array",
+        "default": [],
+        "optional": false,
+        "description": "One numeric entry per observation; entries stack on the nearest tick"
+      },
+      {
+        "name": "min",
+        "type": "number",
+        "default": 0,
+        "optional": true,
+        "description": "Axis minimum"
+      },
+      {
+        "name": "max",
+        "type": "number",
+        "default": 10,
+        "optional": true,
+        "description": "Axis maximum"
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": 1,
+        "optional": true,
+        "description": "Tick interval, e.g. 0.25 for quarters"
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Title drawn above the plot"
+      },
+      {
+        "name": "axisLabel",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Caption drawn under the axis, e.g. 'Distance (yards)'"
+      },
+      {
+        "name": "marker",
+        "type": "string",
+        "default": "x",
+        "optional": true,
+        "description": "Mark shape",
+        "options": [
+          "x",
+          "dot"
+        ]
+      },
+      {
+        "name": "fontSize",
+        "type": "number",
+        "default": 15,
+        "optional": true,
+        "description": "Tick label font size in px"
+      },
+      {
+        "name": "width",
+        "type": "number",
+        "default": 520,
+        "optional": true,
+        "description": "Total width in px (minimum 200)"
+      },
+      {
+        "name": "dotRadius",
+        "type": "number",
+        "default": 6,
+        "optional": true,
+        "description": "Half the mark size in px"
+      }
+    ]
+  },
+  "areaDiagram": {
+    "notes": "Rectangular area model with fractional side lengths. Whole unit squares are ruled solid, each unit square is partitioned into equal strips ruled dashed, and a shaded sub-rectangle carries the product. Lengths accept numbers, fractions ('2/3') and mixed numbers ('3 1/4') and are held as exact rationals, so 3 1/4 x 4 reports 13. Set `interactive` to let students shade cells, drag the side lengths, and type answers. `width` and `height` are accepted aliases for `columns` and `rows`.",
+    "fields": [
+      {
+        "name": "columns",
+        "type": "number|string",
+        "default": 4,
+        "optional": true,
+        "description": "Drawn width in whole units; accepts a fraction for a partial last column"
+      },
+      {
+        "name": "rows",
+        "type": "number|string",
+        "default": 1,
+        "optional": true,
+        "description": "Drawn height in whole units"
+      },
+      {
+        "name": "columnParts",
+        "type": "number",
+        "default": 1,
+        "optional": true,
+        "description": "Dashed vertical partitions per unit square"
+      },
+      {
+        "name": "rowParts",
+        "type": "number",
+        "default": 1,
+        "optional": true,
+        "description": "Dashed horizontal partitions per unit square"
+      },
+      {
+        "name": "unitScale",
+        "type": "number",
+        "default": 64,
+        "optional": true,
+        "description": "Pixels per unit"
+      },
+      {
+        "name": "shadeWidth",
+        "type": "number|string",
+        "default": null,
+        "optional": true,
+        "description": "Shaded width in units; defaults to `columns`"
+      },
+      {
+        "name": "shadeHeight",
+        "type": "number|string",
+        "default": null,
+        "optional": true,
+        "description": "Shaded height in units; defaults to `rows`"
+      },
+      {
+        "name": "shadedCells",
+        "type": "array",
+        "default": null,
+        "optional": true,
+        "description": "Explicit [column, row] partition cells; overrides the shaded rectangle"
+      },
+      {
+        "name": "shadeMode",
+        "type": "string",
+        "default": "rect",
+        "optional": true,
+        "description": "'rect' draws the shaded product as one rectangle; 'cells' fills the individual partition cells it covers. Passing shadedCells forces 'cells'."
+      },
+      {
+        "name": "shadeColor",
+        "type": "string",
+        "default": "#7FCFEA",
+        "optional": true,
+        "description": "Fill of the shaded region"
+      },
+      {
+        "name": "shadeOpacity",
+        "type": "number",
+        "default": 1,
+        "optional": true,
+        "description": "Opacity of the shaded region, 0-1. Lower it to let overlapping shading read as two layers."
+      },
+      {
+        "name": "emptyColor",
+        "type": "string",
+        "default": "#FFFFFF",
+        "optional": true,
+        "description": "Fill of the unshaded region"
+      },
+      {
+        "name": "gridColor",
+        "type": "string",
+        "default": "#111111",
+        "optional": true,
+        "description": "Colour of the unit rules and the border"
+      },
+      {
+        "name": "gridStrokeWidth",
+        "type": "number",
+        "default": 2.5,
+        "optional": true,
+        "description": "Stroke width of the unit rules"
+      },
+      {
+        "name": "partitionColor",
+        "type": "string",
+        "default": "#111111",
+        "optional": true,
+        "description": "Colour of the dashed partition rules"
+      },
+      {
+        "name": "partitionStrokeWidth",
+        "type": "number",
+        "default": 1.6,
+        "optional": true,
+        "description": "Stroke width of the dashed partition rules"
+      },
+      {
+        "name": "partitionDash",
+        "type": "string",
+        "default": "7 6",
+        "optional": true,
+        "description": "SVG dash pattern for partition rules"
+      },
+      {
+        "name": "showPartitions",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Draw the dashed partition rules"
+      },
+      {
+        "name": "showUnitLines",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Draw the solid unit-square rules"
+      },
+      {
+        "name": "partitionScope",
+        "type": "string|object",
+        "default": "all",
+        "optional": true,
+        "description": "Which units carry partition rules: 'all', 'last' (only the unit the shading ends inside), or { from, to }",
+        "options": [
+          "all",
+          "last"
+        ]
+      },
+      {
+        "name": "columnPartitionScope",
+        "type": "string|object",
+        "default": "all",
+        "optional": true,
+        "description": "Partition scope for the vertical rules only"
+      },
+      {
+        "name": "rowPartitionScope",
+        "type": "string|object",
+        "default": "all",
+        "optional": true,
+        "description": "Partition scope for the horizontal rules only"
+      },
+      {
+        "name": "topBrace",
+        "type": "string|object|boolean",
+        "default": null,
+        "optional": true,
+        "description": "Brace above the figure: 'unit', 'shaded', 'grid', false, or { from, to, label, style }",
+        "options": [
+          "unit",
+          "shaded",
+          "grid",
+          "none"
+        ]
+      },
+      {
+        "name": "leftBrace",
+        "type": "string|object|boolean",
+        "default": null,
+        "optional": true,
+        "description": "Brace to the left of the figure; same shape as `topBrace`"
+      },
+      {
+        "name": "topBraces",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Several spans above the figure, e.g. the whole part and the fractional part of a mixed number"
+      },
+      {
+        "name": "leftBraces",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Several spans to the left of the figure"
+      },
+      {
+        "name": "showLabels",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Shorthand for braces on the shaded extent on both axes"
+      },
+      {
+        "name": "braceStyle",
+        "type": "string",
+        "default": "brace",
+        "optional": true,
+        "description": "Annotation style",
+        "options": [
+          "brace",
+          "arrow"
+        ]
+      },
+      {
+        "name": "braceColor",
+        "type": "string",
+        "default": "#111111",
+        "optional": true,
+        "description": "Colour of braces and arrows"
+      },
+      {
+        "name": "labelFontSize",
+        "type": "number",
+        "default": 17,
+        "optional": true,
+        "description": "Font size for brace labels and readouts"
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "omdMathText markup drawn above the figure"
+      },
+      {
+        "name": "titleFontSize",
+        "type": "number",
+        "default": 15,
+        "optional": true,
+        "description": "Font size of the title line above the figure"
+      },
+      {
+        "name": "showAreaLabel",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Print the computed area under the figure"
+      },
+      {
+        "name": "areaLabelText",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Override text for the area label"
+      },
+      {
+        "name": "expressionLine",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Print the live 'w x h = area' line under the figure"
+      },
+      {
+        "name": "expressionSuffix",
+        "type": "string",
+        "default": "square units",
+        "optional": true,
+        "description": "Unit phrase appended to area readouts"
+      },
+      {
+        "name": "decompose",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Tint the fractional part, rule the split, and print the partial products"
+      },
+      {
+        "name": "decomposeAxis",
+        "type": "string",
+        "default": "auto",
+        "optional": true,
+        "description": "Axis to decompose along",
+        "options": [
+          "auto",
+          "x",
+          "y"
+        ]
+      },
+      {
+        "name": "decomposeLabels",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Print the partial-product line for a decomposition"
+      },
+      {
+        "name": "decomposeColor",
+        "type": "string",
+        "default": "#F6C177",
+        "optional": true,
+        "description": "Tint of the fractional part"
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Enable student input"
+      },
+      {
+        "name": "allowPaint",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Press and drag to shade or unshade partition cells"
+      },
+      {
+        "name": "allowResize",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Drag handles that set the shaded side lengths, snapped to partitions"
+      },
+      {
+        "name": "inputs",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Answer fields ({ key, label, answer, suffix, width }) or live readouts ({ label, readout: 'area'|'expression' })"
+      },
+      {
+        "name": "checkAnswers",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Grade answer fields as they are typed"
+      }
+    ]
+  },
+  "fractionStrips": {
+    "notes": "Equal-sharing strip diagram: one whole strip per object, each partitioned by the number of sharers, with one share highlighted. Three sandwiches shared by five people is { strips: 3, parts: 5, shaded: 1 }. Vertical orientation with a separator renders the chocolate-bar model.",
+    "fields": [
+      {
+        "name": "strips",
+        "type": "number",
+        "default": 3,
+        "optional": true,
+        "description": "Number of whole strips"
+      },
+      {
+        "name": "parts",
+        "type": "number",
+        "default": 5,
+        "optional": true,
+        "description": "Equal parts each whole is cut into"
+      },
+      {
+        "name": "shaded",
+        "type": "number",
+        "default": 1,
+        "optional": true,
+        "description": "Shaded parts per strip"
+      },
+      {
+        "name": "shadedList",
+        "type": "array",
+        "default": null,
+        "optional": true,
+        "description": "Per-strip shaded counts, overriding `shaded`"
+      },
+      {
+        "name": "shadedCells",
+        "type": "array",
+        "default": null,
+        "optional": true,
+        "description": "Explicit [strip, part] cells"
+      },
+      {
+        "name": "orientation",
+        "type": "string",
+        "default": "horizontal",
+        "optional": true,
+        "description": "Strip direction",
+        "options": [
+          "horizontal",
+          "vertical"
+        ]
+      },
+      {
+        "name": "fillFrom",
+        "type": "string",
+        "default": "start",
+        "optional": true,
+        "description": "Which end the shading starts from",
+        "options": [
+          "start",
+          "end"
+        ]
+      },
+      {
+        "name": "stripLength",
+        "type": "number",
+        "default": 420,
+        "optional": true,
+        "description": "Length in px along the partitioned axis"
+      },
+      {
+        "name": "stripThickness",
+        "type": "number",
+        "default": 46,
+        "optional": true,
+        "description": "Thickness of each strip in px"
+      },
+      {
+        "name": "gap",
+        "type": "number",
+        "default": 14,
+        "optional": true,
+        "description": "Gap between strips in px"
+      },
+      {
+        "name": "shadeColor",
+        "type": "string",
+        "default": "#7FCFEA",
+        "optional": true,
+        "description": "Fill of the shaded parts"
+      },
+      {
+        "name": "emptyColor",
+        "type": "string",
+        "default": "#FFFFFF",
+        "optional": true,
+        "description": "Fill of the unshaded parts of each strip"
+      },
+      {
+        "name": "strokeColor",
+        "type": "string",
+        "default": "#111111",
+        "optional": true,
+        "description": "Strip outline colour"
+      },
+      {
+        "name": "strokeWidth",
+        "type": "number",
+        "default": 2.5,
+        "optional": true,
+        "description": "Stroke width of each strip outline"
+      },
+      {
+        "name": "dividerDash",
+        "type": "string",
+        "default": "6 5",
+        "optional": true,
+        "description": "Dash pattern for the internal dividers; 'none' draws them solid"
+      },
+      {
+        "name": "dividerColor",
+        "type": "string",
+        "default": "#111111",
+        "optional": true,
+        "description": "Colour of the interior lines that split a strip into equal parts"
+      },
+      {
+        "name": "dividerWidth",
+        "type": "number",
+        "default": 1.8,
+        "optional": true,
+        "description": "Stroke width of the interior part dividers"
+      },
+      {
+        "name": "cornerRadius",
+        "type": "number",
+        "default": 3,
+        "optional": true,
+        "description": "Corner radius of the strip outline"
+      },
+      {
+        "name": "brace",
+        "type": "string|boolean",
+        "default": "1",
+        "optional": true,
+        "description": "Label for the brace under the whole; false hides it"
+      },
+      {
+        "name": "braceEvery",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Repeat the brace under every strip"
+      },
+      {
+        "name": "stripLabels",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Caption drawn under each strip"
+      },
+      {
+        "name": "separator",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Symbol drawn between vertical strips, e.g. '+'"
+      },
+      {
+        "name": "labelFontSize",
+        "type": "number",
+        "default": 17,
+        "optional": true,
+        "description": "Font size for labels"
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "omdMathText markup drawn above the figure"
+      },
+      {
+        "name": "expressionLine",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Print 'strips x per-strip = total' under the figure"
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Click or drag parts to shade them"
+      }
+    ]
+  },
+  "fractionCircle": {
+    "notes": "One or more circles cut into equal wedges with some wedges shaded. Two circles of sixths with five sixths shaded on each is the model for 2 x 5/6. `circles` is an accepted alias for `count`.",
+    "fields": [
+      {
+        "name": "count",
+        "type": "number",
+        "default": 2,
+        "optional": true,
+        "description": "Number of circles"
+      },
+      {
+        "name": "parts",
+        "type": "number",
+        "default": 6,
+        "optional": true,
+        "description": "Wedges per circle"
+      },
+      {
+        "name": "shaded",
+        "type": "number",
+        "default": 5,
+        "optional": true,
+        "description": "Shaded wedges per circle"
+      },
+      {
+        "name": "shadedList",
+        "type": "array",
+        "default": null,
+        "optional": true,
+        "description": "Per-circle shaded counts, overriding `shaded`"
+      },
+      {
+        "name": "shadedCells",
+        "type": "array",
+        "default": null,
+        "optional": true,
+        "description": "Explicit [circle, wedge] cells"
+      },
+      {
+        "name": "radius",
+        "type": "number",
+        "default": 74,
+        "optional": true,
+        "description": "Circle radius in px"
+      },
+      {
+        "name": "gap",
+        "type": "number",
+        "default": 26,
+        "optional": true,
+        "description": "Gap between circles in px"
+      },
+      {
+        "name": "startAngle",
+        "type": "number",
+        "default": -90,
+        "optional": true,
+        "description": "Angle of the first cut, in degrees"
+      },
+      {
+        "name": "shadeColor",
+        "type": "string",
+        "default": "#FFD84D",
+        "optional": true,
+        "description": "Fill of the shaded wedges"
+      },
+      {
+        "name": "emptyColor",
+        "type": "string",
+        "default": "#FFFFFF",
+        "optional": true,
+        "description": "Fill of the unshaded wedges"
+      },
+      {
+        "name": "strokeColor",
+        "type": "string",
+        "default": "#111111",
+        "optional": true,
+        "description": "Outline colour"
+      },
+      {
+        "name": "strokeWidth",
+        "type": "number",
+        "default": 2.5,
+        "optional": true,
+        "description": "Stroke width of each wedge outline"
+      },
+      {
+        "name": "circleLabels",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Caption drawn under each circle"
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "omdMathText markup drawn above the figure"
+      },
+      {
+        "name": "labelFontSize",
+        "type": "number",
+        "default": 17,
+        "optional": true,
+        "description": "Font size of the title and circle labels"
+      },
+      {
+        "name": "expressionLine",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Print 'count x per-circle = total' under the figure"
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Click wedges to toggle them"
       }
     ]
   }

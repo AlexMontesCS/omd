@@ -49,6 +49,12 @@ import { omdEquationStack } from './equations/omdEquationStack.js';
 import { omdEquationNode } from './equations/omdEquationNode.js';
 import { omdConstantNode } from './equations/omdConstantNode.js';
 import { omdVariableNode } from './equations/omdVariableNode.js';
+import { omdAlgorithmWork } from './visualizations/omdAlgorithmWork.js';
+import { omdMathText } from './visualizations/omdMathText.js';
+import { omdLinePlot } from './visualizations/omdLinePlot.js';
+import { omdAreaDiagram } from './visualizations/omdAreaDiagram.js';
+import { omdFractionStrips } from './visualizations/omdFractionStrips.js';
+import { omdFractionCircle } from './visualizations/omdFractionCircle.js';
 
 /**
  * Map of omdType strings to their corresponding class constructors
@@ -82,6 +88,12 @@ const OMD_TYPE_MAP = {
     'circle': omdCircle,
     'angle': omdAngle,
     'regularPolygon': omdRegularPolygon,
+    'algorithmWork': omdAlgorithmWork,
+    'mathText': omdMathText,
+    'linePlot': omdLinePlot,
+    'areaDiagram': omdAreaDiagram,
+    'fractionStrips': omdFractionStrips,
+    'fractionCircle': omdFractionCircle,
     'label': omdLabel,
 };
 

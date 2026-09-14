@@ -1,4 +1,4 @@
-import { omdColor } from "../omdConstants.js";
+import { omdColor, OMD_MATH_FONT_FAMILY } from "../omdConstants.js";
 import { jsvgGroup, jsvgRect, jsvgClipMask, jsvgLine, jsvgEllipse, jsvgTextBox, jsvgTextLine, jsvgPath } from "@teachinglab/jsvg";
 import { math } from "../math.js";
 import {
@@ -52,9 +52,25 @@ export class omdCoordinatePlane extends jsvgGroup {
         this.backgroundCornerRadius = 15;
         this.backgroundOpacity = 1.0;
         this.showBackground = true;
+        // Plot mode swaps the default grey card for a white one with a hairline
+        // border, unless the author picked a colour themselves.
+        this._backgroundColorExplicit = false;
 
         this.interactive = false;
         this.variables = [];
+
+        // --- Interactive point-plotting (student input) ---------------------
+        // When `plotMode` is true the student can click inside the plane to drop
+        // points (and click an existing point to remove it). Data flows back out
+        // via the `onChange` callback and the `omd-coordinateplane-change` event.
+        this.plotMode = false;
+        this.plottedPoints = [];          // [[x, y], ...] in data coordinates
+        this.plotSnap = 1;                // snap increment for clicked points
+        this.maxPlottedPoints = null;     // optional cap (null = unlimited)
+        this.plotPointColor = "#2563eb";  // colour of student-plotted points
+        this.onChange = null;             // optional callback(payload)
+        this._plotLayer = null;
+
         this.basePaddingBottom = 30;
         this.interactivePaddingBottom = 0;
         this.customPaddingTop = null;
@@ -112,6 +128,7 @@ export class omdCoordinatePlane extends jsvgGroup {
 
         // Load background customization properties
         this.backgroundColor = data.backgroundColor || this.backgroundColor;
+        if (data.backgroundColor) this._backgroundColorExplicit = true;
         this.backgroundCornerRadius = (data.backgroundCornerRadius !== undefined) ? data.backgroundCornerRadius : this.backgroundCornerRadius;
         this.backgroundOpacity = (data.backgroundOpacity !== undefined) ? data.backgroundOpacity : this.backgroundOpacity;
         this.showBackground = (data.showBackground !== undefined) ? data.showBackground : this.showBackground;
@@ -119,6 +136,17 @@ export class omdCoordinatePlane extends jsvgGroup {
         this.variables = this.normalizeInteractiveVariables(
             data.variables || data.interactiveVariables || []
         );
+
+        // Interactive point-plotting config.
+        this.plotMode = data.plotMode === true || data.plotMode === "true";
+        if (Array.isArray(data.plottedPoints)) {
+            this.plottedPoints = data.plottedPoints
+                .map((p) => (Array.isArray(p) ? [Number(p[0]), Number(p[1])] : null))
+                .filter((p) => p && Number.isFinite(p[0]) && Number.isFinite(p[1]));
+        }
+        if (Number.isFinite(data.plotSnap) && data.plotSnap > 0) this.plotSnap = data.plotSnap;
+        if (Number.isFinite(data.maxPlottedPoints)) this.maxPlottedPoints = data.maxPlottedPoints;
+        if (typeof data.plotPointColor === "string") this.plotPointColor = data.plotPointColor;
 
         this.calculatePadding();
         this.updateLayout();
@@ -128,6 +156,14 @@ export class omdCoordinatePlane extends jsvgGroup {
 
     updateLayout() {
         this.removeAllChildren();
+        // removeAllChildren() only clears jsvg-tracked children; interactive
+        // overlays are appended directly to svgObject, so clear them here to
+        // avoid duplicating controls/plot layers across re-layouts.
+        if (this.svgObject && this.svgObject.querySelectorAll) {
+            this.svgObject
+                .querySelectorAll("[data-omd-interactive-controls], [data-omd-plot-layer]")
+                .forEach((el) => el.remove());
+        }
         this.calculateGraphDimensions();
 
         const outerWidth = this.width;
@@ -139,9 +175,14 @@ export class omdCoordinatePlane extends jsvgGroup {
         const whiteRect = new jsvgRect();
         whiteRect.setWidthAndHeight(outerWidth, outerHeight);
         
+        // Plot mode reads as a worksheet, not a chart chrome: white paper with a
+        // hairline edge rather than the default grey card.
+        const plotSurface = this.plotMode && !this._backgroundColorExplicit;
+        const surfaceColor = plotSurface ? "#FFFFFF" : this.backgroundColor;
+
         // Apply customizable background properties
         if (this.showBackground) {
-            whiteRect.setFillColor(this.backgroundColor);
+            whiteRect.setFillColor(surfaceColor);
             if (this.backgroundOpacity < 1.0) {
                 whiteRect.setOpacity(this.backgroundOpacity);
             }
@@ -155,6 +196,17 @@ export class omdCoordinatePlane extends jsvgGroup {
         }
 
         clipMask.addChild(whiteRect);
+
+        if (plotSurface && this.showBackground) {
+            const edge = new jsvgRect();
+            edge.setWidthAndHeight(outerWidth - 1, outerHeight - 1);
+            edge.setPosition(0.5, 0.5);
+            edge.setFillColor("none");
+            edge.setStrokeColor("#E4E7EB");
+            edge.setStrokeWidth(1);
+            if (edge.setCornerRadius) edge.setCornerRadius(Math.max(0, this.backgroundCornerRadius - 1));
+            clipMask.addChild(edge);
+        }
 
         const contentGroup = new jsvgGroup();
         contentGroup.setPosition(0, 0);
@@ -191,6 +243,10 @@ export class omdCoordinatePlane extends jsvgGroup {
         this.sliderControlRows = [];
         if (this.shouldShowInteractiveControls()) {
             this.createInteractiveControls(this.svgObject);
+        }
+
+        if (this.plotMode) {
+            this.createPlotLayer(this.svgObject);
         }
     }
 
@@ -438,8 +494,8 @@ export class omdCoordinatePlane extends jsvgGroup {
             try {
                 const compiledExpression = this.compileFunctionExpression(functionConfig.equation);
                 const path = new jsvgPath();
-                path.setStrokeColor(this.getAllowedColor(functionConfig.color));
-                path.setStrokeWidth(functionConfig.strokeWidth);
+                path.setStrokeColor(this.getAllowedColor(functionConfig.color || 'blue'));
+                path.setStrokeWidth(typeof functionConfig.strokeWidth === 'number' && Number.isFinite(functionConfig.strokeWidth) ? functionConfig.strokeWidth : 2);
                 this.graphFunctionWithDomain(path, functionConfig.domain, compiledExpression);
                 holder.addChild(path);
 
@@ -991,6 +1047,307 @@ export class omdCoordinatePlane extends jsvgGroup {
         if (!rect.width || !viewBoxWidth) return 0;
 
         return viewBoxX + ((clientX - rect.left) / rect.width) * viewBoxWidth;
+    }
+
+    // ===== Interactive point plotting (student input) =====
+
+    /**
+     * Map a viewport (client) coordinate to this plane's internal SVG user
+     * units using the live screen CTM. Mirrors the approach used by
+     * omdNumberLine so plotting stays accurate under any CSS scaling.
+     */
+    clientToLocalPoint(clientX, clientY) {
+        if (!this.svgObject || typeof this.svgObject.createSVGPoint !== "function") {
+            return { x: clientX, y: clientY };
+        }
+        const point = this.svgObject.createSVGPoint();
+        point.x = clientX;
+        point.y = clientY;
+        const matrix = this.svgObject.getScreenCTM();
+        if (!matrix) return { x: clientX, y: clientY };
+        return point.matrixTransform(matrix.inverse());
+    }
+
+    /** Convert internal SVG user units → graph data coordinates {x, y}. */
+    localPointToData(localX, localY) {
+        const graphPixelX = localX - this.paddingLeft;
+        const graphPixelY = localY - this.paddingTop;
+        const dataX = this.xMin + graphPixelX / this.xSpacer;
+        const dataY = this.yMin + (this.graphHeight - graphPixelY) / this.ySpacer;
+        return { x: dataX, y: dataY };
+    }
+
+    snapPlotValue(value, min, max) {
+        const step = this.plotSnap || 1;
+        const snapped = Math.round(value / step) * step;
+        const decimals = this.getStepPrecision(step);
+        const rounded = Number(snapped.toFixed(decimals));
+        return Math.max(min, Math.min(max, rounded));
+    }
+
+    /** Text width for the hover pill — canvas-accurate in a browser. */
+    measurePlotLabel(text, fontSize) {
+        if (typeof document === "undefined") return String(text).length * fontSize * 0.58;
+        if (!this._plotMeasureContext) {
+            this._plotMeasureContext = document.createElement("canvas").getContext("2d");
+        }
+        const context = this._plotMeasureContext;
+        if (!context) return String(text).length * fontSize * 0.58;
+        context.font = `600 ${fontSize}px ${OMD_MATH_FONT_FAMILY}`;
+        return context.measureText(String(text)).width;
+    }
+
+    createPlotLayer(parentSvg) {
+        const layer = this.createSvgElement("g", { "data-omd-plot-layer": "true" });
+        const accent = this.getAllowedColor(this.plotPointColor);
+        const removeColor = "#DC2626";
+        const r = Math.max(5, this.dotSize / 1.4);
+
+        const left = this.paddingLeft;
+        const top = this.paddingTop;
+        const right = left + this.graphWidth;
+        const bottom = top + this.graphHeight;
+
+        // Transparent hit area covering the plotting region. Everything else in
+        // the layer sets pointer-events:none so a click anywhere — including
+        // directly on a plotted dot — falls through to this single handler,
+        // which snaps to the grid and toggles.
+        const hitArea = this.createSvgElement("rect", {
+            x: left, y: top, width: this.graphWidth, height: this.graphHeight,
+            fill: "transparent",
+            "pointer-events": "all",
+        });
+        hitArea.style.cursor = "crosshair";
+        layer.appendChild(hitArea);
+
+        // --- Hover guides: dashed rules from the snapped point out to both
+        // axes, so a student can read the coordinates off the scale instead of
+        // eyeballing the dot's position. ---
+        const guideStyle = {
+            stroke: accent,
+            "stroke-width": 1.5,
+            "stroke-dasharray": "4 4",
+            "stroke-opacity": 0.55,
+            "pointer-events": "none",
+            visibility: "hidden",
+        };
+        const guideX = this.createSvgElement("line", guideStyle);
+        const guideY = this.createSvgElement("line", guideStyle);
+        layer.appendChild(guideX);
+        layer.appendChild(guideY);
+
+        // Existing student points: soft halo, white ring, solid core.
+        for (let i = 0; i < this.plottedPoints.length; i++) {
+            const [x, y] = this.plottedPoints[i];
+            const cx = left + this.toGraphPixelX(x);
+            const cy = top + this.toGraphPixelY(y);
+
+            layer.appendChild(this.createSvgElement("circle", {
+                cx, cy, r: r + 5,
+                fill: accent,
+                "fill-opacity": 0.14,
+                "pointer-events": "none",
+            }));
+            layer.appendChild(this.createSvgElement("circle", {
+                cx, cy, r,
+                fill: accent,
+                stroke: "#ffffff",
+                "stroke-width": 2.5,
+                "pointer-events": "none",
+                "data-omd-plot-point": i,
+            }));
+        }
+
+        // --- Hover affordance: a dashed ghost where the click will land, or a
+        // red ring over a point that a click would remove. ---
+        const ghost = this.createSvgElement("circle", {
+            r,
+            fill: accent,
+            "fill-opacity": 0.18,
+            stroke: accent,
+            "stroke-width": 2,
+            "stroke-dasharray": "3 3",
+            "pointer-events": "none",
+            visibility: "hidden",
+        });
+        const ring = this.createSvgElement("circle", {
+            r: r + 6,
+            fill: "none",
+            stroke: removeColor,
+            "stroke-width": 2,
+            "pointer-events": "none",
+            visibility: "hidden",
+        });
+
+        const labelFont = 12;
+        const labelHeight = 22;
+        const pill = this.createSvgElement("rect", {
+            rx: 6, ry: 6, height: labelHeight,
+            fill: accent,
+            "pointer-events": "none",
+            visibility: "hidden",
+        });
+        const label = this.createSvgElement("text", {
+            "font-family": OMD_MATH_FONT_FAMILY,
+            "font-size": labelFont,
+            "font-weight": 600,
+            "text-anchor": "middle",
+            "dominant-baseline": "central",
+            "pointer-events": "none",
+            fill: "#ffffff",
+            visibility: "hidden",
+        });
+
+        layer.appendChild(ring);
+        layer.appendChild(ghost);
+        layer.appendChild(pill);
+        layer.appendChild(label);
+
+        const setVisible = (visible) => {
+            const value = visible ? "visible" : "hidden";
+            for (const node of [guideX, guideY, pill, label]) node.setAttribute("visibility", value);
+        };
+
+        const updateHover = (event) => {
+            const local = this.clientToLocalPoint(event.clientX, event.clientY);
+            const data = this.localPointToData(local.x, local.y);
+            const px = this.snapPlotValue(data.x, this.xMin, this.xMax);
+            const py = this.snapPlotValue(data.y, this.yMin, this.yMax);
+            const cx = left + this.toGraphPixelX(px);
+            const cy = top + this.toGraphPixelY(py);
+            const existing = this.plottedPoints.some((p) => p[0] === px && p[1] === py);
+            const color = existing ? removeColor : accent;
+
+            // Guides run to the axes when they are in view, otherwise to the edge.
+            const axisX = left + this.toGraphPixelX(Math.min(Math.max(0, this.xMin), this.xMax));
+            const axisY = top + this.toGraphPixelY(Math.min(Math.max(0, this.yMin), this.yMax));
+            guideX.setAttribute("x1", cx);
+            guideX.setAttribute("y1", cy);
+            guideX.setAttribute("x2", cx);
+            guideX.setAttribute("y2", Math.min(bottom, Math.max(top, axisY)));
+            guideY.setAttribute("x1", cx);
+            guideY.setAttribute("y1", cy);
+            guideY.setAttribute("x2", Math.min(right, Math.max(left, axisX)));
+            guideY.setAttribute("y2", cy);
+            guideX.setAttribute("stroke", color);
+            guideY.setAttribute("stroke", color);
+
+            ghost.setAttribute("cx", cx);
+            ghost.setAttribute("cy", cy);
+            ghost.setAttribute("visibility", existing ? "hidden" : "visible");
+
+            ring.setAttribute("cx", cx);
+            ring.setAttribute("cy", cy);
+            ring.setAttribute("visibility", existing ? "visible" : "hidden");
+
+            const text = `(${px}, ${py})`;
+            const pillWidth = this.measurePlotLabel(text, labelFont) + 16;
+
+            // Sit above the point, or below it when the pill would clip the top.
+            const above = cy - r - 9 - labelHeight >= top - 4;
+            const pillY = above ? cy - r - 9 - labelHeight : cy + r + 9;
+            const pillX = Math.min(right - pillWidth, Math.max(left, cx - pillWidth / 2));
+
+            pill.setAttribute("x", pillX);
+            pill.setAttribute("y", pillY);
+            pill.setAttribute("width", pillWidth);
+            pill.setAttribute("fill", color);
+
+            label.textContent = text;
+            label.setAttribute("x", pillX + pillWidth / 2);
+            label.setAttribute("y", pillY + labelHeight / 2);
+
+            setVisible(true);
+        };
+
+        const hideHover = () => {
+            setVisible(false);
+            ghost.setAttribute("visibility", "hidden");
+            ring.setAttribute("visibility", "hidden");
+        };
+
+        hitArea.addEventListener("pointermove", updateHover);
+        hitArea.addEventListener("pointerenter", updateHover);
+        hitArea.addEventListener("pointerleave", hideHover);
+
+        hitArea.addEventListener("pointerdown", (event) => {
+            event.preventDefault();
+            const local = this.clientToLocalPoint(event.clientX, event.clientY);
+            const data = this.localPointToData(local.x, local.y);
+            const px = this.snapPlotValue(data.x, this.xMin, this.xMax);
+            const py = this.snapPlotValue(data.y, this.yMin, this.yMax);
+            this.togglePlotPoint(px, py);
+        });
+
+        parentSvg.appendChild(layer);
+        this._plotLayer = layer;
+    }
+
+    /** Add a point, or remove it if one already exists at (x, y). */
+    togglePlotPoint(x, y) {
+        const idx = this.plottedPoints.findIndex(
+            (p) => p[0] === x && p[1] === y
+        );
+        if (idx >= 0) {
+            this.plottedPoints.splice(idx, 1);
+            this.updateLayout();
+            this.emitPlotChange("remove", { x, y });
+            return;
+        }
+        if (
+            Number.isFinite(this.maxPlottedPoints) &&
+            this.plottedPoints.length >= this.maxPlottedPoints
+        ) {
+            if (this.maxPlottedPoints <= 1) {
+                this.plottedPoints = [];
+            } else {
+                this.plottedPoints.shift(); // drop oldest to make room
+            }
+        }
+        this.plottedPoints.push([x, y]);
+        this.updateLayout();
+        this.emitPlotChange("add", { x, y });
+    }
+
+    getPlottedPoints() {
+        return this.plottedPoints.map((p) => [p[0], p[1]]);
+    }
+
+    setPlottedPoints(points) {
+        this.plottedPoints = (Array.isArray(points) ? points : [])
+            .map((p) => (Array.isArray(p) ? [Number(p[0]), Number(p[1])] : null))
+            .filter((p) => p && Number.isFinite(p[0]) && Number.isFinite(p[1]));
+        this.updateLayout();
+        this.emitPlotChange("set");
+    }
+
+    clearPlottedPoints() {
+        this.plottedPoints = [];
+        this.updateLayout();
+        this.emitPlotChange("clear");
+    }
+
+    emitPlotChange(type, detail = {}) {
+        const payload = {
+            type,
+            points: this.getPlottedPoints(),
+            ...detail,
+        };
+        if (typeof this.onChange === "function") {
+            this.onChange(payload);
+        }
+        if (
+            typeof CustomEvent !== "undefined" &&
+            this.svgObject &&
+            typeof this.svgObject.dispatchEvent === "function"
+        ) {
+            this.svgObject.dispatchEvent(
+                new CustomEvent("omd-coordinateplane-change", {
+                    bubbles: true,
+                    detail: payload,
+                })
+            );
+        }
     }
 
     // Background customization methods

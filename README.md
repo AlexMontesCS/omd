@@ -131,6 +131,25 @@ expr.hideBackgroundByDefault();       // transparent background
 | `omdTapeDiagram` | Part-whole tape diagram |
 | `omdDoubleTapeDiagram` | Two stacked tape diagrams |
 
+### Fraction Models
+
+| Class | Description |
+|---|---|
+| `omdAreaDiagram` | Area model with fractional side lengths; shadeable, draggable, answerable |
+| `omdFractionStrips` | Equal-sharing strips — `a ÷ b` and `a × 1/b` on one diagram |
+| `omdFractionCircle` | Circles cut into equal wedges |
+
+Lengths accept `4`, `'2/3'` and `'3 1/4'` and stay exact, so a 3 1/4 by 4 rectangle
+reports an area of 13. See [`docs/visualizations.md`](docs/visualizations.md) and the
+Grade 5 Unit 2 gallery in `examples/g5-unit2/`.
+
+### Algorithms & Prose
+
+| Class | Description |
+|---|---|
+| `omdAlgorithmWork` | US standard algorithms on a place-value grid, with step-by-step reveal |
+| `omdMathText` | Prose with stacked fractions and mixed numbers inline — `[3/4]`, `[2 1/2]`, `**bold**` |
+
 ### Graphing & Data
 
 ![Graphing & Data](docs/screenshots/graphs.png)
@@ -140,6 +159,7 @@ expr.hideBackgroundByDefault();       // transparent background
 | `omdCoordinatePlane` | 2D graph — plot equations, points, segments |
 | `omdTable` | Data table from an equation or manual data |
 | `omdTileEquation` | Algebra tile equation |
+| `omdLinePlot` | Dot/line plot with stacked marks over a fraction-aware axis |
 
 ### Shapes
 
@@ -148,7 +168,7 @@ expr.hideBackgroundByDefault();       // transparent background
 | Class | Description |
 |---|---|
 | `omdRectangle` | Rectangle with dimension labels |
-| `omdRectangularPrism` | 3D rectangular prism |
+| `omdRectangularPrism` | 3D rectangular prism; `showUnitCubes` renders it as stacked unit cubes |
 | `omdRightTriangle` | Right triangle |
 | `omdIsoscelesTriangle` | Isosceles triangle |
 | `omdCircle` | Circle with optional points and segments |

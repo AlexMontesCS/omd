@@ -36,6 +36,12 @@ export type OmdConstructibleType =
   | "circle"
   | "angle"
   | "regularPolygon"
+  | "algorithmWork"
+  | "mathText"
+  | "linePlot"
+  | "areaDiagram"
+  | "fractionStrips"
+  | "fractionCircle"
   | "label";
 
 export type OmdType = OmdConstructibleType | "number" | "variable";
@@ -86,12 +92,14 @@ export interface OmdDisplayOptions {
   autoScale?: boolean;
   maxScale?: number;
   padding?: number;
+  onChange?: (payload: unknown) => void;
 }
 
 export declare class omdDisplay {
   constructor(container: HTMLElement, options?: OmdDisplayOptions);
   readonly container: HTMLElement;
-  readonly options: Required<OmdDisplayOptions>;
+  readonly options: Required<Omit<OmdDisplayOptions, "onChange">> &
+    Pick<OmdDisplayOptions, "onChange">;
   readonly svg: OmdComponentLike;
   render(value: string): void;
   load(component: OmdComponentLike): void;
@@ -264,12 +272,21 @@ export interface OmdNumberLineSpecialNumber {
   color?: string;
 }
 
+export interface OmdNumberLineDot {
+  value: number;
+  label?: string;
+  color?: string;
+  fillColor?: string;
+  size?: number;
+  locked?: boolean;
+}
+
 export interface OmdNumberLineJson {
   omdType: "numberLine";
   min?: number;
   max?: number;
   increment?: number;
-  dotValues?: number[];
+  dotValues?: Array<number | OmdNumberLineDot>;
   title?: string;
   label?: string;
   units?: string;
@@ -278,6 +295,26 @@ export interface OmdNumberLineJson {
   hideDefaultNumbers?: boolean;
   specialNumbers?: Array<number | OmdNumberLineSpecialNumber>;
   totalWidth?: number;
+  interactive?: boolean;
+  allowAddDots?: boolean;
+  allowDragDots?: boolean;
+  allowRemoveDots?: boolean;
+  allowKeyboard?: boolean;
+  snapToIncrement?: boolean;
+  snapStep?: number;
+  showValueLabels?: boolean;
+  showHoverValue?: boolean;
+  maxInteractiveDots?: number;
+  interactiveDotColor?: string;
+  selectedDotColor?: string;
+  rangeColor?: string;
+  interactiveRange?: boolean;
+  rangeValues?: [number, number];
+  selectedRange?: [number, number];
+  rangeStartClosed?: boolean;
+  rangeEndClosed?: boolean;
+  rangeStartStyle?: "closed" | "open" | "arrow";
+  rangeEndStyle?: "closed" | "open" | "arrow";
 }
 
 export interface OmdDoubleNumberLineJson {
@@ -359,6 +396,11 @@ export interface OmdCoordinatePlaneJson {
   backgroundColor?: string;
   backgroundCornerRadius?: number;
   backgroundOpacity?: number;
+  plotMode?: boolean;
+  plottedPoints?: Array<[number, number]>;
+  plotSnap?: number;
+  maxPlottedPoints?: number | null;
+  plotPointColor?: string;
 }
 
 export interface OmdTapeValue {
@@ -468,6 +510,27 @@ export interface OmdTableJson {
   evenRowColor?: string;
   oddRowColor?: string;
   alternatingRowOpacity?: number;
+  editable?: boolean;
+  editableCells?: Array<[number, number]>;
+  editableToken?: OmdTableCellValue;
+  editableValues?: Record<string, OmdTableCellValue>;
+}
+
+export interface OmdTableChangePayload {
+  type: string;
+  data: OmdTableCellValue[][];
+  editableValues: Record<string, OmdTableCellValue>;
+  values: Record<string, OmdTableCellValue>;
+  row?: number;
+  col?: number;
+  value?: OmdTableCellValue;
+}
+
+export interface OmdCoordinatePlaneChangePayload {
+  type: string;
+  points: Array<[number, number]>;
+  x?: number;
+  y?: number;
 }
 
 export interface OmdRatioChartJson {
@@ -550,6 +613,10 @@ export interface OmdRectangularPrismJson {
   widthLabel?: string;
   heightLabel?: string;
   labelFontSize?: number;
+  showUnitCubes?: boolean;
+  highlightLayer?: number;
+  layerColors?: { top?: string; side?: string; front?: string };
+  cubeGapRatio?: number;
 }
 
 export interface OmdEllipseJson {
@@ -706,6 +773,12 @@ export type OmdJson =
   | OmdRatioChartJson
   | OmdShapeJson
   | OmdSpinnerJson
+  | OmdAlgorithmWorkJson
+  | OmdMathTextJson
+  | OmdLinePlotJson
+  | OmdAreaDiagramJson
+  | OmdFractionStripsJson
+  | OmdFractionCircleJson
   | OmdLabelJson;
 
 export interface OmdEquationStackOptions {
@@ -795,6 +868,19 @@ export declare class omdBalanceHanger extends OmdComponentBase {
 export declare class omdNumberLine extends OmdComponentBase {
   constructor();
   loadFromJSON(data: OmdLoadData<OmdNumberLineJson>): void;
+  addNumberDot(value: number | OmdNumberLineDot): void;
+  setMinAndMax(min: number, max: number): void;
+  addInteractiveDot(value: number): void;
+  removeDot(index: number): void;
+  setDotValue(index: number, value: number): void;
+  setRangeValue(handle: "start" | "end", value: number): void;
+  setInteractiveRange(
+    rangeValues?: [number, number],
+    options?: { startStyle?: "closed" | "open" | "arrow"; endStyle?: "closed" | "open" | "arrow" }
+  ): void;
+  clearInteractiveRange(): void;
+  cycleRangeEndpointStyle(handle: "start" | "end"): void;
+  setRangeEndpointStyle(handle: "start" | "end", style: "closed" | "open" | "arrow"): void;
 }
 
 export declare class omdDoubleNumberLine extends OmdComponentBase {
@@ -805,6 +891,11 @@ export declare class omdDoubleNumberLine extends OmdComponentBase {
 export declare class omdCoordinatePlane extends OmdComponentBase {
   constructor();
   loadFromJSON(data: OmdLoadData<OmdCoordinatePlaneJson>): void;
+  onChange: ((payload: OmdCoordinatePlaneChangePayload) => void) | null;
+  getPlottedPoints(): Array<[number, number]>;
+  setPlottedPoints(points: Array<[number, number]>): void;
+  clearPlottedPoints(): void;
+  togglePlotPoint(x: number, y: number): void;
 }
 
 export declare class omdTapeDiagram extends OmdComponentBase {
@@ -830,6 +921,13 @@ export declare class omdTileEquation extends OmdComponentBase {
 export declare class omdTable extends OmdComponentBase {
   constructor();
   loadFromJSON(data: OmdLoadData<OmdTableJson>): void;
+  onChange: ((payload: OmdTableChangePayload) => void) | null;
+  getCellValues(): OmdTableCellValue[][];
+  getEditableValues(): Record<string, OmdTableCellValue>;
+  setEditableValues(
+    values: Record<string, OmdTableCellValue>,
+    emitChange?: boolean
+  ): void;
 }
 
 export declare class omdRatioChart extends OmdComponentBase {
@@ -889,6 +987,311 @@ export declare class omdSpinner extends OmdComponentBase {
 export declare class omdLabel extends OmdComponentBase {
   constructor();
   loadFromJSON(data: OmdLoadData<OmdLabelJson>): void;
+}
+
+export interface OmdAlgorithmWorkRow {
+  kind?: "carry" | "given" | "answer" | "work" | "blank" | "rule";
+  cells?: (string | number | { text: string | number; kind?: string; color?: string; step?: number; strike?: boolean; strikeStep?: number })[];
+  step?: number;
+  annotation?: string;
+  color?: string;
+  gapAfter?: number;
+}
+
+export interface OmdAlgorithmWorkStep {
+  label?: string;
+  description?: string;
+}
+
+export interface OmdAlgorithmWorkJson {
+  omdType: "algorithmWork";
+  operation?: "addition" | "subtraction" | "multiplication" | "division";
+  columns?: string[];
+  divisor?: string;
+  rows?: OmdAlgorithmWorkRow[];
+  steps?: OmdAlgorithmWorkStep[];
+  stepIndex?: number;
+  activeRow?: number;
+  showStepsList?: boolean;
+  fontSize?: number;
+  columnWidth?: number;
+  rowGap?: number;
+}
+
+export declare class omdAlgorithmWork extends OmdComponentBase {
+  constructor();
+  loadFromJSON(data: OmdLoadData<OmdAlgorithmWorkJson>): void;
+  nextStep(): string | null;
+  getRevealedSteps(): number;
+}
+
+export interface OmdMathTextJson {
+  omdType: "mathText";
+  text: string;
+  fontSize?: number;
+  width?: number;
+  lineHeight?: number;
+  fontFamily?: string;
+}
+
+export interface OmdLinePlotJson {
+  omdType: "linePlot";
+  min?: number;
+  max?: number;
+  step?: number;
+  values?: number[];
+  title?: string;
+  fontSize?: number;
+  width?: number;
+  dotRadius?: number;
+}
+
+export declare class omdLinePlot extends OmdComponentBase {
+  constructor();
+  loadFromJSON(data: OmdLoadData<OmdLinePlotJson>): void;
+}
+
+/** A length in units: 4, 0.75, "2/3" or "3 1/4". */
+export type OmdRationalLike = number | string | { n: number; d: number };
+
+export interface OmdBraceSpan {
+  /** Preset extent when `from`/`to` are omitted. */
+  scope?: "unit" | "shaded" | "grid";
+  from?: OmdRationalLike;
+  to?: OmdRationalLike;
+  /** omdMathText markup; defaults to the span length, e.g. "[2/3]". */
+  label?: string;
+  style?: "brace" | "arrow";
+}
+
+export type OmdBraceSpec =
+  | false
+  | "none"
+  | "unit"
+  | "shaded"
+  | "grid"
+  | OmdBraceSpan
+  | ReadonlyArray<"unit" | "shaded" | "grid" | OmdBraceSpan>;
+
+export type OmdPartitionScope = "all" | "last" | { from?: OmdRationalLike; to?: OmdRationalLike };
+
+export interface OmdAreaDiagramInput {
+  /** Identifies the field in payloads; defaults to `label`. */
+  key?: string;
+  label?: string;
+  /** Renders a live value instead of a text field. */
+  readout?: "area" | "expression";
+  placeholder?: string;
+  suffix?: string;
+  width?: number;
+  /** Accepted answer(s); numbers compare as exact rationals. */
+  answer?: string | number | ReadonlyArray<string | number>;
+  value?: string;
+}
+
+export interface OmdAreaDiagramState {
+  columns: string;
+  rows: string;
+  shadeWidth: string;
+  shadeHeight: string;
+  rectangular: boolean;
+  shadeMode: "rect" | "cells";
+  shadedCells: string[] | null;
+  area: string;
+  areaValue: number;
+  areaFraction: { n: number; d: number };
+  expression: string;
+  answers: Record<string, string>;
+  feedback: Record<string, "correct" | "incorrect" | null>;
+}
+
+export interface OmdAreaDiagramChange extends OmdAreaDiagramState {
+  type: "paint" | "resize" | "cells" | "clear" | "input" | "check";
+  key?: string;
+  value?: string;
+}
+
+export interface OmdAreaDiagramJson {
+  omdType: "areaDiagram";
+  /** Drawn grid extent in whole units. `width`/`height` are accepted aliases. */
+  columns?: OmdRationalLike;
+  rows?: OmdRationalLike;
+  width?: OmdRationalLike;
+  height?: OmdRationalLike;
+  /** Dashed partitions per unit square. */
+  columnParts?: number;
+  rowParts?: number;
+  unitScale?: number;
+  shadeWidth?: OmdRationalLike;
+  shadeHeight?: OmdRationalLike;
+  shadeMode?: "rect" | "cells";
+  shadedCells?: ReadonlyArray<[number, number] | string>;
+  shadeColor?: string;
+  shadeOpacity?: number;
+  emptyColor?: string;
+  gridColor?: string;
+  gridStrokeWidth?: number;
+  partitionColor?: string;
+  partitionStrokeWidth?: number;
+  partitionDash?: string;
+  showPartitions?: boolean;
+  showUnitLines?: boolean;
+  partitionScope?: OmdPartitionScope;
+  columnPartitionScope?: OmdPartitionScope;
+  rowPartitionScope?: OmdPartitionScope;
+  topBrace?: OmdBraceSpec;
+  leftBrace?: OmdBraceSpec;
+  topBraces?: OmdBraceSpec;
+  leftBraces?: OmdBraceSpec;
+  /** Shorthand for `topBrace: 'shaded'` and `leftBrace: 'shaded'`. */
+  showLabels?: boolean;
+  braceStyle?: "brace" | "arrow";
+  braceColor?: string;
+  labelFontSize?: number;
+  title?: string;
+  titleFontSize?: number;
+  showAreaLabel?: boolean;
+  areaLabelText?: string;
+  expressionLine?: boolean;
+  expressionSuffix?: string;
+  decompose?: boolean;
+  decomposeAxis?: "auto" | "x" | "y";
+  decomposeLabels?: boolean;
+  decomposeColor?: string;
+  interactive?: boolean;
+  allowPaint?: boolean;
+  allowResize?: boolean;
+  inputs?: ReadonlyArray<OmdAreaDiagramInput>;
+  checkAnswers?: boolean;
+  onChange?: (payload: OmdAreaDiagramChange) => void;
+}
+
+export declare class omdAreaDiagram extends OmdComponentBase {
+  constructor();
+  loadFromJSON(data: OmdLoadData<OmdAreaDiagramJson>): void;
+  onChange: ((payload: OmdAreaDiagramChange) => void) | null;
+  getState(): OmdAreaDiagramState;
+  getArea(): { n: number; d: number };
+  getShadeExtent(): { width: { n: number; d: number }; height: { n: number; d: number }; rectangular: boolean };
+  getExpressionText(): string;
+  setShadeSize(width?: OmdRationalLike, height?: OmdRationalLike, emit?: boolean): void;
+  setShadedCells(cells: ReadonlyArray<[number, number] | string>, emit?: boolean): void;
+  clearShading(emit?: boolean): void;
+  getAnswers(): Record<string, string>;
+  setAnswer(key: string, value: string, emit?: boolean): void;
+  checkAll(): Record<string, "correct" | "incorrect" | null>;
+}
+
+export interface OmdFractionStripsState {
+  strips: number;
+  parts: number;
+  shadedCells: string[];
+  shadedCount: number;
+  total: string;
+  totalValue: number;
+  totalFraction: { n: number; d: number };
+}
+
+export interface OmdFractionStripsJson {
+  omdType: "fractionStrips";
+  /** Wholes being shared. */
+  strips?: number;
+  /** Equal parts each whole is cut into. */
+  parts?: number;
+  /** Shaded parts per whole. */
+  shaded?: number;
+  shadedList?: readonly number[];
+  shadedCells?: ReadonlyArray<[number, number] | string>;
+  orientation?: "horizontal" | "vertical";
+  fillFrom?: "start" | "end";
+  stripLength?: number;
+  stripThickness?: number;
+  gap?: number;
+  shadeColor?: string;
+  emptyColor?: string;
+  strokeColor?: string;
+  strokeWidth?: number;
+  dividerColor?: string;
+  dividerWidth?: number;
+  /** SVG dash pattern, or "none" for solid dividers. */
+  dividerDash?: string;
+  cornerRadius?: number;
+  /** Label under the whole; false hides the brace. */
+  brace?: string | false;
+  braceEvery?: boolean;
+  stripLabels?: readonly string[];
+  separator?: string;
+  labelFontSize?: number;
+  title?: string;
+  expressionLine?: boolean;
+  interactive?: boolean;
+  onChange?: (payload: OmdFractionStripsState & { type: string }) => void;
+}
+
+export declare class omdFractionStrips extends OmdComponentBase {
+  constructor();
+  loadFromJSON(data: OmdLoadData<OmdFractionStripsJson>): void;
+  onChange: ((payload: OmdFractionStripsState & { type: string }) => void) | null;
+  getState(): OmdFractionStripsState;
+  getTotal(): { n: number; d: number };
+  getTotalAsDrawn(): { n: number; d: number };
+  setShadedCells(cells: ReadonlyArray<[number, number] | string>, emit?: boolean): void;
+  clearShading(emit?: boolean): void;
+}
+
+export interface OmdFractionCircleState {
+  count: number;
+  parts: number;
+  shadedCells: string[];
+  shadedCount: number;
+  total: string;
+  totalValue: number;
+  totalFraction: { n: number; d: number };
+}
+
+export interface OmdFractionCircleJson {
+  omdType: "fractionCircle";
+  count?: number;
+  circles?: number;
+  parts?: number;
+  shaded?: number;
+  shadedList?: readonly number[];
+  shadedCells?: ReadonlyArray<[number, number] | string>;
+  radius?: number;
+  gap?: number;
+  startAngle?: number;
+  shadeColor?: string;
+  emptyColor?: string;
+  strokeColor?: string;
+  strokeWidth?: number;
+  labelFontSize?: number;
+  title?: string;
+  circleLabels?: readonly string[];
+  expressionLine?: boolean;
+  interactive?: boolean;
+  onChange?: (payload: OmdFractionCircleState & { type: string }) => void;
+}
+
+export declare class omdFractionCircle extends OmdComponentBase {
+  constructor();
+  loadFromJSON(data: OmdLoadData<OmdFractionCircleJson>): void;
+  onChange: ((payload: OmdFractionCircleState & { type: string }) => void) | null;
+  getState(): OmdFractionCircleState;
+  getTotal(): { n: number; d: number };
+  getTotalAsDrawn(): { n: number; d: number };
+  setShadedCells(cells: ReadonlyArray<[number, number] | string>, emit?: boolean): void;
+}
+
+/** Exact rational helpers used by the fraction visuals. */
+export declare function parseRational(value: OmdRationalLike, fallback?: { n: number; d: number } | null): { n: number; d: number } | null;
+export declare function makeRational(n: number, d: number): { n: number; d: number } | null;
+export declare function ratValue(r: { n: number; d: number }): number;
+export declare function formatRationalText(r: { n: number; d: number }, options?: { mixed?: boolean }): string;
+export declare function formatRationalMarkup(r: { n: number; d: number }, options?: { mixed?: boolean }): string;
+
+export declare class omdMathText extends OmdComponentBase {
+  constructor();
+  loadFromJSON(data: OmdLoadData<OmdMathTextJson>): void;
 }
 
 export declare class omdProblem extends OmdComponentBase {

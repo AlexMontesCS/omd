@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD × Grade 5 — Feasibility Gallery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f7f8f9;
+            --card: #ffffff;
+            --border: #e6e8ea;
+            --label: #8a9097;
+            --heading: #16191d;
+            --accent: #1b4965;
+        }
+
+        body {
+            font-family: 'Albert Sans', Arial, Helvetica, sans-serif;
+            background: var(--bg);
+            color: var(--heading);
+            padding: 56px 64px 96px;
+        }
+
+        header { margin-bottom: 48px; max-width: 880px; }
+        header h1 {
+            font-size: 30px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 10px;
+        }
+        header p { color: #5a6068; font-size: 15px; line-height: 1.55; }
+        header .eyebrow {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 14px;
+        }
+
+        .section { margin-bottom: 56px; }
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-header h2 {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #3c4249;
+        }
+        .section-header .subtitle { font-size: 12.5px; color: var(--label); font-style: italic; }
+
+        .grid { display: grid; gap: 18px; grid-template-columns: repeat(2, 1fr); }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 22px;
+            box-shadow: 0 1px 2px rgba(22, 25, 29, 0.04), 0 10px 28px rgba(22, 25, 29, 0.05);
+        }
+        .card .caption {
+            font-size: 12px;
+            color: var(--label);
+            margin-top: 12px;
+            line-height: 1.45;
+        }
+        .card .render { min-height: 40px; }
+        .card.wide { grid-column: span 2; }
+
+        .controls { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+        .controls button {
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 7px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--heading);
+            cursor: pointer;
+            transition: background 120ms ease, border-color 120ms ease;
+        }
+        .controls button:hover { background: #eef4f9; border-color: #c9dcea; }
+        .step-readout { font-size: 12.5px; color: var(--accent); font-weight: 600; min-width: 130px; }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="eyebrow">Feasibility · OMD × Grade 5</span>
+        <h1>Can OMD render the 2025 NYST Grade 5 visuals?</h1>
+        <p>
+            Three capability gaps surfaced by the released state test, closed with new OMD
+            components: standard algorithms with step-by-step reveal, volume with unit cubes
+            and layer highlighting, and stacked fractions inline with problem text.
+            All rendering is native OMD SVG — same style language as the existing library.
+        </p>
+    </header>
+
+    <div class="section">
+        <div class="section-header">
+            <h2>1 · Standard algorithms</h2>
+            <div class="subtitle">omdAlgorithmWork — place-value grid, regrouping digits, progressive steps</div>
+        </div>
+        <div class="grid">
+            <div class="card wide">
+                <div class="controls">
+                    <button id="btn-reset">Reset</button>
+                    <button id="btn-next">Next step →</button>
+                    <span class="step-readout" id="division-step-readout"></span>
+                </div>
+                <div class="render" id="division-steps"></div>
+                <div class="caption">Long division, revealed one step at a time (NYST 2025 Q3: find 816 ÷ 12).
+                    The highlighted row is the part the current step acts on; the step list on the right names each action.</div>
+            </div>
+            <div class="card">
+                <div class="render" id="addition"></div>
+                <div class="caption">Addition with regrouping — carry digits in red above the columns.</div>
+            </div>
+            <div class="card">
+                <div class="render" id="subtraction"></div>
+                <div class="caption">Subtraction across zeros — 6,320 − 2,756.</div>
+            </div>
+            <div class="card">
+                <div class="render" id="multiplication"></div>
+                <div class="caption">Two-digit multiplication with partial-product annotations.</div>
+            </div>
+            <div class="card">
+                <div class="render" id="division-full"></div>
+                <div class="caption">Full long division with bracket, brought-down digits and quotient.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h2>2 · Volume with unit cubes</h2>
+            <div class="subtitle">omdRectangularPrism showUnitCubes + highlightLayer — nonstandard solids omitted</div>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <div class="render" id="volume-layer"></div>
+                <div class="caption">First layer highlighted (NYST 2025 Q10): “the first layer of a right
+                    rectangular prism… height is 6 unit cubes.” Volume = 5 × 3 × 6 = 90.</div>
+            </div>
+            <div class="card">
+                <div class="render" id="volume-top"></div>
+                <div class="caption">Top layer highlighted for “identical layers” questions (NYST 2025 Q29).</div>
+            </div>
+            <div class="card">
+                <div class="render" id="prism-dims"></div>
+                <div class="caption">Dimension labels + inside label work over the cube grid (NYST 2025 Q36:
+                    given V = 90 ft³, find w).</div>
+            </div>
+            <div class="card">
+                <div class="render" id="volume-full"></div>
+                <div class="caption">All layers visible in the classic OMD prism palette.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h2>3 · Fractions inline with text</h2>
+            <div class="subtitle">omdMathText — [n/d] fractions and [w n/d] mixed numbers inside prose</div>
+        </div>
+        <div class="grid">
+            <div class="card wide">
+                <div class="render" id="mathtext-baker"></div>
+                <div class="caption">Word-for-word from NYST 2025 Q11. Fractions are real stacked OMD math,
+                    wrapped and baseline-aligned with the sentence.</div>
+            </div>
+            <div class="card wide">
+                <div class="render" id="mathtext-chocolate"></div>
+                <div class="caption">Mixed numbers (NYST 2025 Q38) — whole number + fraction as one inline token.</div>
+            </div>
+            <div class="card wide">
+                <div class="render" id="mathtext-hike"></div>
+                <div class="caption">Constructed-response style stem (NYST 2025 Q37) mixing bold lead-ins,
+                    fractions, and wrapping at a fixed measure.</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import {
+            omdDisplay,
+            createFromJSON,
+        } from '../../dist/omd.browser.js';
+
+        const mount = (id, json) => {
+            const visual = createFromJSON(json);
+            new omdDisplay(document.getElementById(id), {
+                alignment: 'left',
+                autoScale: true,
+                maxScale: 1,
+                padding: 4,
+            }).load(visual);
+            return visual;
+        };
+
+        // ---- 1. Standard algorithms ------------------------------------
+        const divisionStepsJson = {
+            omdType: 'algorithmWork',
+            operation: 'division',
+            divisor: '12',
+            columns: ['100s', '10s', '1s'],
+            rows: [
+                { kind: 'answer', cells: ['', '', ''], step: 2 },
+                { kind: 'rule', gapAfter: 2 },
+                { kind: 'given', cells: ['8', '1', '6'] },
+                { kind: 'work', cells: ['7', '2'], step: 1, annotation: '12 × 6 tens = 72' },
+                { kind: 'rule', gapAfter: 3, step: 1 },
+                { kind: 'work', cells: ['9', '6'], step: 2, annotation: '81 − 72 = 9; bring down the 6' },
+                { kind: 'rule', gapAfter: 3, step: 3 },
+                { kind: 'work', cells: ['9', '6'], step: 3, annotation: '12 × 8 ones = 96' },
+                { kind: 'rule', gapAfter: 3, step: 3 },
+                { kind: 'work', cells: ['0', ''], step: 4, annotation: '96 − 96 = 0' },
+                { kind: 'answer', cells: ['6', '8'], step: 4 },
+            ],
+            steps: [
+                { label: 'Step 1', description: 'Divide the tens' },
+                { label: 'Step 2', description: 'Bring down the ones' },
+                { label: 'Step 3', description: 'Divide the ones' },
+                { label: 'Step 4', description: 'Subtract to check' },
+            ],
+            showStepsList: true,
+        };
+
+        let stepIndex = 0;
+        let divisionVisual = null;
+        const readout = document.getElementById('division-step-readout');
+
+        function renderDivisionSteps() {
+            document.getElementById('division-steps').innerHTML = '';
+            divisionVisual = createFromJSON({
+                ...divisionStepsJson,
+                stepIndex,
+                activeRow: stepIndex === 0 ? -1 : ({ 1: 3, 2: 5, 3: 7 }[stepIndex] ?? -1),
+            });
+            new omdDisplay(document.getElementById('division-steps'), {
+                alignment: 'left', autoScale: true, maxScale: 1, padding: 4,
+            }).load(divisionVisual);
+
+            if (stepIndex === 0) readout.textContent = 'Setup';
+            else {
+                const s = divisionStepsJson.steps[stepIndex - 1];
+                readout.textContent = `Step ${stepIndex}: ${s.description}`;
+            }
+        }
+
+        document.getElementById('btn-next').addEventListener('click', () => {
+            stepIndex = Math.min(4, stepIndex + 1);
+            renderDivisionSteps();
+        });
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            stepIndex = 0;
+            renderDivisionSteps();
+        });
+
+        renderDivisionSteps();
+
+        mount('addition', {
+            omdType: 'algorithmWork',
+            operation: 'addition',
+            columns: ['1000s', '100s', '10s', '1s'],
+            rows: [
+                { kind: 'carry', cells: ['1', '1', '1', ''] },
+                { kind: 'given', cells: ['', '3', '5', '7', '6'] },
+                { kind: 'given', cells: ['+', '', '2', '4', '8', '9'] },
+                { kind: 'rule' },
+                { kind: 'answer', cells: ['', '6', '0', '6', '5'] },
+            ],
+        });
+
+        mount('subtraction', {
+            omdType: 'algorithmWork',
+            operation: 'subtraction',
+            columns: ['1000s', '100s', '10s', '1s'],
+            rows: [
+                { kind: 'given', cells: ['', '6', '3', '2', '0'] },
+                { kind: 'given', cells: ['−', '', '2', '7', '5', '6'] },
+                { kind: 'rule' },
+                { kind: 'answer', cells: ['', '3', '5', '6', '4'] },
+            ],
+        });
+
+        mount('multiplication', {
+            omdType: 'algorithmWork',
+            operation: 'multiplication',
+            columns: ['100s', '10s', '1s'],
+            rows: [
+                { kind: 'carry', cells: ['2', ''] },
+                { kind: 'given', cells: ['2', '4'] },
+                { kind: 'given', cells: ['×', '', '3', '6'] },
+                { kind: 'rule' },
+                { kind: 'work', cells: ['1', '4', '4'], annotation: '24 × 6 = 144' },
+                { kind: 'rule', gapAfter: 3 },
+                { kind: 'work', cells: ['7', '2', ''], annotation: '24 × 30 = 720' },
+                { kind: 'rule', gapAfter: 3 },
+                { kind: 'answer', cells: ['8', '6', '4'] },
+            ],
+        });
+
+        mount('division-full', {
+            omdType: 'algorithmWork',
+            operation: 'division',
+            divisor: '12',
+            columns: ['100s', '10s', '1s'],
+            rows: [
+                { kind: 'answer', cells: ['', '6', '8'] },
+                { kind: 'rule', gapAfter: 2 },
+                { kind: 'given', cells: ['8', '1', '6'] },
+                { kind: 'work', cells: ['7', '2'], annotation: '12 × 6 tens = 72' },
+                { kind: 'rule', gapAfter: 3 },
+                { kind: 'work', cells: ['9', '6'], annotation: '81 − 72 = 9; bring down 6' },
+                { kind: 'rule', gapAfter: 3 },
+                { kind: 'work', cells: ['9', '6'], annotation: '12 × 8 = 96' },
+                { kind: 'rule', gapAfter: 3 },
+                { kind: 'work', cells: ['0'], annotation: '96 − 96 = 0 ✓' },
+            ],
+        });
+
+        // ---- 2. Volume --------------------------------------------------
+        mount('volume-layer', {
+            omdType: 'rectangularPrism',
+            length: 5, width: 3, height: 6,
+            showUnitCubes: true, highlightLayer: 1, unitScale: 19,
+        });
+
+        mount('volume-top', {
+            omdType: 'rectangularPrism',
+            length: 5, width: 3, height: 6,
+            showUnitCubes: true, highlightLayer: 6, unitScale: 19,
+        });
+
+        mount('prism-dims', {
+            omdType: 'rectangularPrism',
+            length: 5, width: 3, height: 6,
+            showUnitCubes: true, highlightLayer: 1, unitScale: 17,
+            sideLabels: { l: '5 ft', w: '3 ft', h: '6 ft' },
+            insideLabel: 'V = 90 ft³',
+        });
+
+        mount('volume-full', {
+            omdType: 'rectangularPrism',
+            length: 4, width: 3, height: 3,
+            showUnitCubes: true, unitScale: 22,
+        });
+
+        // ---- 3. Fractions inline ---------------------------------------
+        mount('mathtext-baker', {
+            omdType: 'mathText',
+            text: '**11**  A baker has [3/4] of a box of muffin mix. He pours all of the muffin mix equally into [6] bowls. What fraction of the whole box is in each bowl?',
+            fontSize: 18,
+            width: 720,
+        });
+
+        mount('mathtext-chocolate', {
+            omdType: 'mathText',
+            text: '**38**  Leia has [2 1/2] pounds of chocolate. She puts [1/4] pound of chocolate into each bag.',
+            fontSize: 18,
+            width: 700,
+        });
+
+        mount('mathtext-hike', {
+            omdType: 'mathText',
+            text: 'Last week Nancy hiked [3 3/4] miles. This week she swam [1/3] of the distance she hiked last week.',
+            fontSize: 18,
+            width: 520,
+        });
+    </script>
+</body>
+</html>

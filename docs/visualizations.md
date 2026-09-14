@@ -29,7 +29,7 @@ Renders a horizontal number line with optional dots, labels, and arrows.
 | `min` | number | Yes | — | Left bound of the number line |
 | `max` | number | Yes | — | Right bound of the number line |
 | `increment` | number | Yes | — | Spacing between tick marks |
-| `dotValues` | number[] | No | `[]` | Values at which to place dots |
+| `dotValues` | number[] or object[] | No | `[]` | Values at which to place dots; objects can include `{value, label, color, locked}` |
 | `title` | string | No | `""` | Title text rendered above the line |
 | `label` | string | No | `""` | Label rendered beside the line |
 | `units` | string | No | `""` | Unit label appended to tick numbers |
@@ -38,6 +38,24 @@ Renders a horizontal number line with optional dots, labels, and arrows.
 | `hideDefaultNumbers` | boolean | No | `false` | Hide the default tick number labels |
 | `specialNumbers` | object[] | No | `[]` | Custom labels at specific positions: `{value, label}` |
 | `totalWidth` | number | No | auto | Total SVG width in px |
+| `interactive` | boolean | No | `false` | Enable draggable/clickable dots and optional range handles |
+| `allowAddDots` | boolean | No | `true` | Click the line to add dots when interactive |
+| `allowDragDots` | boolean | No | `true` | Drag dots when interactive |
+| `allowRemoveDots` | boolean | No | `true` | Double-click dots or press Delete to remove |
+| `allowKeyboard` | boolean | No | `true` | Use arrow keys, Shift+arrow, Home, and End on focused dots/handles |
+| `snapStep` | number | No | `increment` | Snapping interval for interactive movement |
+| `showValueLabels` | boolean | No | `true` | Show live labels above interactive dots |
+| `showHoverValue` | boolean | No | `true` | Preview snapped values while hovering |
+| `interactiveRange` | boolean | No | `false` | Enable a textbook-style draggable interval for `rangeValues` |
+| `rangeValues` | number[] | No | — | Two values defining the selected interval |
+| `rangeStartClosed` | boolean | No | `true` | Use a filled start endpoint circle when true, open circle when false |
+| `rangeEndClosed` | boolean | No | `true` | Use a filled end endpoint circle when true, open circle when false |
+| `rangeStartStyle` | string | No | `"closed"` | Start endpoint style: `"closed"`, `"open"`, or `"arrow"` |
+| `rangeEndStyle` | string | No | `"closed"` | End endpoint style: `"closed"`, `"open"`, or `"arrow"` |
+| `maxInteractiveDots` | number | No | — | Cap on how many dots the student may add; omit for unlimited |
+| `interactiveDotColor` | string | No | `'black'` | Fill of student-added dots |
+| `selectedDotColor` | string | No | `'#2386DB'` | Fill of the focused/dragged dot |
+| `rangeColor` | string | No | `'#2386DB'` | Colour of the selected interval bar and its handles |
 
 ### Example
 
@@ -53,6 +71,27 @@ line.loadFromJSON({
   specialNumbers: [{ value: 6, label: 'low' }, { value: 14, label: 'high' }]
 });
 display.load(line);
+```
+
+### Interactive Example
+
+```js
+line.loadFromJSON({
+  min: -10,
+  max: 10,
+  increment: 1,
+  dotValues: [{ value: -3, color: '#2386DB' }, { value: 4, color: 'black' }],
+  interactive: true,
+  interactiveRange: true,
+  rangeValues: [-2, 6],
+  rangeStartStyle: 'closed',
+  rangeEndStyle: 'arrow',
+  snapStep: 0.5
+});
+
+line.svgObject.addEventListener('omd-numberline-change', (event) => {
+  console.log(event.detail.dotValues, event.detail.rangeValues);
+});
 ```
 
 ---
@@ -243,6 +282,22 @@ Renders a Cartesian coordinate plane. Supports graphing equations, line segments
 | `backgroundColor` | string | No | `""` | Background fill color |
 | `backgroundCornerRadius` | number | No | `0` | Corner radius of the background rect |
 | `backgroundOpacity` | number | No | `1` | Opacity of the background rect |
+| `plotMode` | boolean | No | `false` | Enable click-to-add/remove student points and hover previews |
+| `plottedPoints` | `[number, number][]` | No | `[]` | Initial student-created points |
+| `plotSnap` | number | No | `1` | Grid increment used to snap points |
+| `maxPlottedPoints` | number | No | unlimited | Optional point limit |
+| `plotPointColor` | string | No | `"#2563eb"` | Student point color |
+
+### Plot mode
+
+Clicking a snapped location adds a point; clicking an existing point removes it.
+Hovering previews the landing spot with a dashed ghost, dashed guides running out
+to both axes, and a coordinate pill — the pill and ring turn red over a point that
+a click would remove. Plot mode also swaps the default grey card for white paper
+with a hairline edge, unless you set `backgroundColor` yourself.
+
+Changes are available through `omdDisplay`'s `onChange` option and the bubbling
+`omd-coordinateplane-change` event.
 
 ### Example
 
@@ -349,6 +404,10 @@ Renders a value table. Can auto-generate rows from an equation or use manually p
 | `backgroundCornerRadius` | number | No | `0` | Corner radius of the background rect |
 | `backgroundOpacity` | number | No | `1` | Opacity of the background rect |
 | `showBackground` | boolean | No | `false` | Whether to render a background rect |
+| `editable` | boolean | No | `false` | Render editable cells as inputs inside the table |
+| `editableCells` | `[number, number][]` | No | blank cells | Explicit zero-based row/column pairs to edit |
+| `editableToken` | primitive | No | `null` | Value that marks a cell as editable |
+| `editableValues` | object | No | `{}` | Initial values keyed by `"row,column"` |
 
 \* Either `equation` or `data` must be provided.
 
@@ -365,6 +424,22 @@ table.loadFromJSON({
   alternatingRowColors: true
 });
 display.load(table);
+```
+
+Editable cells render as inputs in place. Entered values are emitted without
+rebuilding the table or losing input focus:
+
+```js
+const display = new omdDisplay(container, {
+  onChange: ({ editableValues }) => console.log(editableValues),
+});
+
+display.loadFromJSON({
+  omdType: 'table',
+  headers: ['Number', 'Cost'],
+  data: [[0, null], [1, null], [2, null]],
+  editable: true,
+});
 ```
 
 ---
@@ -433,4 +508,368 @@ spinner.loadFromJSON({
   size: 'large'
 });
 display.load(spinner);
+```
+
+---
+
+## areaDiagram
+
+Rectangular area model with fractional side lengths — the Grade 5 fraction-multiplication
+visual. Whole unit squares are ruled solid, each unit square is partitioned into equal
+strips ruled dashed, and a shaded sub-rectangle carries the product.
+
+Every length accepts a number, a fraction string (`'2/3'`) or a mixed number (`'3 1/4'`)
+and is held as an exact rational, so a 3 1/4 by 4 rectangle reports an area of 13 rather
+than 12.999999999999998.
+
+**Example JSON**
+```json
+{ "omdType": "areaDiagram", "columns": 4, "rows": 1, "rowParts": 3, "shadeHeight": "2/3",
+  "topBrace": { "scope": "grid", "label": "4" }, "leftBrace": { "scope": "shaded" },
+  "expressionLine": true }
+```
+
+### Fields
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `columns` | number\|string | No | `4` | Drawn width in whole units; a fraction gives a partial last column |
+| `rows` | number\|string | No | `1` | Drawn height in whole units |
+| `columnParts` | number | No | `1` | Dashed vertical partitions per unit square |
+| `rowParts` | number | No | `1` | Dashed horizontal partitions per unit square |
+| `unitScale` | number | No | `64` | Pixels per unit |
+| `shadeWidth` | number\|string | No | `columns` | Shaded width in units |
+| `shadeHeight` | number\|string | No | `rows` | Shaded height in units |
+| `shadedCells` | `[col,row][]` | No | — | Explicit partition cells; overrides the shaded rectangle |
+| `shadeColor` | string | No | `#7FCFEA` | Fill of the shaded region |
+| `showPartitions` | boolean | No | `true` | Draw the dashed partition rules |
+| `showUnitLines` | boolean | No | `true` | Draw the solid unit-square rules |
+| `partitionScope` | `'all'`\|`'last'`\|`{from,to}` | No | `'all'` | Which units carry partition rules. `'last'` subdivides only the unit the shading ends inside — the convention for mixed numbers |
+| `columnPartitionScope` / `rowPartitionScope` | same | No | `'all'` | Per-axis override |
+| `topBrace` / `leftBrace` | `'unit'`\|`'shaded'`\|`'grid'`\|`false`\|object | No | — | Dimension annotation. Object form is `{ from, to, label, style }` in units |
+| `topBraces` / `leftBraces` | array | No | `[]` | Several spans per axis — used for the whole and fractional parts of a mixed number |
+| `showLabels` | boolean | No | `false` | Shorthand for braces on the shaded extent on both axes |
+| `braceStyle` | `'brace'`\|`'arrow'` | No | `'brace'` | Curly brace or double-headed measurement arrow |
+| `title` | string | No | `''` | omdMathText markup above the figure |
+| `expressionLine` | boolean | No | `false` | Print the live `w × h = area` line under the figure |
+| `expressionSuffix` | string | No | `'square units'` | Unit phrase for area readouts |
+| `showAreaLabel` | boolean | No | `false` | Print the area centred under the figure |
+| `decompose` | boolean | No | `false` | Tint the fractional part, rule the split, print the partial products |
+| `decomposeAxis` | `'auto'`\|`'x'`\|`'y'` | No | `'auto'` | Axis to decompose along |
+| `interactive` | boolean | No | `false` | Enable student input |
+| `allowPaint` | boolean | No | `true` | Press and drag to shade or unshade partition cells |
+| `allowResize` | boolean | No | `false` | Drag handles that set the side lengths, snapped to partitions |
+| `inputs` | object[] | No | `[]` | Answer fields or live readouts under the figure |
+| `checkAnswers` | boolean | No | `false` | Grade answer fields as they are typed |
+
+`inputs` entries are either an answer field —
+`{ key, label, answer, suffix, width }` — or a live readout —
+`{ label, readout: 'area' | 'expression' }`. Numeric answers compare as exact rationals,
+so `15/4`, `3 3/4` and `3.75` all match; expressions compare as normalized text, so
+`4 x 2/3`, `4 × 2/3` and `4*2/3` all match.
+
+### Interaction
+
+`onChange(payload)` fires on every gesture, and the same payload is dispatched as the DOM
+event `omd-areadiagram-change`:
+
+```js
+{
+  type: 'paint',          // paint | resize | cells | clear | input | check
+  shadeWidth: '2 1/4',
+  shadeHeight: '2',
+  rectangular: true,      // false when the painted region is ragged
+  area: '4 1/2',
+  areaFraction: { n: 9, d: 2 },
+  expression: '2 1/4 × 2',
+  answers: { area: '4 1/2' },
+  feedback: { area: 'correct' }
+}
+```
+
+### Example
+
+```js
+import { omdAreaDiagram } from '@teachinglab/omd';
+
+// 2 × 3 2/5 with the distributive decomposition drawn in
+const model = new omdAreaDiagram();
+model.loadFromJSON({
+  columns: 4, rows: 2, columnParts: 5,
+  shadeWidth: '3 2/5',
+  partitionScope: 'last',
+  topBraces: [ { from: 0, to: 3, label: '3' }, { from: 3, to: '3 2/5' } ],
+  leftBrace: { scope: 'grid', label: '2' },
+  decompose: true,
+});
+display.load(model);
+
+model.getArea();          // { n: 34, d: 5 }
+model.getState().area;    // '6 4/5'
+```
+
+---
+
+## fractionStrips
+
+Equal-sharing strip diagram: one whole strip per object, each partitioned by the number of
+sharers, with one share highlighted. Three sandwiches shared by four people is three strips
+of fourths with one fourth shaded on each — 3 × 1/4 = 3/4 = 3 ÷ 4.
+
+**Example JSON**
+```json
+{ "omdType": "fractionStrips", "strips": 3, "parts": 4, "shaded": 1, "brace": "1", "expressionLine": true }
+```
+
+### Fields
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `strips` | number | No | `3` | Number of whole strips |
+| `parts` | number | No | `5` | Equal parts each whole is cut into |
+| `shaded` | number | No | `1` | Shaded parts per strip |
+| `shadedList` | number[] | No | — | Per-strip shaded counts, overriding `shaded` |
+| `shadedCells` | `[strip,part][]` | No | — | Explicit shaded cells |
+| `orientation` | `'horizontal'`\|`'vertical'` | No | `'horizontal'` | Strip direction |
+| `fillFrom` | `'start'`\|`'end'` | No | `'start'` | Which end the shading starts from |
+| `stripLength` | number | No | `420` | Length in px along the partitioned axis |
+| `stripThickness` | number | No | `46` | Thickness of each strip in px |
+| `gap` | number | No | `14` | Gap between strips in px |
+| `dividerDash` | string | No | `'6 5'` | Dash pattern for internal dividers; `'none'` draws them solid |
+| `brace` | string\|`false` | No | `'1'` | Label for the brace under the whole |
+| `braceEvery` | boolean | No | `false` | Repeat the brace under every strip |
+| `stripLabels` | string[] | No | `[]` | Caption under each strip |
+| `separator` | string | No | `''` | Symbol between vertical strips, e.g. `'+'` |
+| `expressionLine` | boolean | No | `false` | Print `strips × per-strip = total` under the figure |
+| `interactive` | boolean | No | `false` | Click or drag parts to shade them |
+
+### Example
+
+```js
+import { omdFractionStrips } from '@teachinglab/omd';
+
+// four chocolate bars of fifths, three fifths eaten from each
+const bars = new omdFractionStrips();
+bars.loadFromJSON({
+  strips: 4, parts: 5, shaded: 3,
+  orientation: 'vertical', fillFrom: 'end',
+  separator: '+', brace: false, dividerDash: 'none',
+  stripLength: 210, expressionLine: true,
+});
+display.load(bars);
+
+bars.getState().total;    // '2 2/5'
+```
+
+---
+
+## fractionCircle
+
+One or more circles cut into equal wedges with some wedges shaded — the circle model for a
+whole number times a non-unit fraction.
+
+**Example JSON**
+```json
+{ "omdType": "fractionCircle", "count": 2, "parts": 6, "shaded": 5, "expressionLine": true }
+```
+
+### Fields
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `count` | number | No | `2` | Number of circles (`circles` is an accepted alias) |
+| `parts` | number | No | `6` | Wedges per circle |
+| `shaded` | number | No | `5` | Shaded wedges per circle |
+| `shadedList` | number[] | No | — | Per-circle shaded counts |
+| `shadedCells` | `[circle,wedge][]` | No | — | Explicit shaded wedges |
+| `radius` | number | No | `74` | Circle radius in px |
+| `gap` | number | No | `26` | Gap between circles in px |
+| `startAngle` | number | No | `-90` | Angle of the first cut in degrees |
+| `shadeColor` | string | No | `#FFD84D` | Fill of the shaded wedges |
+| `circleLabels` | string[] | No | `[]` | Caption under each circle |
+| `expressionLine` | boolean | No | `false` | Print `count × per-circle = total` under the figure |
+| `interactive` | boolean | No | `false` | Click wedges to toggle them |
+
+### Example
+
+```js
+import { omdFractionCircle } from '@teachinglab/omd';
+
+const model = new omdFractionCircle();
+model.loadFromJSON({ count: 2, parts: 6, shaded: 5, expressionLine: true });
+display.load(model);
+
+model.getState().total;   // '1 2/3'
+```
+
+---
+
+## algorithmWork
+
+The US standard algorithms — addition, subtraction, multiplication, long division — on a
+place-value aligned digit grid. Rows and individual cells carry `step` numbers, so a single
+JSON object drives a whole step-by-step reveal: anything tagged above `stepIndex` stays
+hidden. For division, set `divisor` and the bracket is drawn automatically over the first
+`given` row.
+
+**Example JSON**
+```json
+{ "omdType": "algorithmWork", "operation": "addition", "columns": ["1000s", "100s", "10s", "1s"],
+  "rows": [
+    { "kind": "carry", "cells": ["1", "1", "1", ""] },
+    { "kind": "given", "cells": ["", "3", "5", "7", "6"] },
+    { "kind": "given", "cells": ["+", "2", "4", "8", "9"] },
+    { "kind": "rule" },
+    { "kind": "answer", "cells": ["", "6", "0", "6", "5"] }
+  ] }
+```
+
+### Fields
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `operation` | `'addition'`\|`'subtraction'`\|`'multiplication'`\|`'division'` | No | `'addition'` | Algorithm being shown |
+| `rows` | `Row[]` | Yes | `[]` | Rows top-to-bottom (see below) |
+| `columns` | string[] | No | `[]` | Place-value headers across the top, e.g. `['100s','10s','1s']` |
+| `divisor` | string | No | `''` | Division only: the divisor drawn outside the bracket |
+| `steps` | `{ label, description }[]` | No | `[]` | Step descriptions for the optional steps list |
+| `stepIndex` | number | No | — | How many steps are revealed; omit to reveal everything |
+| `activeRow` | number | No | `-1` | Row index to highlight as the current step |
+| `showStepsList` | boolean | No | `false` | Draw the numbered step list beside the grid (requires `steps`) |
+| `fontSize` | number | No | `26` | Digit font size in px |
+| `columnWidth` | number | No | `32` | Width of one place-value column in px |
+| `rowGap` | number | No | `4` | Vertical gap between rows in px |
+
+### Row shape
+
+| Name | Type | Description |
+|---|---|---|
+| `kind` | `'given'`\|`'carry'`\|`'work'`\|`'answer'`\|`'rule'` | `given` is an operand digit, `carry` a small regrouped digit, `work` an intermediate line, `answer` the emphasized result, `rule` a horizontal line |
+| `cells` | `(string \| Cell)[]` | One entry per column, right-aligned against `columns`; `''` leaves the cell blank |
+| `step` | number | Row stays hidden until `stepIndex` reaches this value |
+| `annotation` | string | Caption drawn to the right of the row |
+| `color` | string | Overrides the palette colour for the row |
+| `fontSize` | number | Overrides the digit size for the row |
+| `gapAfter` | number | `rule` rows only: vertical space after the line, in px |
+
+A cell may also be an object — `{ text, kind, color }` — to give one digit a different kind
+or colour than its row, which is how crossed-out regrouping digits are drawn.
+
+### Example
+
+```js
+import { omdAlgorithmWork } from '@teachinglab/omd';
+
+// long division, revealed one step at a time
+const work = new omdAlgorithmWork();
+work.loadFromJSON({
+  operation: 'division', divisor: '12',
+  rows: [
+    { kind: 'answer', cells: ['', '6', '8'], step: 3 },
+    { kind: 'given',  cells: ['8', '1', '6'] },
+    { kind: 'work',   cells: ['7', '2', ''], step: 1 },
+    { kind: 'rule',   step: 1 },
+    { kind: 'work',   cells: ['', '9', '6'], step: 2 },
+  ],
+  steps: [
+    { label: 'Step 1', description: '12 x 6 = 72' },
+    { label: 'Step 2', description: '81 - 72 = 9, bring down the 6' },
+    { label: 'Step 3', description: '12 x 8 = 96, so the quotient is 68' },
+  ],
+  showStepsList: true,
+  stepIndex: 2,        // steps 1-2 visible, step 3 still hidden
+  activeRow: 4,
+});
+display.load(work);
+```
+
+---
+
+## mathText
+
+Prose with real stacked math inline. Fractions, mixed numbers and bracketed numbers are laid
+out on the text baseline, and the text wraps at `width` without ever splitting a fraction
+across lines — the component for word problems whose stems contain fractions.
+
+**Example JSON**
+```json
+{ "omdType": "mathText", "text": "**11** A baker has [3/4] of a box of muffin mix. He pours it equally into [6] bowls.",
+  "fontSize": 18, "width": 460 }
+```
+
+### Markup
+
+| Markup | Renders as |
+|---|---|
+| `[3/4]` | Stacked fraction |
+| `[2 1/2]` | Mixed number with a stacked fractional part |
+| `[6]` | Plain number in the math font |
+| `**bold**` | Bold span |
+
+### Fields
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `text` | string | Yes | `''` | Sentence with `[n/d]`, `[w n/d]`, `[n]` and `**bold**` markup |
+| `fontSize` | number | No | `18` | Prose font size in px |
+| `width` | number | No | `0` | Wrap width in px; `0` renders a single line |
+| `lineHeight` | number | No | — | Line height in px; defaults to 1.85 × `fontSize` |
+| `fontFamily` | string | No | `'Albert Sans, Arial, Helvetica, sans-serif'` | CSS font family for the prose |
+
+### Example
+
+```js
+import { omdMathText } from '@teachinglab/omd';
+
+const stem = new omdMathText();
+stem.loadFromJSON({
+  text: 'Each chocolate bar is cut into fifths. Noah eats [3/5] of every bar, ' +
+        'and there are [4] bars, so he eats [2 2/5] bars in all.',
+  fontSize: 18, width: 420,
+});
+display.load(stem);
+```
+
+---
+
+## linePlot
+
+Dot/line plot in state-test style: stacked marks above a labeled axis. Ticks that land on
+exact halves, thirds, quarters or eighths label themselves as fractions and mixed numbers
+(`9`, `9 1/4`, `9 1/2`); other values fall back to decimals.
+
+**Example JSON**
+```json
+{ "omdType": "linePlot", "min": 9, "max": 12, "step": 0.25,
+  "values": [9, 9.5, 9.5, 9.75, 10, 10, 10.25, 10.5, 10.5, 10.5, 11, 11.25, 12],
+  "title": "PAPER AIRPLANE FLIGHTS", "axisLabel": "Distance (yards)" }
+```
+
+### Fields
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `values` | number[] | Yes | `[]` | One entry per observation; entries stack on the nearest tick |
+| `min` | number | No | `0` | Axis minimum |
+| `max` | number | No | `10` | Axis maximum |
+| `step` | number | No | `1` | Tick interval, e.g. `0.25` for quarters |
+| `title` | string | No | `''` | Title drawn above the plot |
+| `axisLabel` | string | No | `''` | Caption drawn under the axis, e.g. `'Distance (yards)'` |
+| `marker` | `'x'`\|`'dot'` | No | `'x'` | Mark shape |
+| `fontSize` | number | No | `15` | Tick label font size in px |
+| `width` | number | No | `520` | Total width in px (minimum 200) |
+| `dotRadius` | number | No | `6` | Half the mark size in px |
+
+### Example
+
+```js
+import { omdLinePlot } from '@teachinglab/omd';
+
+const plot = new omdLinePlot();
+plot.loadFromJSON({
+  min: 0, max: 2, step: 0.125,
+  values: [0.25, 0.5, 0.5, 0.875, 1, 1, 1, 1.5],
+  marker: 'dot', axisLabel: 'Length (inches)',
+});
+display.load(plot);
 ```
