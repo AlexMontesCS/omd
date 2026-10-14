@@ -50,6 +50,8 @@ import { omdEquationNode } from './equations/omdEquationNode.js';
 import { omdConstantNode } from './equations/omdConstantNode.js';
 import { omdVariableNode } from './equations/omdVariableNode.js';
 import { omdAlgorithmWork } from './visualizations/omdAlgorithmWork.js';
+import { omdFractionWork } from './visualizations/omdFractionWork.js';
+import { omdFractionAreaModel } from './visualizations/omdFractionAreaModel.js';
 import { omdMathText } from './visualizations/omdMathText.js';
 import { omdLinePlot } from './visualizations/omdLinePlot.js';
 import { omdAreaDiagram } from './visualizations/omdAreaDiagram.js';
@@ -89,6 +91,8 @@ const OMD_TYPE_MAP = {
     'angle': omdAngle,
     'regularPolygon': omdRegularPolygon,
     'algorithmWork': omdAlgorithmWork,
+    'fractionWork': omdFractionWork,
+    'fractionAreaModel': omdFractionAreaModel,
     'mathText': omdMathText,
     'linePlot': omdLinePlot,
     'areaDiagram': omdAreaDiagram,

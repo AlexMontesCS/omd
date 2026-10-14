@@ -1,24 +1,30 @@
 
 import { OMD_MATH_FONT_FAMILY } from "../omdConstants.js";
-import { jsvgGroup, jsvgLine, jsvgTextLine } from "@teachinglab/jsvg";
+import { jsvgGroup } from "@teachinglab/jsvg";
+import { inlineMathToPlainText } from "../text/omdInlineMath.js";
+import { renderInlineMathToHTML, ensureInlineMathStyles } from "../text/omdInlineMathHtml.js";
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+const XHTML_NS = "http://www.w3.org/1999/xhtml";
 
 /**
- * omdMathText — a paragraph of text with real stacked math embedded inline.
+ * omdMathText — a paragraph of prose with real typeset math inline.
  *
- * Answers the "nice rendering of fractions inline with text" requirement:
- * word problems like "A baker has 3/4 of a box..." render the fraction as a
- * true vertical fraction sitting on the text baseline instead of "3/4".
+ * The prose is ordinary HTML text inside a <foreignObject>, not SVG <text>:
+ * Chrome's page translator rewrites HTML text nodes only, so a word problem
+ * rendered this way translates like any other paragraph while the math runs
+ * (marked translate="no") keep their variables and numerals intact.
  *
- * Markup (a light subset — everything else is plain prose):
- *   [3/4]        → stacked fraction
- *   [2 3/4]      → mixed number (whole + fraction)
- *   **bold**     → bold span
+ * Markup (see src/text/omdInlineMath.js for the full grammar):
+ *   \( \frac{3}{4}x + 2 \)   LaTeX-subset inline math
+ *   [3/4] [2 3/4] [6]        legacy bracket tokens
+ *   3/4, 2 5/8               bare fractions in prose
+ *   **bold**                 bold span
  *
  * JSON shape:
  * {
  *   omdType: 'mathText',
- *   text: 'A baker has [3/4] of a box of muffin mix.',
+ *   text: 'A baker has \\( \\frac{3}{4} \\) of a box of muffin mix.',
  *   fontSize: 18,
  *   width: 420,          // wrap width in px (0 = single line)
  * }
@@ -36,35 +42,11 @@ export class omdMathText extends jsvgGroup
         this.wrapWidth = 0;             // 0 = single line, no wrapping
         this.lineHeightRatio = 1.85;
         this.fontFamily = OMD_MATH_FONT_FAMILY;
+        this.fontColor = "#222222";
+        this.fontWeight = 400;
 
-        this._measureContext = null;
-        this._lineHolder = new jsvgGroup();
-        this.addChild(this._lineHolder);
-    }
-
-    _getMeasureContext()
-    {
-        if ( typeof document == "undefined" )
-            return null;
-        if ( this._measureContext )
-            return this._measureContext;
-        const canvas = document.createElement("canvas");
-        this._measureContext = canvas.getContext("2d");
-        return this._measureContext;
-    }
-
-    /**
-     * Real DOM-accurate width when a canvas is available (browser); falls back
-     * to the library-wide glyph heuristic in non-DOM environments.
-     */
-    _measureText(text, fontSize, bold)
-    {
-        const context = this._getMeasureContext();
-        const weight = bold ? 700 : 400;
-        if ( !context )
-            return String(text || "").length * fontSize * (bold ? 0.62 : 0.58);
-        context.font = `${weight} ${fontSize}px ${this.fontFamily}`;
-        return context.measureText(String(text || "")).width;
+        this._foreignObject = null;
+        this._contentDiv = null;
     }
 
     loadFromJSON(data)
@@ -85,304 +67,245 @@ export class omdMathText extends jsvgGroup
         if ( typeof data.fontFamily == "string" )
             this.fontFamily = data.fontFamily;
 
+        if ( typeof data.fontColor == "string" )
+            this.fontColor = data.fontColor;
+
+        if ( typeof data.fontWeight == "number" || typeof data.fontWeight == "string" )
+            this.fontWeight = data.fontWeight;
+
         this.updateLayout();
+    }
+
+    /** The paragraph as linear text — for read-aloud, grading and alt text. */
+    getPlainText()
+    {
+        return inlineMathToPlainText(this.text);
+    }
+
+    /** Inline CSS shared by the rendered paragraph and its measuring twin. */
+    _contentStyle()
+    {
+        const wrap = this.wrapWidth > 0
+            ? `width:${this.wrapWidth}px;white-space:normal;`
+            : "white-space:nowrap;";
+
+        return "display:inline-block;box-sizing:border-box;"
+            + wrap
+            + `font-family:${this.fontFamily};`
+            + `font-size:${this.fontSize}px;`
+            + `line-height:${this.lineHeightRatio};`
+            + `font-weight:${this.fontWeight};`
+            + `color:${this.fontColor};`
+            + "overflow-wrap:break-word;";
     }
 
     updateLayout()
     {
-        this._lineHolder.removeAllChildren();
+        const doc = this.svgObject && this.svgObject.ownerDocument
+            ? this.svgObject.ownerDocument
+            : (typeof document != "undefined" ? document : null);
 
-        // Flatten markup into atomic layout pieces: one per word, one per
-        // fraction/mixed-number. Pieces carry their own visual + real metrics.
-        const pieces = [];
-        for ( const segment of parseSegments(this.text) )
-            pieces.push(...buildSegmentPieces(segment, this, this._measureText.bind(this)));
+        if ( !doc )
+            return;
 
-        const lineHeight = this.fontSize * this.lineHeightRatio;
-        const spaceW = spaceWidth(this.fontSize);
-        const maxWidth = this.wrapWidth > 0 ? this.wrapWidth : Infinity;
+        ensureInlineMathStyles(doc);
 
-        // Greedy line breaking: never split a piece across lines. A break piece
-        // ends the current line outright.
-        const lines = [[]];
-        let cursorX = 0;
+        const html = renderInlineMathToHTML(this.text);
+        const style = this._contentStyle();
+        const { width, height } = measureHtml(doc, html, style, {
+            source: this.text,
+            wrapWidth: this.wrapWidth,
+            fontSize: this.fontSize,
+            lineHeightRatio: this.lineHeightRatio,
+        });
 
-        for ( const piece of pieces )
+        if ( !this._foreignObject )
         {
-            if ( piece.isBreak )
-            {
-                lines.push([]);
-                cursorX = 0;
-                continue;
-            }
-
-            const fits = cursorX === 0 || cursorX + spaceW + piece.width <= maxWidth;
-            if ( !fits )
-            {
-                lines.push([]);
-                cursorX = 0;
-            }
-
-            lines[lines.length - 1].push(piece);
-            cursorX += (cursorX > 0 ? spaceW : 0) + piece.width;
+            this._foreignObject = doc.createElementNS(SVG_NS, "foreignObject");
+            this._foreignObject.setAttribute("x", "0");
+            this._foreignObject.setAttribute("y", "0");
+            this._foreignObject.setAttribute("overflow", "visible");
+            this._contentDiv = doc.createElementNS(XHTML_NS, "div");
+            this._foreignObject.appendChild(this._contentDiv);
+            this.svgObject.appendChild(this._foreignObject);
         }
 
-        // Render pass: vertically center every piece on its line's reading
-        // axis so stacked fractions grow up AND down like typeset inline math.
-        let y = 0;
-        let maxRight = 0;
+        this._contentDiv.setAttribute("xmlns", XHTML_NS);
+        this._contentDiv.setAttribute("style", style);
+        this._contentDiv.innerHTML = html;
 
-        for ( const line of lines )
-        {
-            const lineWidth = line.reduce((sum, piece) => sum + piece.width, 0)
-                + Math.max(0, line.length - 1) * spaceW;
-            maxRight = Math.max(maxRight, lineWidth);
-
-            let x = 0;
-            for ( const piece of line )
-            {
-                if ( piece.visual )
-                {
-                    // jsvgTextLine glyphs center on their anchor point
-                    // (dominant-baseline: central) — hand word pieces the line's
-                    // reading axis directly. Fraction groups are top-left boxes,
-                    // so they keep the centered-box math.
-                    if ( piece.isText )
-                        piece.visual.setPosition(x, y + lineHeight / 2);
-                    else
-                        piece.visual.setPosition(x, y + lineHeight / 2 - piece.height / 2);
-                    this._lineHolder.addChild(piece.visual);
-                }
-                x += piece.width + spaceW;
-            }
-
-            y += lineHeight;
-        }
-
-        this.width = Math.ceil(Math.max(maxRight, 1));
-        this.height = Math.ceil(y);
-        this.svgObject.setAttribute("viewBox", `0 0 ${this.width} ${this.height}`);
+        this._applySize(width, height);
+        this._observeContent();
     }
-}
 
-/* ------------------------------------------------------------------ */
-/* Parsing                                                             */
-/* ------------------------------------------------------------------ */
-
-/**
- * Splits raw markup into typed segments. Text segments keep their internal
- * spaces; they are split into word pieces at build time.
- */
-function parseSegments(raw)
-{
-    const segments = [];
-    const pattern = /\[([^\[\]]+?)\]|\*\*(.+?)\*\*/g;
-    let lastIndex = 0;
-    let match;
-
-    while ( (match = pattern.exec(raw)) !== null )
+    /**
+     * The paragraph as a standalone HTML element, for hosts that can mount
+     * plain DOM. Chrome's page translator walks the HTML document and skips
+     * everything inside an <svg> — foreignObject included — so prose that has
+     * to be translatable must live OUTSIDE the SVG. omdDisplay prefers this
+     * node; omdCanvas and other SVG-only hosts fall back to the foreignObject.
+     */
+    getHtmlNode()
     {
-        if ( match.index > lastIndex )
-            segments.push({ type: "text", text: raw.slice(lastIndex, match.index) });
+        const doc = this.svgObject && this.svgObject.ownerDocument
+            ? this.svgObject.ownerDocument
+            : (typeof document != "undefined" ? document : null);
 
-        if ( match[1] )
-            segments.push(parseMathToken(match[1]));
-        else if ( match[2] )
-            segments.push({ type: "bold", text: match[2] });
+        if ( !doc )
+            return null;
 
-        lastIndex = pattern.lastIndex;
+        if ( !this._htmlNode )
+            this._htmlNode = doc.createElement("div");
+
+        this._htmlNode.className = "omd-math-paragraph";
+        this._htmlNode.setAttribute("style", this._contentStyle());
+        this._htmlNode.innerHTML = renderInlineMathToHTML(this.text);
+        this._observeContent();
+        return this._htmlNode;
     }
 
-    if ( lastIndex < raw.length )
-        segments.push({ type: "text", text: raw.slice(lastIndex) });
-
-    return segments;
-}
-
-/**
- * Parses the inside of a [...] token: `n/d` fraction, `w n/d` mixed number, or
- * a bare number (authors bracket those for consistency — render as-is).
- */
-function parseMathToken(token)
-{
-    const fraction = token.match(/^(\d+)\/(\d+)$/);
-    if ( fraction )
-        return { type: "fraction", numerator: fraction[1], denominator: fraction[2] };
-
-    const mixed = token.match(/^(\d+)\s+(\d+)\/(\d+)$/);
-    if ( mixed )
-        return { type: "mixed", whole: mixed[1], numerator: mixed[2], denominator: mixed[3] };
-
-    if ( /^\d+(?:\.\d+)?$/.test(token) )
-        return { type: "text", text: token };
-
-    // Unknown token — degrade gracefully to literal bracketed text.
-    return { type: "text", text: `[${token}]` };
-}
-
-/* ------------------------------------------------------------------ */
-/* Segment visuals                                                     */
-/* ------------------------------------------------------------------ */
-
-function buildSegmentPieces(segment, owner, measure)
-{
-    const fontSize = owner.fontSize;
-
-    if ( segment.type === "fraction" )
-        return [buildFraction(null, segment.numerator, segment.denominator, owner, measure)];
-
-    if ( segment.type === "mixed" )
-        return [buildFraction(segment.whole, segment.numerator, segment.denominator, owner, measure)];
-
-    const bold = segment.type === "bold";
-    const color = bold ? "#111111" : "#222222";
-    const weight = bold ? 700 : 400;
-
-    // A newline is a hard break: it emits a break piece, and the surrounding
-    // runs are word-split as usual. Lets a Number Talk list one expression per
-    // line without one component per line.
-    const pieces = [];
-    const chunks = String(segment.text).split("\n");
-
-    chunks.forEach((chunk, index) => {
-        if ( index > 0 ) pieces.push({ isBreak: true, width: 0, height: 0 });
-
-        for ( const word of chunk.split(/\s+/) )
-        {
-            if ( word.length === 0 ) continue;
-            pieces.push({
-                width: Math.max(2, measure(word, fontSize, bold)),
-                height: fontSize * 1.42,   // covers Albert Sans ascent+descent (~1.36em)
-                isText: true,              // glyph centers on anchor → axis placement
-                visual: makeWordLabel(word, color, weight, fontSize, owner.fontFamily),
-            });
-        }
-    });
-
-    return pieces;
-}
-
-function makeWordLabel(text, color, weight, fontSize, fontFamily)
-{
-    const label = new jsvgTextLine();
-    label.setFontFamily(fontFamily);
-    label.setFontSize(fontSize);
-    label.setFontColor(color);
-    label.setFontWeight(weight);
-    label.setAlignment("left");
-    label.setText(text);
-    label.svgObject.setAttribute("dominant-baseline", "central");
-    return label;
-}
-
-/**
- * Same as makeWordLabel but center-anchored — used for fraction digits so they
- * sit exactly on the rule's midline regardless of glyph width.
- */
-function makeCenteredLabel(text, color, weight, fontSize, fontFamily)
-{
-    const label = makeWordLabel(text, color, weight, fontSize, fontFamily);
-    label.setAlignment("center");
-    return label;
-}
-
-// A mixed number is one number: the whole part, the numerator and the
-// denominator all carry the same ink and weight as the prose around them, so
-// "3 1/4" never reads as a bold 3 next to a lighter fraction.
-const FRACTION_INK = "#222222";
-const FRACTION_WEIGHT = 400;
-
-/**
- * Stacked fraction (or mixed number): two small anchored labels around a rule,
- * sized to sit inline with surrounding prose. Plain jsvgTextLines are used
- * instead of omdExpression boxes because their glyphs center exactly on the
- * anchor (dominant-baseline: central) — no padded-box guesswork, identical in
- * browser and Node.
- */
-function buildFraction(whole, numerator, denominator, owner, measure)
-{
-    const fontSize = owner.fontSize;
-    const fontFamily = owner.fontFamily;
-    const fracSize = fontSize * 0.62;                 // fraction digits run smaller inline
-    const group = new jsvgGroup();
-
-    const numW = Math.max(measure(numerator, fracSize, false), 4);
-    const denW = Math.max(measure(denominator, fracSize, false), 4);
-    const inkH = measureDigitHeight(owner, fracSize);
-
-    const digitWidth = Math.max(numW, denW);
-    const wholeWidth = whole ? measure(whole, fontSize, false) + fontSize * 0.14 : 0;
-    // The rule overhangs the widest digit slightly, like typeset fractions.
-    const barLength = digitWidth + fontSize * 0.22;
-    const barWidth = barLength + fontSize * 0.08;
-    const gap = fontSize * 0.17;
-    const barStroke = Math.max(1.4, fontSize * 0.055);
-    const aboveBar = inkH / 2 + gap + barStroke / 2;
-    const belowBar = aboveBar;
-    const barY = aboveBar + barStroke / 2;
-    let x = 0;
-
-    if ( whole )
+    _applySize(width, height)
     {
-        const wholeLabel = makeWordLabel(whole, FRACTION_INK, FRACTION_WEIGHT, fontSize, fontFamily);
-        wholeLabel.setPosition(0, barY);
-        group.addChild(wholeLabel);
-        x += wholeWidth;
+        this.width = width;
+        this.height = height;
+
+        // Slack keeps descenders and the bottom of a stacked fraction from
+        // being clipped by the foreignObject's own box.
+        this._foreignObject.setAttribute("width", String(width + 2));
+        this._foreignObject.setAttribute("height", String(height + 2));
     }
 
-    // Digits are CENTER-anchored on the bar's midline; anchors sit a half-ink
-    // plus the gap from the rule, so the nearest ink edge clears it by `gap`.
-    const cx = x + barWidth / 2;
+    /**
+     * Translated prose is a different length than the original, so the
+     * paragraph reflows after load — Chrome swaps the text in long after
+     * updateLayout ran. Watching the content box keeps the foreignObject and
+     * the enclosing display sized to whatever the browser ends up laying out.
+     */
+    _observeContent()
+    {
+        if ( typeof ResizeObserver == "undefined" )
+            return;
+        if ( this._resizeObserver )
+            this._resizeObserver.disconnect();
 
-    const numLabel = makeCenteredLabel(String(numerator), FRACTION_INK, FRACTION_WEIGHT, fracSize, fontFamily);
-    numLabel.setPosition(cx, barY - barStroke / 2 - gap - inkH / 2);
-    group.addChild(numLabel);
+        // ResizeObserver reports the layout box, which — unlike
+        // getBoundingClientRect — ignores the scale transform omdDisplay puts
+        // on this component. Measuring the scaled rect here would feed the
+        // display its own scale back and oscillate.
+        this._resizeObserver = new ResizeObserver((entries) => {
+            const entry = entries[entries.length - 1];
+            const box = entry.borderBoxSize && entry.borderBoxSize[0];
+            const width = Math.ceil(box ? box.inlineSize : entry.contentRect.width);
+            const height = Math.ceil(box ? box.blockSize : entry.contentRect.height);
+            if ( width < 1 || height < 1 )
+                return;
+            if ( width === this.width && height === this.height )
+                return;
 
-    const denLabel = makeCenteredLabel(String(denominator), FRACTION_INK, FRACTION_WEIGHT, fracSize, fontFamily);
-    denLabel.setPosition(cx, barY + barStroke / 2 + gap + inkH / 2);
-    group.addChild(denLabel);
+            this._applySize(width, height);
+            // omdDisplay owns scaling and the enclosing <svg> box; it listens
+            // for this on the component's own node.
+            this.svgObject.dispatchEvent(new CustomEvent("omd:resize", { bubbles: true }));
+            if ( this._htmlNode )
+                this._htmlNode.dispatchEvent(new CustomEvent("omd:resize", { bubbles: true }));
+        });
 
-    const bar = new jsvgLine();
-    bar.setStrokeColor(FRACTION_INK);
-    bar.setStrokeWidth(barStroke);
-    bar.setEndpoints(cx - barLength / 2, barY, cx + barLength / 2, barY);
-    group.addChild(bar);
+        // Either box can be the mounted one; the unmounted twin measures zero
+        // and is skipped by the guard above.
+        this._resizeObserver.observe(this._contentDiv);
+        if ( this._htmlNode )
+            this._resizeObserver.observe(this._htmlNode);
+    }
 
-    return {
-        width: x + barWidth,
-        height: aboveBar + belowBar + barStroke,
-        visual: group,
-    };
+    destroy()
+    {
+        if ( this._resizeObserver )
+        {
+            this._resizeObserver.disconnect();
+            this._resizeObserver = null;
+        }
+        if ( typeof super.destroy == "function" )
+            super.destroy();
+    }
 }
 
 /**
- * Cap-height estimate for fraction digits. Uses canvas ascent/descent when a
- * DOM is present; heuristic otherwise.
+ * Measures the paragraph with a throwaway copy in the live document, which is
+ * the only way to get real glyph metrics for HTML content. Headless DOM shims
+ * answer getBoundingClientRect with invented numbers, so the result is only
+ * trusted when it looks like real layout; otherwise the library-wide glyph
+ * heuristic takes over.
  */
-function measureDigitHeight(owner, fontSize)
+function measureHtml(doc, html, style, metrics)
 {
-    const context = owner._getMeasureContext();
-    if ( !context )
-        return fontSize * 1.15;
-    context.font = `400 ${fontSize}px ${owner.fontFamily}`;
-    const metrics = context.measureText("8");
-    const ascent = Number.isFinite(metrics.actualBoundingBoxAscent) ? metrics.actualBoundingBoxAscent : fontSize * 0.72;
-    const descent = Number.isFinite(metrics.actualBoundingBoxDescent) ? metrics.actualBoundingBoxDescent : fontSize * 0.04;
-    return ascent + descent;
+    let probe = null;
+
+    try
+    {
+        if ( doc.body )
+        {
+            probe = doc.createElement("div");
+            probe.setAttribute("aria-hidden", "true");
+            probe.setAttribute("style", "position:absolute;left:-99999px;top:0;visibility:hidden;");
+            const inner = doc.createElement("div");
+            inner.setAttribute("style", style);
+            inner.innerHTML = html;
+            probe.appendChild(inner);
+            doc.body.appendChild(probe);
+
+            const rect = typeof inner.getBoundingClientRect == "function"
+                ? inner.getBoundingClientRect()
+                : null;
+
+            if ( isRealLayout(rect, metrics) )
+            {
+                return {
+                    width: Math.ceil(rect.width),
+                    height: Math.ceil(rect.height),
+                };
+            }
+        }
+    }
+    catch
+    {
+        // Fall through to the heuristic below.
+    }
+    finally
+    {
+        if ( probe && probe.parentNode )
+            probe.parentNode.removeChild(probe);
+    }
+
+    return estimateSize(metrics);
 }
 
-
-/* ------------------------------------------------------------------ */
-
-// Matches the omdShapes glyph-width heuristic (~0.58em average) so layout is
-// deterministic between Node and browser without DOM measurement.
-function estimateTextWidth(text, fontSize, bold)
+// A real layout engine honours the wrap width and gives the box at least one
+// full line box of height. Anything else is a shim guessing from string length.
+function isRealLayout(rect, metrics)
 {
-    const ratio = bold ? 0.62 : 0.58;
-    return String(text || "").length * fontSize * ratio;
+    if ( !rect || !(rect.width > 0) || !(rect.height > 0) )
+        return false;
+    if ( metrics.wrapWidth > 0 && rect.width > metrics.wrapWidth + 2 )
+        return false;
+    return rect.height >= metrics.fontSize;
 }
 
-function spaceWidth(fontSize)
+// ~0.58em average glyph width matches the heuristic the other omd visuals use,
+// so Node-side layout stays deterministic and close to the browser.
+function estimateSize({ source, wrapWidth, fontSize, lineHeightRatio })
 {
-    return fontSize * 0.30;
+    const plain = inlineMathToPlainText(source);
+    const lineHeight = fontSize * lineHeightRatio;
+    const lines = plain.split("\n");
+    const naturalWidth = Math.max(...lines.map(line => line.length * fontSize * 0.58), 1);
+
+    if ( wrapWidth <= 0 )
+        return { width: Math.ceil(naturalWidth), height: Math.ceil(lines.length * lineHeight) };
+
+    const rows = lines.reduce(
+        (total, line) => total + Math.max(1, Math.ceil((line.length * fontSize * 0.58) / wrapWidth)),
+        0,
+    );
+
+    return { width: Math.ceil(wrapWidth), height: Math.ceil(rows * lineHeight) };
 }

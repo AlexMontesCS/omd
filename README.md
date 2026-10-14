@@ -148,7 +148,9 @@ Grade 5 Unit 2 gallery in `examples/g5-unit2/`.
 | Class | Description |
 |---|---|
 | `omdAlgorithmWork` | US standard algorithms on a place-value grid, with step-by-step reveal |
-| `omdMathText` | Prose with stacked fractions and mixed numbers inline — `[3/4]`, `[2 1/2]`, `**bold**` |
+| `omdFractionWork` | Fraction ×, ÷, +, − worked line by line from the operands alone, with step-by-step reveal |
+| `omdFractionAreaModel` | “a/b of c/d” built up on a unit square in three captioned panels |
+| `omdMathText` | Prose with typeset math inline, rendered as translatable HTML — `\( 4x + 2 \)`, `\( \frac{3}{4} \)`, `[3/4]`, `2 5/8`, `**bold**` |
 
 ### Graphing & Data
 
@@ -280,6 +282,30 @@ line.loadFromJSON({ omdType: 'numberLine', min: 0, max: 10, dotValues: [3, 7] })
 // Or render directly via omdDisplay.loadFromJSON — one line:
 display.loadFromJSON({ omdType: 'numberLine', min: 0, max: 10, dotValues: [3, 7] });
 ```
+
+### Inline math in prose (`@teachinglab/omd/text`)
+
+Word problems need fractions and expressions set inside the sentence, and the sentence
+needs to stay translatable — Chrome's page translator only rewrites HTML text nodes, never
+SVG `<text>`. The grammar and its HTML renderer therefore ship as a standalone entry point
+with no SVG, no jsvg and no DOM access at import time, so React and SSR consumers can use
+them directly. The `mathText` component renders the exact same markup on canvas.
+
+```js
+import {
+    parseInlineMath,          // string -> inline AST (prose runs + math runs)
+    renderInlineMathToHTML,   // string -> HTML; math runs carry translate="no"
+    renderInlineMathToDOM,    // string -> DocumentFragment
+    inlineMathToPlainText,    // string -> linear text for TTS/grading: "3/4", "x^2"
+    INLINE_MATH_CSS,          // stylesheet for the emitted classes
+} from '@teachinglab/omd/text';
+
+renderInlineMathToHTML(String.raw`Solve \( 4x + 2 = 10 \), then divide by 2 5/8.`);
+```
+
+Markup: `\( ... \)` LaTeX subset (`\frac`, `a/b`, `x^2`, `a_1`, `\sqrt`, `\times`, `\div`,
+`\le`, `\pi`, `\text{...}`), legacy `[3/4]` / `[2 3/4]` / `[6]` tokens, bare `3/4` and
+`2 5/8` in prose, `**bold**`, and `\n`. See [Visualizations → mathText](docs/visualizations.md#mathtext).
 
 ## Documentation
 

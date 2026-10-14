@@ -19,11 +19,12 @@ const pages = [
     { from: "cookbook.html", to: "cookbook.html" },
     { from: "interactive.html", to: "interactive.html" },
     { from: "direct.html", to: "direct.html" },
+    { from: "fractions.html", to: "fractions.html" },
 ];
 
 // Clear only what this script generates — `.vercel/` (project link) and
 // `.env.local` must survive so repeat deploys keep the same project + URL.
-for ( const name of ["index.html", "cookbook.html", "interactive.html", "direct.html", "omd.browser.js", "vercel.json"] )
+for ( const name of ["index.html", "cookbook.html", "interactive.html", "direct.html", "fractions.html", "omd.browser.js", "vercel.json"] )
     await rm(path.join(outDir, name), { force: true });
 
 await copyFile(bundle, path.join(outDir, "omd.browser.js"));

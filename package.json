@@ -1,6 +1,6 @@
 {
   "name": "@teachinglab/omd",
-  "version": "0.9.94",
+  "version": "0.9.96",
   "description": "omd",
   "main": "./index.js",
   "module": "./index.js",
@@ -19,6 +19,11 @@
       "default": "./dist/omd.browser.js"
     },
     "./global": "./dist/omd.global.js",
+    "./text": {
+      "types": "./src/text/index.d.ts",
+      "import": "./src/text/index.js",
+      "default": "./src/text/index.js"
+    },
     "./schema": {
       "types": "./schemas.d.ts",
       "import": "./src/omdSchemas.js",

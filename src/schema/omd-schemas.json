@@ -4950,15 +4950,143 @@
       }
     ]
   },
+  "fractionWork": {
+    "notes": "Standard fraction algorithms worked line by line, DERIVED from the two operands — give the problem, not the rows. Multiplication: rename whole/mixed numbers, multiply across, products, divide by the GCF, simplify, mixed number. Division adds keep-change-flip before multiplying. Addition/subtraction: rename, least common denominator, equivalent fractions, combine numerators, simplify, mixed number. Mixed numbers are renamed as fractions greater than 1 first, so subtraction never regroups. Lines align on '='; the first step sits right of the problem. Each line is one step: `stepIndex` reveals that many (0 = problem only) and turns on the current-step band. The part each step introduces (reciprocal, × LCD factor, ÷ GCF) is drawn in the accent color. Layout is sized for the finished work, so stepping never reflows.",
+    "fields": [
+      {
+        "name": "operation",
+        "type": "string",
+        "default": "multiplication",
+        "optional": false,
+        "description": "Fraction operation to work",
+        "options": [
+          "multiplication",
+          "division",
+          "addition",
+          "subtraction"
+        ]
+      },
+      {
+        "name": "left",
+        "type": "string",
+        "default": "1/2",
+        "optional": false,
+        "description": "Left operand. Whole number (4), fraction (\"3/4\"), or mixed number (\"2 1/2\"); kept as written, so 6/8 is not pre-reduced"
+      },
+      {
+        "name": "right",
+        "type": "string",
+        "default": "1/3",
+        "optional": false,
+        "description": "Right operand. Whole number (4), fraction (\"3/4\"), or mixed number (\"2 1/2\"); kept as written, so 6/8 is not pre-reduced. Division by zero throws"
+      },
+      {
+        "name": "stepIndex",
+        "type": "number",
+        "default": null,
+        "optional": true,
+        "description": "How many steps are revealed (0 = problem only); omit to show the finished work without a current-step band"
+      },
+      {
+        "name": "showStepsList",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Draw the numbered step list beside the work"
+      },
+      {
+        "name": "showAnnotations",
+        "type": "boolean",
+        "default": true,
+        "optional": true,
+        "description": "Draw the per-line note explaining each step"
+      },
+      {
+        "name": "fontSize",
+        "type": "number",
+        "default": 28,
+        "optional": true,
+        "description": "Font size of the main work in px"
+      }
+    ]
+  },
+  "fractionAreaModel": {
+    "notes": "Fraction-of-a-fraction area model on a unit square, in three side-by-side panels: (1) the whole cut into rows with the `right` fraction shaded, (2) only the shaded part cut into columns with the `left` fraction of it darkened, (3) the column cuts extended across the whole so the dark part reads as (a×c) of (b×d) equal pieces. Each panel has '1' braces on its top and left edges and a caption below. Both factors must be fractions from 0 to 1 and are drawn unreduced. `stepIndex` 1–3 reveals that many panels; space for the rest stays reserved.",
+    "fields": [
+      {
+        "name": "left",
+        "type": "string",
+        "default": "1/4",
+        "optional": false,
+        "description": "The 'of' fraction a/b (columns), from 0 to 1"
+      },
+      {
+        "name": "right",
+        "type": "string",
+        "default": "1/3",
+        "optional": false,
+        "description": "The amount c/d it is taken of (rows), from 0 to 1"
+      },
+      {
+        "name": "stepIndex",
+        "type": "number",
+        "default": 3,
+        "optional": true,
+        "description": "Panels revealed, 1–3"
+      },
+      {
+        "name": "captions",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Per-panel caption overrides; [3/4], [2 1/2] and [6] typeset as stacked math, e.g. ['pan with [1/3] left', \"eat [1/4] of what's left\", '[1/4] of [1/3] is [1/12]']; missing entries keep the default caption"
+      },
+      {
+        "name": "unitScale",
+        "type": "number",
+        "default": 150,
+        "optional": true,
+        "description": "Side length of each unit square in px"
+      },
+      {
+        "name": "shadeColor",
+        "type": "string",
+        "default": "#7FCFEA",
+        "optional": true,
+        "description": "Fill of the shaded amount"
+      },
+      {
+        "name": "overlapColor",
+        "type": "string",
+        "default": "#0096C7",
+        "optional": true,
+        "description": "Fill of the part taken of it"
+      },
+      {
+        "name": "captionFontSize",
+        "type": "number",
+        "default": 17,
+        "optional": true,
+        "description": "Caption font size in px"
+      },
+      {
+        "name": "labelFontSize",
+        "type": "number",
+        "default": 15,
+        "optional": true,
+        "description": "Font size of the '1' brace labels in px"
+      }
+    ]
+  },
   "mathText": {
-    "notes": "Prose with real stacked math inline. Markup: [3/4] stacked fraction, [2 1/2] mixed number, [6] plain number, **bold** span. Text wraps at `width` and never splits a fraction across lines.",
+    "notes": "Prose with real typeset math inline, rendered as HTML text (not SVG) so browser page-translation works on the prose while math runs stay untranslated. Markup: \\( ... \\) LaTeX subset (\\frac, a/b, x^2, x_{1}, \\sqrt, \\times, \\div, \\le, \\pi, \\text{...}), legacy [3/4] [2 3/4] [6] tokens, bare 3/4 and 2 5/8 in prose, **bold**, and \\n line breaks.",
     "fields": [
       {
         "name": "text",
         "type": "string",
         "default": "",
         "optional": false,
-        "description": "Sentence with [n/d], [w n/d], [n] and **bold** markup"
+        "description": "Prose with inline math: \\( ... \\) LaTeX subset, legacy [n/d], [w n/d], [n] tokens, bare fractions like 3/4 and 2 5/8, **bold** and \\n line breaks"
       },
       {
         "name": "fontSize",
@@ -4987,6 +5115,20 @@
         "default": "Albert Sans, Arial, Helvetica, sans-serif",
         "optional": true,
         "description": "CSS font family"
+      },
+      {
+        "name": "fontColor",
+        "type": "string",
+        "default": "#222222",
+        "optional": true,
+        "description": "CSS color for the prose and math"
+      },
+      {
+        "name": "fontWeight",
+        "type": "number",
+        "default": 400,
+        "optional": true,
+        "description": "CSS font weight for the prose"
       }
     ]
   },

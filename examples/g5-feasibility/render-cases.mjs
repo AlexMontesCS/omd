@@ -185,6 +185,23 @@ const cases = [
             width: 400,
         },
     },
+    ...[
+        ["multiplication", "2/3", "3/4"],
+        ["multiplication", "1 1/2", "2 2/3"],
+        ["division", "3 1/2", "1/4"],
+        ["division", "6", "1/3"],
+        ["addition", "2 1/2", "1 2/3"],
+        ["subtraction", "1/4", "3/4"],
+    ].map(([operation, left, right]) => ({
+        name: `fraction-${operation}-${left}-${right}`.replace(/[\s/]+/g, "_"),
+        label: `Fraction ${operation} — ${left} and ${right}`,
+        json: { omdType: "fractionWork", operation, left, right, stepIndex: 3, showStepsList: true },
+    })),
+    ...[1, 2, 3].map(stepIndex => ({
+        name: `fraction-area-model-${stepIndex}`,
+        label: `Area model — 1/4 of 1/3, ${stepIndex} panel(s)`,
+        json: { omdType: "fractionAreaModel", left: "1/4", right: "1/3", stepIndex },
+    })),
 ];
 
 const serializer = new JsvgHeadlessXMLSerializer();

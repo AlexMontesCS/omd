@@ -785,15 +785,118 @@ display.load(work);
 
 ---
 
-## mathText
+## fractionWork
 
-Prose with real stacked math inline. Fractions, mixed numbers and bracketed numbers are laid
-out on the text baseline, and the text wraps at `width` without ever splitting a fraction
-across lines — the component for word problems whose stems contain fractions.
+The standard fraction algorithms worked line by line. Unlike `algorithmWork`, the rows are
+**derived from the problem** — give the operation and two operands, and every step is
+computed exactly:
+
+| Operation | Steps |
+|---|---|
+| `multiplication` | rename whole/mixed numbers → multiply across → products → divide by the GCF → simplify → mixed number |
+| `division` | rename → keep, change, flip → then the multiplication steps |
+| `addition` | rename → least common denominator → equivalent fractions → add numerators → sum → simplify → mixed number |
+| `subtraction` | same as addition, subtracting numerators |
+
+Steps that do nothing are skipped (no rename for plain fractions, no common-denominator step
+when denominators already match, no GCF step when the result is in lowest terms). Mixed
+numbers are renamed as fractions greater than 1 before every operation, so subtraction never
+regroups. Lines align on `=`; the first step sits to the right of the problem, as on paper.
+The part each step introduces — the reciprocal, the `× 4` that builds an equivalent fraction,
+the `÷ GCF` — is drawn in the accent colour, and each line carries a note saying why.
 
 **Example JSON**
 ```json
+{ "omdType": "fractionWork", "operation": "division", "left": "3 1/2", "right": "1/4",
+  "stepIndex": 2, "showStepsList": true }
+```
+
+### Fields
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `operation` | `'multiplication'`\|`'division'`\|`'addition'`\|`'subtraction'` | Yes | — | Operation to work |
+| `left` | string \| number | Yes | — | Whole number (`4`), fraction (`'3/4'`) or mixed number (`'2 1/2'`); kept as written, so `6/8` is not pre-reduced |
+| `right` | string \| number | Yes | — | Same forms as `left`; dividing by zero throws |
+| `stepIndex` | number | No | — | Steps revealed (`0` = problem only). Setting it turns on the current-step band; omit for the finished work |
+| `showStepsList` | boolean | No | `false` | Draw the numbered step list beside the work |
+| `showAnnotations` | boolean | No | `true` | Draw the per-line note explaining each step |
+| `fontSize` | number | No | `28` | Font size of the main work in px |
+
+The layout is sized for the finished work at every `stepIndex`, so stepping never reflows the
+figure. Each revealed line is a `<g data-step="n">`, and step-list entries carry
+`data-step-index` for click-to-jump navigation. Invalid operands (negative, decimal, zero
+denominator) throw with the offending value in the message.
+
+### Example
+
+```js
+import { omdFractionWork } from '@teachinglab/omd';
+
+const work = new omdFractionWork();
+work.loadFromJSON({ operation: 'addition', left: '1/3', right: '1/4', stepIndex: 0 });
+display.load(work);
+
+work.getSteps().map(s => s.description);
+// ['Find a common denominator', 'Write equivalent fractions', 'Add the numerators', 'Find the sum']
+work.nextStep();   // 'Find a common denominator' — reveals line 1
+```
+
+---
+
+## fractionAreaModel
+
+“a/b of c/d” on a unit square, built up in three side-by-side panels — the model Grade 5
+materials use to introduce fraction × fraction:
+
+1. the whole cut into `d` rows with `c` of them shaded (`right`);
+2. only the shaded part cut into `b` columns, `a` of them darkened (`left` of it);
+3. the column cuts extended across the whole, so the dark part reads as `a×c` of `b×d` equal pieces.
+
+Every panel has `1` braces on its top and left edges and a caption below. Default captions are
+`[c/d] of the whole`, `[a/b] of [c/d]` and `[a/b] of [c/d] is [ac/bd]` (with `= simplified`
+appended when the product reduces); `captions` overrides them, with `[3/4]`, `[2 1/2]` and `[6]`
+typeset as stacked math. Everything is plain SVG — no `foreignObject` — so it exports cleanly.
+
+**Example JSON**
+```json
+{ "omdType": "fractionAreaModel", "left": "1/4", "right": "1/3",
+  "captions": ["pan with [1/3] left", "eat [1/4] of what's left", "[1/4] of [1/3] is [1/12]"] }
+```
+
+### Fields
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `left` | string | Yes | `'1/4'` | The “of” fraction `a/b` (columns), from 0 to 1 |
+| `right` | string | Yes | `'1/3'` | The amount `c/d` it is taken of (rows), from 0 to 1 |
+| `stepIndex` | `1`\|`2`\|`3` | No | `3` | Panels revealed; space for the rest stays reserved |
+| `captions` | string[] | No | — | Per-panel caption overrides; `[3/4]`, `[2 1/2]`, `[6]` typeset as math |
+| `unitScale` | number | No | `150` | Side of each unit square in px |
+| `shadeColor` | string | No | `'#7FCFEA'` | Fill of the shaded amount |
+| `overlapColor` | string | No | `'#0096C7'` | Fill of the part taken of it |
+| `captionFontSize` | number | No | `17` | Caption font size in px |
+| `labelFontSize` | number | No | `15` | Font size of the `1` brace labels in px |
+
+---
+
+## mathText
+
+Prose with real typeset math inline — the component for word problems whose stems contain
+fractions, expressions or equations. The prose is rendered as ordinary HTML text inside a
+`<foreignObject>` rather than SVG `<text>`, so Chrome's page translator translates the
+sentence while every math run is marked `translate="no"` and stays exactly as authored.
+Text wraps at `width` and never splits a fraction, radical or script across lines.
+
+**Example JSON** — legacy bracket markup
+```json
 { "omdType": "mathText", "text": "**11** A baker has [3/4] of a box of muffin mix. He pours it equally into [6] bowls.",
+  "fontSize": 18, "width": 460 }
+```
+
+**Example JSON** — inline LaTeX
+```json
+{ "omdType": "mathText", "text": "The area of the garden is \\( \\frac{1}{2}bh \\) and the fence is 2 5/8 meters long, so solve \\( 4x + 2 = 10 \\).",
   "fontSize": 18, "width": 460 }
 ```
 
@@ -801,20 +904,37 @@ across lines — the component for word problems whose stems contain fractions.
 
 | Markup | Renders as |
 |---|---|
-| `[3/4]` | Stacked fraction |
-| `[2 1/2]` | Mixed number with a stacked fractional part |
-| `[6]` | Plain number in the math font |
+| `\( ... \)`, `\[ ... \]` | LaTeX-subset math run (untranslated) |
+| `\frac{a}{b}`, `\dfrac`, `\tfrac`, `a/b` | Stacked fraction |
+| `x^2`, `x^{n+1}`, `a_1`, `a_{ij}` | Superscript / subscript |
+| `\sqrt{x}`, `\sqrt[3]{x}` | Radical, with optional index |
+| `( )`, `[ ]`, with optional `\left` / `\right` | Delimiters (inline size; `\left`/`\right` are accepted, not scaled) |
+| `\text{...}` | Words inside math — stays translatable |
+| `\times \div \cdot \pm \mp \le \leq \ge \geq \ne \neq \approx \equiv \to \rightarrow \infty \pi \theta \alpha \beta \degree \circ` | Symbol |
+| `[3/4]`, `[2 3/4]`, `[6]` | Legacy bracket tokens; unrecognized bracket content stays literal text |
+| `3/4`, `2 5/8` in running prose | Auto-detected fraction; `km/h`, `9/12/2025` and `1.5/2` are left alone |
 | `**bold**` | Bold span |
+| `\n` | Hard line break |
+
+`2 1/2` and `2\frac{1}{2}` both render as a single mixed number, and a minus with no left
+operand renders as a sign (`-5`, `10^{-2}`). `getPlainText()` returns the whole string in
+linear form (`3/4`, `x^2`, `sqrt(16)`) for read-aloud, grading and alt text.
+
+The grammar itself is also published on its own, free of SVG and jsvg, for React and other
+DOM consumers: `import { parseInlineMath, renderInlineMathToHTML, INLINE_MATH_CSS } from
+'@teachinglab/omd/text'`.
 
 ### Fields
 
 | Name | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `text` | string | Yes | `''` | Sentence with `[n/d]`, `[w n/d]`, `[n]` and `**bold**` markup |
+| `text` | string | Yes | `''` | Prose with `\( ... \)` math, legacy `[n/d]` tokens, bare fractions, `**bold**` and `\n` |
 | `fontSize` | number | No | `18` | Prose font size in px |
 | `width` | number | No | `0` | Wrap width in px; `0` renders a single line |
 | `lineHeight` | number | No | — | Line height in px; defaults to 1.85 × `fontSize` |
 | `fontFamily` | string | No | `'Albert Sans, Arial, Helvetica, sans-serif'` | CSS font family for the prose |
+| `fontColor` | string | No | `'#222222'` | CSS color for the prose and math |
+| `fontWeight` | number \| string | No | `400` | CSS font weight for the prose |
 
 ### Example
 
@@ -823,8 +943,8 @@ import { omdMathText } from '@teachinglab/omd';
 
 const stem = new omdMathText();
 stem.loadFromJSON({
-  text: 'Each chocolate bar is cut into fifths. Noah eats [3/5] of every bar, ' +
-        'and there are [4] bars, so he eats [2 2/5] bars in all.',
+  text: 'Each chocolate bar is cut into fifths. Noah eats \\( \\frac{3}{5} \\) of every bar, ' +
+        'and there are [4] bars, so he eats 2 2/5 bars in all.',
   fontSize: 18, width: 420,
 });
 display.load(stem);

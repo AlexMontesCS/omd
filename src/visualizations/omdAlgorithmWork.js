@@ -1,6 +1,7 @@
 
 import { omdColor, OMD_MATH_FONT_FAMILY } from "../omdConstants.js";
 import { jsvgGroup, jsvgLine, jsvgTextLine, jsvgRect } from "@teachinglab/jsvg";
+import { renderStepsList } from "./omdStepsList.js";
 
 /**
  * Digit cell kinds for the standard-algorithms grid.
@@ -440,52 +441,17 @@ export class omdAlgorithmWork extends jsvgGroup
         let contentBottom = gridBottom;
         if ( this.showStepsList && this.steps.length > 0 )
         {
-            const listX = contentWidth + fontSize * 0.8;
-            const chipSize = fontSize * 0.62;
-            const rowH = fontSize * 1.55;
-            let ly = this.padding + (this.columns.length > 0 ? fontSize * 0.95 : 0);
-
-            this.steps.forEach((step, i) => {
-                const done = i < revealed;
-
-                const chip = new jsvgRect();
-                chip.setCornerRadius(chipSize / 2);
-                chip.setWidthAndHeight(chipSize * 1.7, chipSize * 1.25);
-                chip.setStrokeColor("none");
-                chip.setFillColor(done ? (i === Math.min(revealed, this.steps.length) - 1 ? this.currentStepFill : "#DCEBF7") : "#EEEEEE");
-                chip.svgObject.setAttribute('data-step-index', String(i + 1));
-                chip.svgObject.setAttribute('data-role', 'step-chip');
-                chip.setPosition(listX, ly + (rowH - chipSize * 1.25) / 2);
-                this._stepsHolder.addChild(chip);
-
-                const num = new jsvgTextLine();
-                num.setFontFamily(this.fontFamily);
-                num.setFontSize(chipSize * 0.85);
-                num.setFontWeight(700);
-                num.setAlignment("center");
-                num.setText(String(i + 1));
-                num.setPosition(listX + chipSize * 0.85, ly + rowH / 2);
-                num.svgObject.setAttribute("dominant-baseline", "central");
-                num.svgObject.setAttribute('data-step-index', String(i + 1));
-                this._stepsHolder.addChild(num);
-
-                const desc = step.description || step.label || "";
-                const label = new jsvgTextLine();
-                label.setFontFamily(this.fontFamily);
-                label.setFontSize(fontSize * 0.56);
-                label.setFontColor(done ? "#333333" : "#9A9A9A");
-                label.setFontWeight(i === Math.min(revealed, this.steps.length) - 1 && done ? 650 : 400);
-                label.setAlignment("left");
-                label.setText(desc);
-                label.setPosition(listX + chipSize * 1.7 + fontSize * 0.45, ly + rowH / 2);
-                label.svgObject.setAttribute("dominant-baseline", "central");
-                label.svgObject.setAttribute('data-step-index', String(i + 1));
-                this._stepsHolder.addChild(label);
-
-                contentWidth = Math.max(contentWidth, listX + chipSize * 1.7 + fontSize * 0.45 + estimateTextWidth(desc, fontSize * 0.56) + this.padding);
-                ly += rowH;
-                contentBottom = Math.max(contentBottom, ly);
+            const list = renderStepsList(this._stepsHolder, {
+                steps: this.steps,
+                revealed,
+                x: contentWidth + fontSize * 0.8,
+                y: this.padding + (this.columns.length > 0 ? fontSize * 0.95 : 0),
+                fontSize,
+                fontFamily: this.fontFamily,
+                currentFill: this.currentStepFill,
             });
+            contentWidth = Math.max(contentWidth, list.right + this.padding);
+            contentBottom = Math.max(contentBottom, list.bottom);
 
             contentWidth += fontSize * 0.4;
         }

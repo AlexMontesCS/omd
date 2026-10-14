@@ -40,6 +40,12 @@ export class omdDisplay {
             this._resizeObserver.observe(container);
         }
 
+        // Components whose content is real HTML (mathText's foreignObject)
+        // reflow after load — web fonts, and page translation rewriting the
+        // prose. They announce the new box here so the <svg> follows.
+        this._onComponentResize = () => { if (!this._destroyed) this._layout(); };
+        this.svg.svgObject.addEventListener('omd:resize', this._onComponentResize);
+
         if (typeof document !== 'undefined' && document.fonts?.ready) {
             document.fonts.ready.then(() => {
                 if (!this._destroyed && this._component) this._layout();
@@ -66,16 +72,26 @@ export class omdDisplay {
             scale = Math.max(0.1, Math.min(sx, sy, maxScale));
         }
 
-        const svgW = Math.ceil(compW * scale + pad * 2);
-        const svgH = Math.ceil(compH * scale + pad * 2);
+        const boxW = Math.ceil(compW * scale + pad * 2);
+        const boxH = Math.ceil(compH * scale + pad * 2);
+
+        if (this._htmlNode) {
+            // Plain DOM host: scale with a CSS transform instead of an SVG one.
+            this._htmlNode.style.transform = scale === 1 ? '' : `scale(${scale})`;
+            this._htmlNode.style.transformOrigin = 'top left';
+            this._htmlNode.style.margin = `${pad}px`;
+            this._htmlNode.style.width = `${compW}px`;
+            this._htmlNode.style.height = `${compH}px`;
+            return;
+        }
 
         this._component.setScale(scale);
         this._component.setPosition(pad, pad);
 
-        this.svg.setWidthAndHeight(svgW, svgH);
-        this.svg.setViewbox(svgW, svgH);
-        this.svg.svgObject.style.width = `${svgW}px`;
-        this.svg.svgObject.style.height = `${svgH}px`;
+        this.svg.setWidthAndHeight(boxW, boxH);
+        this.svg.setViewbox(boxW, boxH);
+        this.svg.svgObject.style.width = `${boxW}px`;
+        this.svg.svgObject.style.height = `${boxH}px`;
     }
 
     render(string) {
@@ -116,13 +132,37 @@ export class omdDisplay {
         if (typeof this.options.onChange === "function") {
             component.onChange = (payload) => this.options.onChange(payload);
         }
-        this.svg.addChild(component);
+
+        // Prose components render as real HTML next to the SVG, never inside
+        // it: Chrome's page translator skips everything under an <svg>, so a
+        // paragraph in a foreignObject is selectable but untranslatable.
+        const htmlNode = typeof component.getHtmlNode === 'function' ? component.getHtmlNode() : null;
+        if (htmlNode) {
+            this._htmlNode = htmlNode;
+            htmlNode.addEventListener('omd:resize', this._onComponentResize);
+            this.svg.svgObject.style.display = 'none';
+            this.container.appendChild(htmlNode);
+        } else {
+            this.svg.svgObject.style.display = 'block';
+            this.svg.addChild(component);
+            this._svgMounted = true;
+        }
+
         this._layout();
     }
 
     _clearComponent() {
+        if (this._htmlNode) {
+            this._htmlNode.removeEventListener('omd:resize', this._onComponentResize);
+            if (this._htmlNode.parentNode === this.container) this.container.removeChild(this._htmlNode);
+            this._htmlNode = null;
+        }
         if (this._component) {
-            this.svg.removeChild(this._component);
+            // Components that watch the DOM (mathText) would otherwise keep a
+            // live ResizeObserver on a detached node.
+            if (typeof this._component.destroy === 'function') this._component.destroy();
+            if (this._svgMounted) this.svg.removeChild(this._component);
+            this._svgMounted = false;
             this._component = null;
         }
     }
@@ -135,6 +175,7 @@ export class omdDisplay {
         this._destroyed = true;
         this._clearComponent();
         if (this._resizeObserver) this._resizeObserver.disconnect();
+        this.svg.svgObject.removeEventListener('omd:resize', this._onComponentResize);
         if (this.container.contains(this.svg.svgObject)) {
             this.container.removeChild(this.svg.svgObject);
         }

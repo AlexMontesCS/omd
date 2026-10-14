@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMD — Fraction Algorithms</title>
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #101418;
+            --ink-soft: #5c646d;
+            --ink-faint: #9aa2ab;
+            --shell: rgba(16, 20, 24, 0.04);
+            --hairline: rgba(16, 20, 24, 0.07);
+            --core: #ffffff;
+            --accent: #1b4965;
+            --ease: cubic-bezier(0.32, 0.72, 0, 1);
+            --r-shell: 2rem;
+            --r-core: calc(2rem - 0.375rem);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Albert Sans', sans-serif;
+            background:
+                radial-gradient(1200px 600px at 85% -10%, rgba(159, 218, 255, 0.16), transparent 60%),
+                radial-gradient(900px 500px at -10% 30%, rgba(27, 73, 101, 0.06), transparent 55%),
+                #fbfbfc;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 0 40px; }
+        @media (max-width: 767px) { .wrap { padding: 0 16px; } }
+
+        .island {
+            position: fixed;
+            top: 24px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 999px;
+            padding: 7px 8px 7px 16px;
+            border: 1px solid var(--hairline);
+            backdrop-filter: blur(24px);
+            box-shadow: 0 12px 40px rgba(16, 20, 24, 0.08);
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .island .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--accent); margin-right: 8px; }
+        .island a {
+            padding: 5px 13px;
+            border-radius: 999px;
+            text-decoration: none;
+            color: var(--ink-soft);
+            font-weight: 500;
+            transition: background 400ms var(--ease), color 400ms var(--ease);
+        }
+        .island a:hover { background: var(--shell); color: var(--ink); }
+        .island a.active { background: var(--ink); color: #fff; }
+
+        header { padding: 140px 0 24px; }
+        .eyebrow {
+            display: inline-flex;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: var(--shell);
+            border: 1px solid var(--hairline);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+        h1 {
+            margin-top: 24px;
+            font-size: clamp(2.4rem, 5.4vw, 4.4rem);
+            font-weight: 600;
+            letter-spacing: -0.045em;
+            line-height: 1;
+            max-width: 18ch;
+        }
+        h1 span { color: var(--ink-faint); }
+        .lede {
+            margin-top: 24px;
+            max-width: 62ch;
+            font-size: 1.08rem;
+            font-weight: 300;
+            line-height: 1.65;
+            color: var(--ink-soft);
+        }
+
+        section { padding: 28px 0; }
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--ink-faint);
+            margin: 0 0 14px 8px;
+        }
+
+        .card {
+            background: var(--shell);
+            border: 1px solid var(--hairline);
+            border-radius: var(--r-shell);
+            padding: 8px;
+            margin-bottom: 24px;
+        }
+        .card-core {
+            background: var(--core);
+            border-radius: var(--r-core);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.65);
+            padding: 30px 34px 28px;
+        }
+        @media (max-width: 767px) { .card-core { padding: 22px 18px; } }
+
+        .card-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px; }
+        .card-title { font-size: clamp(1.25rem, 2vw, 1.55rem); font-weight: 600; letter-spacing: -0.02em; }
+        .card-note { margin-top: 18px; font-size: 13.5px; font-weight: 300; line-height: 1.55; color: var(--ink-soft); max-width: 80ch; }
+
+        .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 18px; }
+        .chip {
+            border: 1px solid var(--hairline);
+            background: var(--shell);
+            border-radius: 999px;
+            padding: 6px 14px;
+            font: 500 13px 'Albert Sans', sans-serif;
+            color: var(--ink-soft);
+            cursor: pointer;
+            transition: background 300ms var(--ease), color 300ms var(--ease);
+        }
+        .chip:hover { color: var(--ink); }
+        .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+        .custom { display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; font-size: 13px; color: var(--ink-soft); }
+        .custom input {
+            width: 74px;
+            padding: 6px 10px;
+            border: 1px solid rgba(16, 20, 24, 0.14);
+            border-radius: 10px;
+            font: 500 14px 'Albert Sans', sans-serif;
+            text-align: center;
+        }
+        .custom .sym { font-size: 16px; color: var(--ink); width: 14px; text-align: center; }
+
+        .stage { display: flex; justify-content: flex-start; padding: 20px 0 4px; min-height: 160px; overflow-x: auto; }
+        .stage svg { max-width: 100%; height: auto; }
+        .stage svg [data-step-index] { cursor: pointer; }
+        .error { color: #b42318; font-size: 13.5px; padding: 12px 0; }
+
+        .step-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+        .pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 6px 6px 18px;
+            border: none;
+            border-radius: 999px;
+            background: var(--ink);
+            color: #fff;
+            font: 600 13.5px 'Albert Sans', sans-serif;
+            cursor: pointer;
+            transition: transform 450ms var(--ease);
+        }
+        .pill-btn:hover { transform: scale(1.03); }
+        .pill-btn:active { transform: scale(0.97); }
+        .pill-btn .orb {
+            width: 28px; height: 28px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .ghost-btn {
+            border: 1px solid var(--hairline);
+            background: transparent;
+            border-radius: 999px;
+            padding: 9px 16px;
+            font: 500 13px 'Albert Sans', sans-serif;
+            color: var(--ink-soft);
+            cursor: pointer;
+        }
+        .ghost-btn:hover { color: var(--ink); background: var(--shell); }
+        .readout { font-size: 12.5px; font-weight: 500; color: var(--accent); margin-left: 6px; }
+
+        footer { padding: 48px 0; font-size: 12.5px; font-weight: 300; color: var(--ink-faint); }
+    </style>
+</head>
+<body>
+
+    <nav class="island">
+        <span class="dot"></span>
+        <a href="./demo.html">Overview</a>
+        <a href="./cookbook.html">Cookbook</a>
+        <a href="./interactive.html">Interactive</a>
+        <a href="./direct.html">Direct</a>
+        <a href="./fractions.html" class="active">Fractions</a>
+    </nav>
+
+    <div class="wrap">
+        <header>
+            <span class="eyebrow">Standard algorithms · fractions</span>
+            <h1>Fraction work, <span>one step at a time.</span></h1>
+            <p class="lede">
+                <code>fractionWork</code> derives the full worked solution from the problem alone —
+                give it two operands and an operation. Each line is one step; the accent color marks
+                what that step introduces. <code>fractionAreaModel</code> builds “a/b of c/d” on a
+                unit square in three panels.
+            </p>
+        </header>
+
+        <section>
+            <div class="section-label">Multiplication &amp; division</div>
+            <div id="card-multiplication"></div>
+            <div id="card-division"></div>
+            <div id="card-area"></div>
+        </section>
+
+        <section>
+            <div class="section-label">Addition &amp; subtraction</div>
+            <div id="card-addition"></div>
+            <div id="card-subtraction"></div>
+        </section>
+
+        <footer>omd · @teachinglab — fractionWork + fractionAreaModel.</footer>
+    </div>
+
+    <script type="module">
+        import { createFromJSON } from '../../dist/omd.browser.js';
+
+        const NS = 'http://www.w3.org/2000/svg';
+
+        function mount(host, json) {
+            host.innerHTML = '';
+            const visual = createFromJSON(json);
+            const svg = document.createElementNS(NS, 'svg');
+            svg.setAttribute('viewBox', `0 0 ${Math.ceil(visual.width)} ${Math.ceil(visual.height)}`);
+            svg.setAttribute('width', String(Math.round(visual.width)));
+            svg.setAttribute('height', String(Math.round(visual.height)));
+            svg.appendChild(visual.svgObject);
+            host.appendChild(svg);
+            return visual;
+        }
+
+        const SYMBOL = { multiplication: '×', division: '÷', addition: '+', subtraction: '−' };
+
+        /**
+         * One card: preset problems, a custom problem, and step controls.
+         * `build(left, right)` returns the visual's JSON; `steps(visual)` its step count.
+         */
+        function workbench(id, { title, note, symbol, presets, build, total, label }) {
+            const root = document.getElementById(id);
+            root.innerHTML = `
+                <div class="card"><div class="card-core">
+                    <div class="card-head"><h2 class="card-title">${title}</h2></div>
+                    <div class="controls">
+                        ${presets.map((p, i) => `<button class="chip" data-preset="${i}">${p.text}</button>`).join('')}
+                        <span class="custom">or
+                            <input data-side="left" aria-label="left operand">
+                            <span class="sym">${symbol}</span>
+                            <input data-side="right" aria-label="right operand">
+                        </span>
+                    </div>
+                    <div class="stage"></div>
+                    <div class="step-row">
+                        <button class="ghost-btn" data-act="back">← Back</button>
+                        <button class="pill-btn" data-act="next">Next step <span class="orb">→</span></button>
+                        <button class="ghost-btn" data-act="all">Show all</button>
+                        <span class="readout"></span>
+                    </div>
+                    <p class="card-note">${note}</p>
+                </div></div>`;
+
+            const stage = root.querySelector('.stage');
+            const readout = root.querySelector('.readout');
+            const inputs = [...root.querySelectorAll('input')];
+            const chips = [...root.querySelectorAll('.chip')];
+            let left = presets[0].left;
+            let right = presets[0].right;
+            let step = 0;
+            let count = 0;
+
+            const render = () => {
+                let visual;
+                try {
+                    visual = mount(stage, build(left, right, step));
+                } catch (error) {
+                    stage.innerHTML = `<div class="error">${error.message}</div>`;
+                    readout.textContent = '';
+                    return;
+                }
+                count = total(visual);
+                readout.textContent = label(step, count, visual);
+                inputs[0].value = left;
+                inputs[1].value = right;
+                chips.forEach(chip => chip.classList.toggle('active', presets[+chip.dataset.preset].left === left && presets[+chip.dataset.preset].right === right));
+                stage.querySelectorAll('[data-step-index]').forEach(el => el.addEventListener('click', () => {
+                    step = +el.getAttribute('data-step-index');
+                    render();
+                }));
+            };
+
+            chips.forEach(chip => chip.addEventListener('click', () => {
+                ({ left, right } = presets[+chip.dataset.preset]);
+                step = 0;
+                render();
+            }));
+            inputs.forEach(input => input.addEventListener('change', () => {
+                left = inputs[0].value.trim();
+                right = inputs[1].value.trim();
+                step = 0;
+                render();
+            }));
+            root.querySelector('[data-act="next"]').addEventListener('click', () => { step = step >= count ? 0 : step + 1; render(); });
+            root.querySelector('[data-act="back"]').addEventListener('click', () => { step = Math.max(0, step - 1); render(); });
+            root.querySelector('[data-act="all"]').addEventListener('click', () => { step = count; render(); });
+            render();
+        }
+
+        function fractionCard(id, operation, title, note, presets) {
+            workbench(id, {
+                title, note, presets,
+                symbol: SYMBOL[operation],
+                build: (left, right, step) => ({
+                    omdType: 'fractionWork', operation, left, right,
+                    stepIndex: step, showStepsList: true, fontSize: 28,
+                }),
+                total: visual => visual.getSteps().length,
+                label: (step, count, visual) => step === 0
+                    ? 'Problem — press Next step'
+                    : `Step ${step} of ${count} — ${visual.getSteps()[step - 1].description}`,
+            });
+        }
+
+        fractionCard('card-multiplication', 'multiplication', 'Multiplying fractions',
+            'Rename whole and mixed numbers, multiply numerator by numerator and denominator by denominator, then simplify by the greatest common factor and name the mixed number.',
+            [
+                { text: '2/3 × 3/4', left: '2/3', right: '3/4' },
+                { text: '4 × 2/3', left: '4', right: '2/3' },
+                { text: '1 1/2 × 2 2/3', left: '1 1/2', right: '2 2/3' },
+                { text: '3/5 × 5/6', left: '3/5', right: '5/6' },
+            ]);
+
+        fractionCard('card-division', 'division', 'Dividing fractions',
+            'Keep the first fraction, change ÷ to ×, flip the divisor — the reciprocal is drawn in the accent color — then finish as multiplication. Covers whole ÷ unit fraction and unit fraction ÷ whole.',
+            [
+                { text: '2/3 ÷ 4/5', left: '2/3', right: '4/5' },
+                { text: '6 ÷ 1/3', left: '6', right: '1/3' },
+                { text: '1/3 ÷ 4', left: '1/3', right: '4' },
+                { text: '3 1/2 ÷ 1/4', left: '3 1/2', right: '1/4' },
+            ]);
+
+        // Area model — default presets use generic captions; the first one
+        // carries the macaroni-pan captions from the curriculum example.
+        const PAN_CAPTIONS = ['pan with [1/3] left', "eat [1/4] of what's left", '[1/4] of [1/3] is [1/12]'];
+        workbench('card-area', {
+            title: 'Fraction of a fraction — area model',
+            note: '“Kiran eats 1/4 of the 1/3 pan that is left.” Panel 1 shades the amount, panel 2 cuts only the shaded part and darkens the fraction of it, panel 3 extends the cuts across the whole so the darkened part reads as 1 of 12 equal pieces. Captions are overridable; [1/3]-style tokens typeset as fractions.',
+            symbol: 'of',
+            presets: [
+                { text: '1/4 of 1/3', left: '1/4', right: '1/3' },
+                { text: '2/3 of 3/4', left: '2/3', right: '3/4' },
+                { text: '3/5 of 1/2', left: '3/5', right: '1/2' },
+            ],
+            build: (left, right, step) => ({
+                omdType: 'fractionAreaModel', left, right,
+                stepIndex: Math.max(1, step),
+                captions: left === '1/4' && right === '1/3' ? PAN_CAPTIONS : undefined,
+            }),
+            total: () => 3,
+            label: (step) => `Panel ${Math.max(1, step)} of 3`,
+        });
+
+        fractionCard('card-addition', 'addition', 'Adding fractions',
+            'Find the least common denominator, build equivalent fractions (the × factor is the accent), add the numerators over the shared denominator, then simplify.',
+            [
+                { text: '1/3 + 1/4', left: '1/3', right: '1/4' },
+                { text: '1/2 + 1/4', left: '1/2', right: '1/4' },
+                { text: '2 1/2 + 1 2/3', left: '2 1/2', right: '1 2/3' },
+                { text: '5/6 + 3/4', left: '5/6', right: '3/4' },
+            ]);
+
+        fractionCard('card-subtraction', 'subtraction', 'Subtracting fractions',
+            'Same common-denominator path, subtracting numerators. Mixed numbers are renamed as fractions first, so 3 1/4 − 1 3/4 needs no regrouping.',
+            [
+                { text: '3/4 − 1/6', left: '3/4', right: '1/6' },
+                { text: '5/8 − 1/4', left: '5/8', right: '1/4' },
+                { text: '3 1/4 − 1 3/4', left: '3 1/4', right: '1 3/4' },
+                { text: '2 − 2/3', left: '2', right: '2/3' },
+            ]);
+    </script>
+</body>
+</html>

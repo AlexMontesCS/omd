@@ -14,6 +14,8 @@ export { omdRatioChart } from './visualizations/omdRatioChart.js';
 export { omdNumberLine } from './visualizations/omdNumberLine.js';
 export { omdDoubleNumberLine } from './visualizations/omdDoubleNumberLine.js';
 export { omdAlgorithmWork } from './visualizations/omdAlgorithmWork.js';
+export { omdFractionWork } from './visualizations/omdFractionWork.js';
+export { omdFractionAreaModel } from './visualizations/omdFractionAreaModel.js';
 export { omdMathText } from './visualizations/omdMathText.js';
 export { omdLinePlot } from './visualizations/omdLinePlot.js';
 export { omdNumberTile } from './visualizations/omdNumberTile.js';
@@ -45,6 +47,21 @@ export {
     formatRationalText,
     formatRationalMarkup,
 } from './visualizations/omdFraction.js';
+export {
+    parseInlineMath,
+    parseMathSource,
+    inlineMathToPlainText,
+    mathNodesToPlainText,
+    hasInlineMath,
+} from './text/omdInlineMath.js';
+export {
+    inlineMathElementTree,
+    renderInlineMathToDOM,
+    renderInlineMathToHTML,
+    ensureInlineMathStyles,
+    INLINE_MATH_CSS,
+    INLINE_MATH_STYLE_ID,
+} from './text/omdInlineMathHtml.js';
 export { createFromJSON, getSupportedTypes, isTypeSupported } from './omdFactory.js';
 export { default as omdSchemas } from './omdSchemas.js';
 export { default as omdSamples } from './omdSamples.js';

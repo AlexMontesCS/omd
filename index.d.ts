@@ -37,6 +37,8 @@ export type OmdConstructibleType =
   | "angle"
   | "regularPolygon"
   | "algorithmWork"
+  | "fractionWork"
+  | "fractionAreaModel"
   | "mathText"
   | "linePlot"
   | "areaDiagram"
@@ -774,6 +776,8 @@ export type OmdJson =
   | OmdShapeJson
   | OmdSpinnerJson
   | OmdAlgorithmWorkJson
+  | OmdFractionWorkJson
+  | OmdFractionAreaModelJson
   | OmdMathTextJson
   | OmdLinePlotJson
   | OmdAreaDiagramJson
@@ -1025,6 +1029,49 @@ export declare class omdAlgorithmWork extends OmdComponentBase {
   getRevealedSteps(): number;
 }
 
+export interface OmdFractionWorkJson {
+  omdType: "fractionWork";
+  operation: "multiplication" | "division" | "addition" | "subtraction";
+  /** Whole number, fraction ("3/4"), or mixed number ("2 1/2"). */
+  left: string | number;
+  right: string | number;
+  stepIndex?: number;
+  showStepsList?: boolean;
+  showAnnotations?: boolean;
+  fontSize?: number;
+}
+
+export declare class omdFractionWork extends OmdComponentBase {
+  constructor();
+  loadFromJSON(data: OmdLoadData<OmdFractionWorkJson>): void;
+  getSteps(): { description: string }[];
+  nextStep(): string | null;
+  getRevealedSteps(): number;
+}
+
+export interface OmdFractionAreaModelJson {
+  omdType: "fractionAreaModel";
+  /** The "of" fraction a/b, from 0 to 1. */
+  left: string;
+  /** The amount c/d it is taken of, from 0 to 1. */
+  right: string;
+  stepIndex?: 1 | 2 | 3;
+  captions?: string[];
+  unitScale?: number;
+  shadeColor?: string;
+  overlapColor?: string;
+  captionFontSize?: number;
+  labelFontSize?: number;
+}
+
+export declare class omdFractionAreaModel extends OmdComponentBase {
+  constructor();
+  loadFromJSON(data: OmdLoadData<OmdFractionAreaModelJson>): void;
+  getCaptions(): string[];
+  nextStep(): string | null;
+  getRevealedSteps(): number;
+}
+
 export interface OmdMathTextJson {
   omdType: "mathText";
   text: string;
@@ -1032,6 +1079,8 @@ export interface OmdMathTextJson {
   width?: number;
   lineHeight?: number;
   fontFamily?: string;
+  fontColor?: string;
+  fontWeight?: number | string;
 }
 
 export interface OmdLinePlotJson {
@@ -1289,9 +1338,59 @@ export declare function ratValue(r: { n: number; d: number }): number;
 export declare function formatRationalText(r: { n: number; d: number }, options?: { mixed?: boolean }): string;
 export declare function formatRationalMarkup(r: { n: number; d: number }, options?: { mixed?: boolean }): string;
 
+export type OmdInlineMathNode =
+  | { kind: "text"; value: string }
+  | { kind: "bold"; value: string }
+  | { kind: "break" }
+  | { kind: "math"; nodes: OmdMathNode[]; plain: string };
+
+export interface OmdMathNode {
+  t: "num" | "ident" | "op" | "punct" | "sym" | "space" | "text" | "frac" | "mixed" | "script" | "sqrt" | "group";
+  v?: string;
+  num?: OmdMathNode[];
+  den?: OmdMathNode[];
+  whole?: OmdMathNode[];
+  base?: OmdMathNode;
+  sup?: OmdMathNode[];
+  sub?: OmdMathNode[];
+  radicand?: OmdMathNode[];
+  index?: OmdMathNode[];
+  children?: OmdMathNode[];
+  open?: string;
+  close?: string;
+}
+
+export interface OmdInlineMathOptions {
+  /** Detect bare `3/4` and `2 5/8` in prose. Default true. */
+  autoFractions?: boolean;
+  /** Accept legacy `[3/4]` bracket tokens. Default true. */
+  bracketTokens?: boolean;
+  /** Accept `**bold**`. Default true. */
+  bold?: boolean;
+}
+
+export interface OmdInlineMathElement {
+  tag: string;
+  attributes: Record<string, string>;
+  children: Array<OmdInlineMathElement | string>;
+}
+
+export declare function parseInlineMath(source: string, options?: OmdInlineMathOptions): OmdInlineMathNode[];
+export declare function parseMathSource(source: string): OmdMathNode[];
+export declare function inlineMathToPlainText(sourceOrNodes: string | OmdInlineMathNode[]): string;
+export declare function mathNodesToPlainText(nodes: OmdMathNode[]): string;
+export declare function hasInlineMath(source: string, options?: OmdInlineMathOptions): boolean;
+export declare function inlineMathElementTree(sourceOrNodes: string | OmdInlineMathNode[], options?: OmdInlineMathOptions): Array<OmdInlineMathElement | string>;
+export declare function renderInlineMathToDOM(sourceOrNodes: string | OmdInlineMathNode[], options?: OmdInlineMathOptions & { document?: Document; namespace?: string }): DocumentFragment;
+export declare function renderInlineMathToHTML(sourceOrNodes: string | OmdInlineMathNode[], options?: OmdInlineMathOptions): string;
+export declare function ensureInlineMathStyles(doc?: Document): boolean;
+export declare const INLINE_MATH_CSS: string;
+export declare const INLINE_MATH_STYLE_ID: string;
+
 export declare class omdMathText extends OmdComponentBase {
   constructor();
   loadFromJSON(data: OmdLoadData<OmdMathTextJson>): void;
+  getPlainText(): string;
 }
 
 export declare class omdProblem extends OmdComponentBase {
