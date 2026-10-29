@@ -1,6 +1,6 @@
 {
   "name": "@teachinglab/omd",
-  "version": "0.9.97",
+  "version": "0.9.98",
   "description": "omd",
   "main": "./index.js",
   "module": "./index.js",

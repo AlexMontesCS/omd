@@ -571,8 +571,14 @@ export class omdTable extends jsvgGroup
     }
 
     createCellInput(group, row, col, x, y, width, height, currentValue) {
+        // The field sits inset in its cell, so it reads as an answer blank
+        // on the row stripe rather than a tinted block over the whole cell.
+        const inset = Math.min(5, Math.max(2, Math.floor(Math.min(width, height) * 0.12)));
         const fo = this._createSvgElement("foreignObject", {
-            x, y, width, height,
+            x: x + inset,
+            y: y + inset,
+            width: Math.max(0, width - inset * 2),
+            height: Math.max(0, height - inset * 2),
             "data-omd-cell-input": `${row},${col}`,
         });
 
@@ -589,13 +595,18 @@ export class omdTable extends jsvgGroup
                 : String(currentValue ?? "");
         input.value = initial;
         this._editableCellKeys.add(`${row},${col}`);
+
+        const BORDER = "#CBD5E1";
+        const BORDER_HOVER = "#94A3B8";
+        const ACCENT = "#2563EB";
         Object.assign(input.style, {
             width: "100%",
             height: "100%",
             boxSizing: "border-box",
-            border: "none",
-            borderRadius: "0",
-            background: "transparent",
+            margin: "0",
+            border: `1.5px solid ${BORDER}`,
+            borderRadius: "6px",
+            background: "#FFFFFF",
             textAlign: "center",
             fontFamily: this.fontFamily,
             fontSize: `${this.fontSize}px`,
@@ -603,15 +614,25 @@ export class omdTable extends jsvgGroup
             color: "#111827",
             outline: "none",
             padding: "0 4px",
-            caretColor: "#2563eb",
+            caretColor: ACCENT,
+            transition: "border-color 120ms ease, box-shadow 120ms ease",
         });
 
+        // Idle: a quiet outlined blank. Hover darkens the outline; focus turns
+        // it a thicker blue — drawn inside the field, since foreignObject clips
+        // anything outside it — with no fill, so the entered value stays crisp.
+        input.addEventListener("mouseenter", () => {
+            if (document.activeElement !== input) input.style.borderColor = BORDER_HOVER;
+        });
+        input.addEventListener("mouseleave", () => {
+            if (document.activeElement !== input) input.style.borderColor = BORDER;
+        });
         input.addEventListener("focus", () => {
-            input.style.background = "rgba(37,99,235,0.10)";
-            input.style.boxShadow = "inset 0 0 0 2px #2563eb";
+            input.style.borderColor = ACCENT;
+            input.style.boxShadow = `inset 0 0 0 1px ${ACCENT}`;
         });
         input.addEventListener("blur", () => {
-            input.style.background = "transparent";
+            input.style.borderColor = BORDER;
             input.style.boxShadow = "none";
         });
         input.addEventListener("input", () => {
