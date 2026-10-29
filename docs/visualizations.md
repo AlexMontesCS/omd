@@ -166,31 +166,35 @@ display.load(hanger);
 
 ## tapeDiagram
 
-Renders a horizontal segmented tape diagram. Each segment can be a plain value or a full object controlling color, label, and weight.
+Renders a horizontal segmented tape diagram. Each segment can be a plain value or a full object controlling color, label, and weight. Bare fractions in segment and brace text (`"3/10"`, `"4 1/2"`) are typeset stacked, the same way as table cells, shape labels and area models.
 
 **Example JSON**
 ```json
-{ "omdType": "tapeDiagram", "title": "Parts of 24", "values": [{ "value": 8, "color": "#4A90D9", "label": "A" }, { "value": 8, "color": "#7ED321", "label": "B" }, { "value": 8, "color": "#F5A623", "label": "C" }], "labelSet": { "braces": [{ "startIndex": 0, "endIndex": 2, "label": "24", "showBelow": true }] } }
+{ "omdType": "tapeDiagram", "title": "Parts of 24", "values": [{ "value": 8, "color": "#4A90D9" }, { "value": 8, "color": "#7ED321" }, { "value": 8, "color": "#F5A623" }], "labelSet": [{ "startIndex": 0, "endIndex": 3, "label": "24", "showBelow": true }] }
 ```
 
 ### Fields
 
 | Name | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `values` | array | Yes | — | Segments. Each entry is a string/number or `{value, weight, showLabel, color, textColor, label}` |
-| `totalWidth` | number | No | auto | Total width of the tape in px |
-| `title` | string | No | `""` | Title above the tape |
-| `titleFontSize` | number | No | auto | Font size for the title |
-| `titleColor` | string | No | `""` | Color for the title text |
-| `segmentHeight` | number | No | auto | Height of each segment in px |
-| `segmentCornerRadius` | number | No | `0` | Corner radius of segments |
-| `segmentStrokeColor` | string | No | `""` | Stroke color for segment borders |
+| `values` | array | Yes | — | Segments. Each entry is a string/number or `{value, weight, showLabel, color, textColor, strokeColor, strokeWidth, parts}` |
+| `totalWidth` | number | No | `300` | Total width of the tape in px |
+| `title` | string | No | `""` | Title to the left of the tape |
+| `titleFontSize` | number | No | `12` | Font size for the title |
+| `titleColor` | string | No | `"black"` | Color for the title text |
+| `segmentHeight` | number | No | `30` | Height of each segment in px; grows to fit stacked fractions |
+| `segmentCornerRadius` | number | No | `5` | Corner radius of segments |
+| `segmentStrokeColor` | string | No | `"white"` | Stroke color for segment borders |
 | `segmentStrokeWidth` | number | No | `1` | Stroke width for segment borders |
-| `labelFontSize` | number | No | auto | Font size for segment labels |
-| `segmentTextColor` | string | No | `""` | Default text color for segment labels |
-| `braceLabelFontSize` | number | No | auto | Font size for brace labels |
-| `braceColor` | string | No | `""` | Color for brace strokes |
-| `labelSet` | object | No | `{}` | Brace annotations: `{ braces: [{startIndex, endIndex, label, showBelow, color, fontSize, strokeWidth}] }` |
+| `labelFontSize` | number | No | `18` | Font size for segment labels |
+| `segmentTextColor` | string | No | `"black"` | Default text color for segment labels |
+| `braceLabelFontSize` | number | No | `14` | Font size for brace labels |
+| `braceColor` | string | No | `"black"` | Color for brace strokes |
+| `partDash` | string | No | `"4 4"` | Dash pattern for the lines a segment's `parts` draws; `"none"` draws them solid |
+| `labelSet` | array | No | `[]` | Brace annotations — a plain array, not `{ braces: [...] }`: `[{startIndex, endIndex, label, showBelow, color, fontSize, strokeWidth}]`. `endIndex` is one past the last segment covered, so `{ startIndex: 0, endIndex: 1 }` spans the first segment |
+
+A segment's `parts` splits it into equal parts ruled dashed, so its solid edges still read as
+the unit: `{ value: "", parts: 6 }` is one whole cut into dashed sixths.
 
 ### Example
 
@@ -199,13 +203,14 @@ const tape = new omdTapeDiagram();
 tape.loadFromJSON({
   title: 'Parts of 24',
   values: [
-    { value: 8, color: '#4A90D9', label: 'A' },
-    { value: 8, color: '#7ED321', label: 'B' },
-    { value: 8, color: '#F5A623', label: 'C' }
+    { value: 8, color: '#4A90D9' },
+    { value: 8, color: '#7ED321' },
+    { value: 8, color: '#F5A623' }
   ],
-  labelSet: {
-    braces: [{ startIndex: 0, endIndex: 2, label: '24', showBelow: true }]
-  }
+  labelSet: [
+    { startIndex: 0, endIndex: 1, label: '8' },
+    { startIndex: 0, endIndex: 3, label: '24', showBelow: true }
+  ]
 });
 display.load(tape);
 ```
@@ -227,7 +232,8 @@ Renders two tape diagrams stacked vertically, useful for part-to-part or part-to
 |---|---|---|---|---|
 | `topTapeDiagram` | object | Yes | — | Config for the top tape (same fields as `tapeDiagram`) |
 | `bottomTapeDiagram` | object | Yes | — | Config for the bottom tape |
-| `spacing` | number | No | auto | Vertical gap in px between the two tapes |
+| `spacing` | number | No | `30` | Vertical gap in px between the two tapes |
+| `totalWidth` | number | No | widest tape `totalWidth`, else `300` | Width of the longer tape in px. Both tapes share one unit width, so this (or a `totalWidth` set on either tape) widens both |
 
 ### Example
 
@@ -385,7 +391,7 @@ Renders a value table. Can auto-generate rows from an equation or use manually p
 |---|---|---|---|---|
 | `equation` | string | No\* | `""` | Equation to generate rows (e.g. `'y=2x'`). Required unless `data` is provided. |
 | `data` | array[][] | No\* | `[]` | Manual rows as `[[x, y], ...]`. Used when `equation` is not set. |
-| `headers` | string[] | No | auto | Column header labels |
+| `headers` | string[] | No | `['x', 'y']` | Column header labels. `""` leaves a header blank — e.g. the corner of a multiplication table; only a missing (`null`) header shows a `Col n` placeholder |
 | `xMin` | number | No | `0` | First x value (when using `equation`) |
 | `xMax` | number | No | `5` | Last x value (when using `equation`) |
 | `stepSize` | number | No | `1` | Step between x values |
@@ -410,6 +416,8 @@ Renders a value table. Can auto-generate rows from an equation or use manually p
 | `editableValues` | object | No | `{}` | Initial values keyed by `"row,column"` |
 
 \* Either `equation` or `data` must be provided.
+
+Bare fractions in headers and cells (`"2/3"`, `"1 1/4"`) are typeset stacked.
 
 ### Example
 
@@ -546,16 +554,20 @@ than 12.999999999999998.
 | `showUnitLines` | boolean | No | `true` | Draw the solid unit-square rules |
 | `partitionScope` | `'all'`\|`'last'`\|`{from,to}` | No | `'all'` | Which units carry partition rules. `'last'` subdivides only the unit the shading ends inside — the convention for mixed numbers |
 | `columnPartitionScope` / `rowPartitionScope` | same | No | `'all'` | Per-axis override |
-| `topBrace` / `leftBrace` | `'unit'`\|`'shaded'`\|`'grid'`\|`false`\|object | No | — | Dimension annotation. Object form is `{ from, to, label, style }` in units |
-| `topBraces` / `leftBraces` | array | No | `[]` | Several spans per axis — used for the whole and fractional parts of a mixed number |
+| `topBrace` / `leftBrace` / `bottomBrace` / `rightBrace` | `'unit'`\|`'shaded'`\|`'grid'`\|`false`\|object | No | — | Dimension annotation on that side. Object form is `{ from, to, label, style }` in units |
+| `topBraces` / `leftBraces` / `bottomBraces` / `rightBraces` | array | No | `[]` | Several spans per side — used for the whole and fractional parts of a mixed number, or a brace under one part of a bar |
 | `showLabels` | boolean | No | `false` | Shorthand for braces on the shaded extent on both axes |
 | `braceStyle` | `'brace'`\|`'arrow'` | No | `'brace'` | Curly brace or double-headed measurement arrow |
 | `title` | string | No | `''` | omdMathText markup above the figure |
 | `expressionLine` | boolean | No | `false` | Print the live `w × h = area` line under the figure |
 | `expressionSuffix` | string | No | `'square units'` | Unit phrase for area readouts |
 | `showAreaLabel` | boolean | No | `false` | Print the area centred under the figure |
-| `decompose` | boolean | No | `false` | Tint the fractional part, rule the split, print the partial products |
-| `decomposeAxis` | `'auto'`\|`'x'`\|`'y'` | No | `'auto'` | Axis to decompose along |
+| `decompose` | boolean | No | `false` | Tint the fractional part(s), rule the split(s), print the partial products |
+| `decomposeAxis` | `'auto'`\|`'x'`\|`'y'`\|`'both'` | No | `'auto'` | Axis to decompose along. `'both'` splits each mixed side into whole + fraction: 2 1/4 × 3 2/3 becomes four partial products |
+| `readout` | `'full'`\|`'partials'`\|`'none'` | No | `'full'` | The decomposition line: `'full'` is `(2 × 3) + (2 × 2/5) = 6 + 4/5 = 6 4/5`, `'partials'` stops at `(2 × 3) + (2 × 2/5)` so the total is left to the student, `'none'` hides it |
+| `decomposeColor` | string | No | `'#F6C177'` | Tint of the fractional columns (or rows, when only rows split) |
+| `decomposeRowColor` | string | No | `'#BFE3B4'` | Tint of the fractional rows when both sides split |
+| `decomposeCornerColor` | string | No | `'#F2B8B5'` | Tint of the fraction × fraction piece when both sides split |
 | `interactive` | boolean | No | `false` | Enable student input |
 | `allowPaint` | boolean | No | `true` | Press and drag to shade or unshade partition cells |
 | `allowResize` | boolean | No | `false` | Drag handles that set the side lengths, snapped to partitions |
@@ -606,6 +618,82 @@ display.load(model);
 
 model.getArea();          // { n: 34, d: 5 }
 model.getState().area;    // '6 4/5'
+
+// 2 1/4 × 3 2/3 split on both sides, readout stopping at the partial products
+const mixed = new omdAreaDiagram();
+mixed.loadFromJSON({
+  columns: 4, rows: 3, columnParts: 3, rowParts: 4,
+  shadeWidth: '3 2/3', shadeHeight: '2 1/4',
+  partitionScope: 'last',
+  topBraces: [ { from: 0, to: 3, label: '3' }, { from: 3, to: '3 2/3' } ],
+  leftBraces: [ { from: 0, to: 2, label: '2' }, { from: 2, to: '2 1/4' } ],
+  decompose: true, decomposeAxis: 'both', readout: 'partials',
+});
+
+// a bar of fifths with a brace under the first fifth
+const bar = new omdAreaDiagram();
+bar.loadFromJSON({
+  columns: 5, rows: 1, columnParts: 3, shadeWidth: '1/3',
+  columnPartitionScope: { from: 0, to: 1 },
+  bottomBraces: [ { from: 0, to: 1, label: '[1/5]' } ],
+});
+```
+
+For a not-to-scale sketch, or whole-number partial products, use [`areaModel`](#areamodel).
+
+---
+
+## areaModel
+
+The partial-products area model teachers sketch: a rectangle cut into pieces, side lengths
+written along the top and left, each piece holding its product, and an optional sum line.
+It is not drawn on a unit grid, so it covers mixed × mixed (2 1/4 × 3 2/3) and multi-digit
+whole numbers (222 × 14) alike. Pieces default to the product of their side lengths —
+fractions improper (`4/3`), whole numbers with thousands separators (`2,000`) — and every
+fraction is typeset stacked.
+
+**Example JSON**
+```json
+{ "omdType": "areaModel", "columns": ["3", "2/3"], "rows": ["2", "1/4"], "showSum": true, "caption": "not to scale" }
+```
+
+### Fields
+
+| Name | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `columns` | string[] | Yes | — | Side lengths across the top, one per column |
+| `rows` | string[] | Yes | — | Side lengths down the left, one per row |
+| `cells` | string[][] | No | computed | Text in each piece, row by row — e.g. `'2 × 3 = 6'` |
+| `showSum` | boolean | No | `false` | Print the sum line: `6 + 4/3 + 3/4 + 1/6 = 8 1/4` |
+| `sumBy` | `'cells'`\|`'rows'` | No | `'cells'` | `'rows'` adds each row first: `2,220 + 888 = 3,108` |
+| `sum` | string | No | `''` | Explicit sum line; wins over the computed one |
+| `toScale` | boolean | No | `false` | Size pieces by their side lengths instead of their text |
+| `unitScale` | number | No | `0` | Px per unit when `toScale`; `0` fits the columns to `cellWidth` each |
+| `cellWidth` / `cellHeight` | number | No | `190` / `90` | Size of the largest column / row when not to scale. Smaller side lengths get smaller pieces, stepping down like a hand sketch (3 : 2/3 draws about 1 : 0.63, 200 : 20 : 2 about 1 : 0.63 : 0.45), and every piece grows to fit its text |
+| `cellColors` | string[][] | No | palette | Piece fills, row by row. Default: blue/yellow over green/pink for two columns; blue/yellow/green over purple/pink/cyan for wider models |
+| `lineStyle` | `'solid'`\|`'dashed'` | No | `'solid'` | Lines between pieces |
+| `lineDash` | string | No | `'7 6'` | Dash pattern when `lineStyle` is `'dashed'` |
+| `strokeColor` / `strokeWidth` | string / number | No | `'#222222'` / `2.5` | Outline and divider style |
+| `fontSize` / `labelFontSize` | number | No | `20` / `20` | Piece and side-length text size |
+| `caption` | string | No | `''` | Small caption under the figure, e.g. `'not to scale'` |
+
+### Example
+
+```js
+import { omdAreaModel } from '@teachinglab/omd';
+
+// 222 × 14 as partial products, summed row by row
+const model = new omdAreaModel();
+model.loadFromJSON({
+  columns: ['200', '20', '2'],
+  rows: ['10', '4'],
+  showSum: true,
+  sumBy: 'rows',
+});
+display.load(model);
+
+model.getCells();         // [['2,000', '200', '20'], ['800', '80', '8']]
+model.getSumText();       // '2,220 + 888 = 3,108'
 ```
 
 ---
@@ -627,7 +715,8 @@ of fourths with one fourth shaded on each — 3 × 1/4 = 3/4 = 3 ÷ 4.
 |---|---|---|---|---|
 | `strips` | number | No | `3` | Number of whole strips |
 | `parts` | number | No | `5` | Equal parts each whole is cut into |
-| `shaded` | number | No | `1` | Shaded parts per strip |
+| `subParts` | number | No | `1` | Cuts every part again. Part lines are then ruled solid and sub-part lines dashed, and `shaded` counts sub-parts |
+| `shaded` | number | No | `1` | Shaded pieces per strip (sub-parts when `subParts` > 1) |
 | `shadedList` | number[] | No | — | Per-strip shaded counts, overriding `shaded` |
 | `shadedCells` | `[strip,part][]` | No | — | Explicit shaded cells |
 | `orientation` | `'horizontal'`\|`'vertical'` | No | `'horizontal'` | Strip direction |
@@ -635,7 +724,8 @@ of fourths with one fourth shaded on each — 3 × 1/4 = 3/4 = 3 ÷ 4.
 | `stripLength` | number | No | `420` | Length in px along the partitioned axis |
 | `stripThickness` | number | No | `46` | Thickness of each strip in px |
 | `gap` | number | No | `14` | Gap between strips in px |
-| `dividerDash` | string | No | `'6 5'` | Dash pattern for internal dividers; `'none'` draws them solid |
+| `dividerDash` | string | No | `'6 5'` | Dash pattern for part dividers when `subParts` is 1; `'none'` draws them solid |
+| `subPartDash` | string | No | `'6 5'` | Dash pattern for sub-part dividers |
 | `brace` | string\|`false` | No | `'1'` | Label for the brace under the whole |
 | `braceEvery` | boolean | No | `false` | Repeat the brace under every strip |
 | `stripLabels` | string[] | No | `[]` | Caption under each strip |
@@ -659,6 +749,10 @@ bars.loadFromJSON({
 display.load(bars);
 
 bars.getState().total;    // '2 2/5'
+
+// solid thirds over dashed eighteenths, one eighteenth shaded
+const strip = new omdFractionStrips();
+strip.loadFromJSON({ strips: 1, parts: 3, subParts: 6, shaded: 1, brace: false });
 ```
 
 ---

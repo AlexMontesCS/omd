@@ -2327,7 +2327,7 @@
     ]
   },
   "tapeDiagram": {
-    "notes": "Keep layout options global. values can be strings or rich objects {value, weight, showLabel, color, textColor, strokeColor, strokeWidth}. labelSet entries can include {startIndex, endIndex, label, showBelow, color, strokeWidth}.",
+    "notes": "Keep layout options global. values can be strings or rich objects {value, weight, showLabel, color, textColor, strokeColor, strokeWidth, parts}; bare fractions in segment and brace text ('3/10', '4 1/2') are typeset stacked. labelSet is a plain array of {startIndex, endIndex, label, showBelow, color, fontSize, strokeWidth} with endIndex exclusive — not { braces: [...] }.",
     "fields": [
       {
         "name": "totalWidth",
@@ -2414,6 +2414,13 @@
         "description": "Default brace line and text color"
       },
       {
+        "name": "partDash",
+        "type": "string",
+        "default": "4 4",
+        "optional": true,
+        "description": "Dash pattern for segment `parts` lines; 'none' draws them solid"
+      },
+      {
         "name": "values",
         "type": "array",
         "default": [],
@@ -2430,7 +2437,7 @@
                   "type": "string",
                   "default": "",
                   "optional": false,
-                  "description": "Displayed segment value text (numbers are also accepted)"
+                  "description": "Displayed segment value text (numbers are also accepted); bare fractions such as '3/10' and '4 1/2' are typeset stacked"
                 },
                 {
                   "name": "weight",
@@ -2473,6 +2480,13 @@
                   "default": 1,
                   "optional": true,
                   "description": "Segment border width in px"
+                },
+                {
+                  "name": "parts",
+                  "type": "number",
+                  "default": 1,
+                  "optional": true,
+                  "description": "Equal parts drawn as dashed lines inside the segment (solid segment edges stay the unit)"
                 }
               ]
             },
@@ -2492,7 +2506,7 @@
         "type": "array",
         "default": [],
         "optional": true,
-        "description": "Braces: [{startIndex,endIndex,label,showBelow,color,fontSize,strokeWidth}]",
+        "description": "Braces as a plain array (not { braces: [...] }): [{startIndex,endIndex,label,showBelow,color,fontSize,strokeWidth}]. endIndex is one past the last segment, so { startIndex: 0, endIndex: 1 } spans segment 0",
         "itemSchema": {
           "type": "object",
           "description": "Brace annotation spanning one or more segment indexes",
@@ -2509,14 +2523,14 @@
               "type": "number",
               "default": 1,
               "optional": false,
-              "description": "Exclusive end segment index"
+              "description": "Exclusive end segment index (one past the last segment covered)"
             },
             {
               "name": "label",
               "type": "string",
               "default": "",
               "optional": false,
-              "description": "Brace label text"
+              "description": "Brace label text; bare fractions are typeset stacked"
             },
             {
               "name": "showBelow",
@@ -2569,6 +2583,7 @@
           "segmentTextColor": "black",
           "braceLabelFontSize": 14,
           "braceColor": "black",
+          "partDash": "4 4",
           "values": [],
           "labelSet": []
         },
@@ -2661,6 +2676,13 @@
               "description": "Default brace line and text color"
             },
             {
+              "name": "partDash",
+              "type": "string",
+              "default": "4 4",
+              "optional": true,
+              "description": "Dash pattern for segment `parts` lines; 'none' draws them solid"
+            },
+            {
               "name": "values",
               "type": "array",
               "default": [],
@@ -2677,7 +2699,7 @@
                         "type": "string",
                         "default": "",
                         "optional": false,
-                        "description": "Displayed segment value text (numbers are also accepted)"
+                        "description": "Displayed segment value text (numbers are also accepted); bare fractions such as '3/10' and '4 1/2' are typeset stacked"
                       },
                       {
                         "name": "weight",
@@ -2720,6 +2742,13 @@
                         "default": 1,
                         "optional": true,
                         "description": "Segment border width in px"
+                      },
+                      {
+                        "name": "parts",
+                        "type": "number",
+                        "default": 1,
+                        "optional": true,
+                        "description": "Equal parts drawn as dashed lines inside the segment (solid segment edges stay the unit)"
                       }
                     ]
                   },
@@ -2739,7 +2768,7 @@
               "type": "array",
               "default": [],
               "optional": true,
-              "description": "Braces: [{startIndex,endIndex,label,showBelow,color,fontSize,strokeWidth}]",
+              "description": "Braces as a plain array (not { braces: [...] }): [{startIndex,endIndex,label,showBelow,color,fontSize,strokeWidth}]. endIndex is one past the last segment, so { startIndex: 0, endIndex: 1 } spans segment 0",
               "itemSchema": {
                 "type": "object",
                 "description": "Brace annotation spanning one or more segment indexes",
@@ -2756,14 +2785,14 @@
                     "type": "number",
                     "default": 1,
                     "optional": false,
-                    "description": "Exclusive end segment index"
+                    "description": "Exclusive end segment index (one past the last segment covered)"
                   },
                   {
                     "name": "label",
                     "type": "string",
                     "default": "",
                     "optional": false,
-                    "description": "Brace label text"
+                    "description": "Brace label text; bare fractions are typeset stacked"
                   },
                   {
                     "name": "showBelow",
@@ -2815,6 +2844,7 @@
           "segmentTextColor": "black",
           "braceLabelFontSize": 14,
           "braceColor": "black",
+          "partDash": "4 4",
           "values": [],
           "labelSet": []
         },
@@ -2907,6 +2937,13 @@
               "description": "Default brace line and text color"
             },
             {
+              "name": "partDash",
+              "type": "string",
+              "default": "4 4",
+              "optional": true,
+              "description": "Dash pattern for segment `parts` lines; 'none' draws them solid"
+            },
+            {
               "name": "values",
               "type": "array",
               "default": [],
@@ -2923,7 +2960,7 @@
                         "type": "string",
                         "default": "",
                         "optional": false,
-                        "description": "Displayed segment value text (numbers are also accepted)"
+                        "description": "Displayed segment value text (numbers are also accepted); bare fractions such as '3/10' and '4 1/2' are typeset stacked"
                       },
                       {
                         "name": "weight",
@@ -2966,6 +3003,13 @@
                         "default": 1,
                         "optional": true,
                         "description": "Segment border width in px"
+                      },
+                      {
+                        "name": "parts",
+                        "type": "number",
+                        "default": 1,
+                        "optional": true,
+                        "description": "Equal parts drawn as dashed lines inside the segment (solid segment edges stay the unit)"
                       }
                     ]
                   },
@@ -2985,7 +3029,7 @@
               "type": "array",
               "default": [],
               "optional": true,
-              "description": "Braces: [{startIndex,endIndex,label,showBelow,color,fontSize,strokeWidth}]",
+              "description": "Braces as a plain array (not { braces: [...] }): [{startIndex,endIndex,label,showBelow,color,fontSize,strokeWidth}]. endIndex is one past the last segment, so { startIndex: 0, endIndex: 1 } spans segment 0",
               "itemSchema": {
                 "type": "object",
                 "description": "Brace annotation spanning one or more segment indexes",
@@ -3002,14 +3046,14 @@
                     "type": "number",
                     "default": 1,
                     "optional": false,
-                    "description": "Exclusive end segment index"
+                    "description": "Exclusive end segment index (one past the last segment covered)"
                   },
                   {
                     "name": "label",
                     "type": "string",
                     "default": "",
                     "optional": false,
-                    "description": "Brace label text"
+                    "description": "Brace label text; bare fractions are typeset stacked"
                   },
                   {
                     "name": "showBelow",
@@ -3051,6 +3095,13 @@
         "default": 30,
         "optional": true,
         "description": "Gap between tapes in px"
+      },
+      {
+        "name": "totalWidth",
+        "type": "number",
+        "default": 300,
+        "optional": true,
+        "description": "Width of the longer tape in px; both tapes share one unit width. Defaults to the widest totalWidth set on either tape"
       }
     ]
   },
@@ -3319,10 +3370,10 @@
           "y"
         ],
         "optional": true,
-        "description": "Column headers",
+        "description": "Column headers; an empty string leaves that header blank (e.g. the corner of a multiplication table). Bare fractions in headers and cells ('2/3', '1 1/4') are typeset stacked",
         "itemSchema": {
           "type": "string",
-          "description": "Column header label"
+          "description": "Column header label; '' for a blank header"
         }
       },
       {
@@ -5212,7 +5263,7 @@
     ]
   },
   "areaDiagram": {
-    "notes": "Rectangular area model with fractional side lengths. Whole unit squares are ruled solid, each unit square is partitioned into equal strips ruled dashed, and a shaded sub-rectangle carries the product. Lengths accept numbers, fractions ('2/3') and mixed numbers ('3 1/4') and are held as exact rationals, so 3 1/4 x 4 reports 13. Set `interactive` to let students shade cells, drag the side lengths, and type answers. `width` and `height` are accepted aliases for `columns` and `rows`.",
+    "notes": "Rectangular area model with fractional side lengths. Whole unit squares are ruled solid, each unit square is partitioned into equal strips ruled dashed, and a shaded sub-rectangle carries the product. Lengths accept numbers, fractions ('2/3') and mixed numbers ('3 1/4') and are held as exact rationals, so 3 1/4 x 4 reports 13. Set `interactive` to let students shade cells, drag the side lengths, and type answers. `width` and `height` are accepted aliases for `columns` and `rows`. Braces can sit on any side: topBraces, leftBraces, bottomBraces, rightBraces. `decompose` with decomposeAxis 'both' splits a mixed × mixed product into four partial products; `readout` controls the line printed under it. For a not-to-scale partial-products sketch, or whole-number partial products like 213 × 12, use areaModel.",
     "fields": [
       {
         "name": "columns",
@@ -5393,6 +5444,20 @@
         "description": "Brace to the left of the figure; same shape as `topBrace`"
       },
       {
+        "name": "bottomBrace",
+        "type": "string|object|boolean",
+        "default": null,
+        "optional": true,
+        "description": "Brace below the figure; same shape as `topBrace`"
+      },
+      {
+        "name": "rightBrace",
+        "type": "string|object|boolean",
+        "default": null,
+        "optional": true,
+        "description": "Brace to the right of the figure; same shape as `topBrace`"
+      },
+      {
         "name": "topBraces",
         "type": "array",
         "default": [],
@@ -5405,6 +5470,20 @@
         "default": [],
         "optional": true,
         "description": "Several spans to the left of the figure"
+      },
+      {
+        "name": "bottomBraces",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Several spans below the figure, e.g. a brace under the first fifth of a bar"
+      },
+      {
+        "name": "rightBraces",
+        "type": "array",
+        "default": [],
+        "optional": true,
+        "description": "Several spans to the right of the figure"
       },
       {
         "name": "showLabels",
@@ -5485,33 +5564,53 @@
         "type": "boolean",
         "default": false,
         "optional": true,
-        "description": "Tint the fractional part, rule the split, and print the partial products"
+        "description": "Tint the fractional part(s), rule the split(s), and print the partial products"
       },
       {
         "name": "decomposeAxis",
         "type": "string",
         "default": "auto",
         "optional": true,
-        "description": "Axis to decompose along",
+        "description": "Axis to decompose along; 'both' splits each mixed side into whole + fraction, giving four partial products (2 1/4 x 3 2/3)",
         "options": [
           "auto",
           "x",
-          "y"
+          "y",
+          "both"
         ]
       },
       {
-        "name": "decomposeLabels",
-        "type": "boolean",
-        "default": true,
+        "name": "readout",
+        "type": "string",
+        "default": "full",
         "optional": true,
-        "description": "Print the partial-product line for a decomposition"
+        "description": "Decomposition line under the figure: 'full' prints the partial products and their total, 'partials' only the partial products (e.g. (3/4 x 6) + (3/4 x 2/5)), 'none' hides it",
+        "options": [
+          "full",
+          "partials",
+          "none"
+        ]
       },
       {
         "name": "decomposeColor",
         "type": "string",
         "default": "#F6C177",
         "optional": true,
-        "description": "Tint of the fractional part"
+        "description": "Tint of the fractional columns (and of the fractional rows when only rows split)"
+      },
+      {
+        "name": "decomposeRowColor",
+        "type": "string",
+        "default": "#BFE3B4",
+        "optional": true,
+        "description": "Tint of the fractional rows when decomposeAxis is 'both'"
+      },
+      {
+        "name": "decomposeCornerColor",
+        "type": "string",
+        "default": "#F2B8B5",
+        "optional": true,
+        "description": "Tint of the fraction x fraction piece when decomposeAxis is 'both'"
       },
       {
         "name": "interactive",
@@ -5550,8 +5649,186 @@
       }
     ]
   },
+  "areaModel": {
+    "notes": "Not-to-scale partial-products area model: a rectangle cut into pieces, side lengths written along the top (columns) and left (rows), each piece holding its product, and an optional sum line. Unlike areaDiagram it is not drawn on a unit grid, so it covers mixed × mixed (2 1/4 × 3 2/3 → columns ['3','2/3'], rows ['2','1/4']) and multi-digit whole numbers (222 × 14 → columns ['200','20','2'], rows ['10','4']). Pieces default to the computed product of their side lengths (fractions improper, whole numbers with thousands separators); `cells` overrides them, e.g. to show '2 × 3 = 6'. Not to scale, bigger side lengths still get bigger pieces (compressed, as in a hand sketch). Fractions anywhere are typeset stacked.",
+    "fields": [
+      {
+        "name": "columns",
+        "type": "array",
+        "default": [
+          "3",
+          "2/3"
+        ],
+        "optional": false,
+        "description": "Side lengths across the top, one per column. Numbers, fractions ('2/3'), mixed numbers ('3 1/4') or text",
+        "itemSchema": {
+          "type": "string",
+          "description": "Column side length"
+        }
+      },
+      {
+        "name": "rows",
+        "type": "array",
+        "default": [
+          "2",
+          "1/4"
+        ],
+        "optional": false,
+        "description": "Side lengths down the left, one per row",
+        "itemSchema": {
+          "type": "string",
+          "description": "Row side length"
+        }
+      },
+      {
+        "name": "cells",
+        "type": "array",
+        "default": null,
+        "optional": true,
+        "description": "Text in each piece, row by row ([['6','4/3'],['3/4','1/6']]). Omit to compute each product from its row and column",
+        "itemSchema": {
+          "type": "array",
+          "description": "One row of piece texts"
+        }
+      },
+      {
+        "name": "showSum",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Print the sum line under the figure, e.g. '6 + 4/3 + 3/4 + 1/6 = 8 1/4'"
+      },
+      {
+        "name": "sumBy",
+        "type": "string",
+        "default": "cells",
+        "optional": true,
+        "description": "'cells' adds every piece; 'rows' adds each row first ('2,220 + 888 = 3,108')",
+        "options": [
+          "cells",
+          "rows"
+        ]
+      },
+      {
+        "name": "sum",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Explicit sum line text; wins over the computed one"
+      },
+      {
+        "name": "toScale",
+        "type": "boolean",
+        "default": false,
+        "optional": true,
+        "description": "Size pieces by their side lengths instead of fitting them to their text"
+      },
+      {
+        "name": "unitScale",
+        "type": "number",
+        "default": 0,
+        "optional": true,
+        "description": "Px per unit when toScale; 0 fits the columns to cellWidth each"
+      },
+      {
+        "name": "cellWidth",
+        "type": "number",
+        "default": 190,
+        "optional": true,
+        "description": "Width in px of the largest column when not to scale. Smaller side lengths get narrower columns, stepping down like a hand sketch (3 : 2/3 draws about 1 : 0.63; 200 : 20 : 2 about 1 : 0.63 : 0.45); every piece grows to fit its text"
+      },
+      {
+        "name": "cellHeight",
+        "type": "number",
+        "default": 90,
+        "optional": true,
+        "description": "Height in px of the largest row when not to scale"
+      },
+      {
+        "name": "lineStyle",
+        "type": "string",
+        "default": "solid",
+        "optional": true,
+        "description": "Lines between pieces",
+        "options": [
+          "solid",
+          "dashed"
+        ]
+      },
+      {
+        "name": "lineDash",
+        "type": "string",
+        "default": "7 6",
+        "optional": true,
+        "description": "Dash pattern when lineStyle is 'dashed'"
+      },
+      {
+        "name": "cellColors",
+        "type": "array",
+        "default": null,
+        "optional": true,
+        "description": "Piece fills row by row. Default: blue/yellow over green/pink for two columns; blue/yellow/green over purple/pink/cyan for wider models"
+      },
+      {
+        "name": "strokeColor",
+        "type": "string",
+        "default": "#222222",
+        "optional": true,
+        "description": "Outline and divider colour"
+      },
+      {
+        "name": "strokeWidth",
+        "type": "number",
+        "default": 2.5,
+        "optional": true,
+        "description": "Outline and divider width in px"
+      },
+      {
+        "name": "fontSize",
+        "type": "number",
+        "default": 20,
+        "optional": true,
+        "description": "Piece and sum-line font size"
+      },
+      {
+        "name": "labelFontSize",
+        "type": "number",
+        "default": 20,
+        "optional": true,
+        "description": "Side-length font size"
+      },
+      {
+        "name": "textColor",
+        "type": "string",
+        "default": "#222222",
+        "optional": true,
+        "description": "Text colour"
+      },
+      {
+        "name": "caption",
+        "type": "string",
+        "default": "",
+        "optional": true,
+        "description": "Small caption under the figure, e.g. 'not to scale'"
+      },
+      {
+        "name": "captionColor",
+        "type": "string",
+        "default": "#666666",
+        "optional": true,
+        "description": "Caption colour"
+      },
+      {
+        "name": "padding",
+        "type": "number",
+        "default": 8,
+        "optional": true,
+        "description": "Outer padding in px"
+      }
+    ]
+  },
   "fractionStrips": {
-    "notes": "Equal-sharing strip diagram: one whole strip per object, each partitioned by the number of sharers, with one share highlighted. Three sandwiches shared by five people is { strips: 3, parts: 5, shaded: 1 }. Vertical orientation with a separator renders the chocolate-bar model.",
+    "notes": "Equal-sharing strip diagram: one whole strip per object, each partitioned by the number of sharers, with one share highlighted. Three sandwiches shared by five people is { strips: 3, parts: 5, shaded: 1 }. Vertical orientation with a separator renders the chocolate-bar model. `subParts` mixes solid and dashed lines on one strip: solid thirds over dashed eighteenths.",
     "fields": [
       {
         "name": "strips",
@@ -5568,11 +5845,18 @@
         "description": "Equal parts each whole is cut into"
       },
       {
+        "name": "subParts",
+        "type": "number",
+        "default": 1,
+        "optional": true,
+        "description": "Cuts every part again into this many equal sub-parts. Part lines are then ruled solid and sub-part lines dashed, and `shaded` counts sub-parts: { parts: 3, subParts: 6, shaded: 1 } shades 1/18"
+      },
+      {
         "name": "shaded",
         "type": "number",
         "default": 1,
         "optional": true,
-        "description": "Shaded parts per strip"
+        "description": "Shaded pieces per strip (sub-parts when subParts > 1)"
       },
       {
         "name": "shadedList",
@@ -5664,7 +5948,14 @@
         "type": "string",
         "default": "6 5",
         "optional": true,
-        "description": "Dash pattern for the internal dividers; 'none' draws them solid"
+        "description": "Dash pattern for the part dividers when subParts is 1; 'none' draws them solid"
+      },
+      {
+        "name": "subPartDash",
+        "type": "string",
+        "default": "6 5",
+        "optional": true,
+        "description": "Dash pattern for the sub-part dividers; 'none' draws them solid"
       },
       {
         "name": "dividerColor",

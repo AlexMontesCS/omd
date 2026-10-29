@@ -76,7 +76,7 @@ A rectangle with optional side labels, center label, and outside labels.
 | `outsideRightLabel` | string | no | `''` | Text to the right of the right edge |
 | `labelFontSize` | number | no | `12` | Font size in pixels for all labels |
 
-Do not use a top-level `color` field.
+Do not use a top-level `color` field. Bare fractions in labels (`'2 1/4 ft'`, `'3/4'`) are typeset stacked, matching tape diagrams, tables and area models.
 
 ```js
 import { omdRectangle } from '@teachinglab/omd';

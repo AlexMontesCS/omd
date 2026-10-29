@@ -129,6 +129,8 @@ export class omdAreaDiagram extends jsvgGroup
         // ---- annotations ----------------------------------------------
         this.topBraces = [];
         this.leftBraces = [];
+        this.bottomBraces = [];
+        this.rightBraces = [];
         this.braceStyle = "brace";          // 'brace' | 'arrow'
         this.braceColor = "#111111";
         this.labelFontSize = 17;
@@ -141,9 +143,11 @@ export class omdAreaDiagram extends jsvgGroup
 
         // ---- decomposition (distributive property) --------------------
         this.decompose = false;
-        this.decomposeAxis = "auto";        // 'auto' | 'x' | 'y'
-        this.decomposeLabels = true;
-        this.decomposeColor = "#F6C177";
+        this.decomposeAxis = "auto";        // 'auto' | 'x' | 'y' | 'both'
+        this.readout = "full";              // 'full' | 'partials' | 'none'
+        this.decomposeColor = "#F6C177";    // fractional columns
+        this.decomposeRowColor = "#BFE3B4"; // fractional rows ('both')
+        this.decomposeCornerColor = "#F2B8B5"; // fraction x fraction ('both')
 
         // ---- interaction ----------------------------------------------
         this.interactive = false;
@@ -215,9 +219,13 @@ export class omdAreaDiagram extends jsvgGroup
         if ( data.expressionSuffix !== undefined ) this.expressionSuffix = String(data.expressionSuffix ?? "");
 
         if ( data.decompose !== undefined ) this.decompose = coerceBoolean(data.decompose, this.decompose);
-        if ( data.decomposeAxis !== undefined ) this.decomposeAxis = data.decomposeAxis;
-        if ( data.decomposeLabels !== undefined ) this.decomposeLabels = coerceBoolean(data.decomposeLabels, this.decomposeLabels);
+        if ( data.decomposeAxis !== undefined )
+            this.decomposeAxis = ["x", "y", "both"].includes(data.decomposeAxis) ? data.decomposeAxis : "auto";
+        if ( data.readout !== undefined )
+            this.readout = ["full", "partials", "none"].includes(data.readout) ? data.readout : "full";
         if ( data.decomposeColor !== undefined ) this.decomposeColor = optionalText(data.decomposeColor, this.decomposeColor);
+        if ( data.decomposeRowColor !== undefined ) this.decomposeRowColor = optionalText(data.decomposeRowColor, this.decomposeRowColor);
+        if ( data.decomposeCornerColor !== undefined ) this.decomposeCornerColor = optionalText(data.decomposeCornerColor, this.decomposeCornerColor);
 
         if ( data.interactive !== undefined ) this.interactive = coerceBoolean(data.interactive, this.interactive);
         if ( data.allowPaint !== undefined ) this.allowPaint = coerceBoolean(data.allowPaint, this.allowPaint);
@@ -231,6 +239,10 @@ export class omdAreaDiagram extends jsvgGroup
             this.topBraces = this._normalizeBraceSpec(data.topBraces ?? data.topBrace);
         if ( data.leftBraces !== undefined || data.leftBrace !== undefined )
             this.leftBraces = this._normalizeBraceSpec(data.leftBraces ?? data.leftBrace);
+        if ( data.bottomBraces !== undefined || data.bottomBrace !== undefined )
+            this.bottomBraces = this._normalizeBraceSpec(data.bottomBraces ?? data.bottomBrace);
+        if ( data.rightBraces !== undefined || data.rightBrace !== undefined )
+            this.rightBraces = this._normalizeBraceSpec(data.rightBraces ?? data.rightBrace);
 
         if ( data.showLabels === true &&
              data.topBrace === undefined && data.topBraces === undefined &&
@@ -476,19 +488,27 @@ export class omdAreaDiagram extends jsvgGroup
         const braceGap = 7;
         const labelGap = 7;
 
-        const topSpans = this._resolveSpans(this.topBraces, "x");
-        const leftSpans = this._resolveSpans(this.leftBraces, "y");
+        const sides = {
+            top: this._resolveSpans(this.topBraces, "x"),
+            bottom: this._resolveSpans(this.bottomBraces, "x"),
+            left: this._resolveSpans(this.leftBraces, "y"),
+            right: this._resolveSpans(this.rightBraces, "y"),
+        };
 
         // Measure labels first so the gutters are exactly as deep as needed.
-        const topLabels = topSpans.map((span) => this._makeSpanLabel(span));
-        const leftLabels = leftSpans.map((span) => this._makeSpanLabel(span));
-
-        const topLabelHeight = topLabels.reduce((max, label) => Math.max(max, label ? label.height : 0), 0);
-        const leftLabelWidth = leftLabels.reduce((max, label) => Math.max(max, label ? label.width : 0), 0);
+        const labels = {};
+        const gutter = {};
+        for ( const [side, spans] of Object.entries(sides) )
+        {
+            labels[side] = spans.map((span) => this._makeSpanLabel(span));
+            const across = side === "top" || side === "bottom" ? "height" : "width";
+            const labelSize = labels[side].reduce((max, label) => Math.max(max, label ? label[across] : 0), 0);
+            gutter[side] = spans.length ? braceGap + braceDepth + labelGap + labelSize : 0;
+        }
 
         const titleHeight = this.title ? this.titleFontSize + 16 : 0;
-        const originY = titleHeight + (topSpans.length ? braceGap + braceDepth + labelGap + topLabelHeight : 4);
-        const originX = leftSpans.length ? braceGap + braceDepth + labelGap + leftLabelWidth : 4;
+        const originY = titleHeight + (gutter.top || 4);
+        const originX = gutter.left || 4;
 
         const content = new jsvgGroup();
         content.setPosition(originX, originY);
@@ -522,25 +542,29 @@ export class omdAreaDiagram extends jsvgGroup
         this._drawUnitLines(content, gridW, gridH);
         this._drawBorder(content, gridW, gridH);
 
-        topSpans.forEach((span, index) => this._drawSpan(span, topLabels[index], {
-            axis: "x", braceDepth, braceGap, labelGap, originX, originY,
-        }));
-        leftSpans.forEach((span, index) => this._drawSpan(span, leftLabels[index], {
-            axis: "y", braceDepth, braceGap, labelGap, originX, originY,
-        }));
+        for ( const [side, spans] of Object.entries(sides) )
+        {
+            spans.forEach((span, index) => this._drawSpan(span, labels[side][index], {
+                side, braceDepth, braceGap, labelGap, originX, originY, gridW, gridH,
+            }));
+        }
 
-        let bottomY = originY + gridH;
+        let bottomY = originY + gridH + gutter.bottom;
+        // Readout lines start at the grid's left edge and may run wider than
+        // it, so the figure grows to fit them.
+        let flowRight = 0;
         const addFlowLabel = (markup, fontSize, centered) => {
             const label = makeMathLabel(markup, { fontSize });
             const x = centered ? originX + Math.max(0, (gridW - label.width) / 2) : originX;
             label.setPosition(x, bottomY + 14);
             this.addChild(label);
             bottomY += 14 + label.height;
+            flowRight = Math.max(flowRight, x + label.width);
             return label;
         };
 
-        if ( decomposition && this.decomposeLabels )
-            addFlowLabel(decomposition.markup, this.labelFontSize, false);
+        if ( decomposition && this.readout !== "none" )
+            addFlowLabel(this.readout === "partials" ? decomposition.partials : decomposition.full, this.labelFontSize, false);
 
         if ( this.showAreaLabel )
         {
@@ -570,16 +594,19 @@ export class omdAreaDiagram extends jsvgGroup
         if ( this.inputs.length )
             bottomY = this._drawInputs(originX, bottomY + 16, Math.max(gridW, 340));
 
-        // Top-brace labels can overhang the grid on either side.
+        // Brace labels above and below can overhang the grid on either side.
         let leftExtent = 0;
-        let rightExtent = originX + gridW;
-        topSpans.forEach((span, index) => {
-            const label = topLabels[index];
-            if ( !label ) return;
-            const cx = originX + (ratValue(span.from) + ratValue(span.to)) / 2 * unit;
-            leftExtent = Math.min(leftExtent, cx - label.width / 2);
-            rightExtent = Math.max(rightExtent, cx + label.width / 2);
-        });
+        let rightExtent = Math.max(originX + gridW + gutter.right, flowRight);
+        for ( const side of ["top", "bottom"] )
+        {
+            sides[side].forEach((span, index) => {
+                const label = labels[side][index];
+                if ( !label ) return;
+                const cx = originX + (ratValue(span.from) + ratValue(span.to)) / 2 * unit;
+                leftExtent = Math.min(leftExtent, cx - label.width / 2);
+                rightExtent = Math.max(rightExtent, cx + label.width / 2);
+            });
+        }
 
         if ( leftExtent < 0 )
         {
@@ -630,60 +657,71 @@ export class omdAreaDiagram extends jsvgGroup
         return makeMathLabel(span.label, { fontSize: this.labelFontSize });
     }
 
+    /** One brace or arrow on any side of the grid, its label just outside the tip. */
     _drawSpan(span, label, options)
     {
-        const { axis, braceDepth, braceGap, labelGap, originX, originY } = options;
+        const { side, braceDepth, braceGap, labelGap, originX, originY, gridW, gridH } = options;
         const unit = this.unitScale;
         const color = this.braceColor;
+        const horizontal = side === "top" || side === "bottom";
+        const outward = side === "top" || side === "left" ? -1 : 1;
         let tipX;
         let tipY;
 
-        if ( axis === "x" )
+        if ( horizontal )
         {
             const x1 = originX + ratValue(span.from) * unit;
             const x2 = originX + ratValue(span.to) * unit;
-            const y = originY - braceGap;
+            const y = side === "top" ? originY - braceGap : originY + gridH + braceGap;
 
             if ( span.style === "arrow" )
             {
-                const arrow = makeArrowDimension(x1, y - braceDepth, x2, y - braceDepth, { color });
+                const arrowY = y + outward * braceDepth;
+                const arrow = makeArrowDimension(x1, arrowY, x2, arrowY, { color });
                 this.addChild(arrow.group);
                 tipX = arrow.tipX;
-                tipY = y - braceDepth;
+                tipY = arrowY;
             }
             else
             {
-                // Right-to-left endpoints put the brace tip above the figure.
-                const brace = makeBrace(x2, y, x1, y, { depth: braceDepth, color });
+                // The tip sits on the left of the drawing direction: right-to-left
+                // points it up, left-to-right points it down.
+                const brace = side === "top"
+                    ? makeBrace(x2, y, x1, y, { depth: braceDepth, color })
+                    : makeBrace(x1, y, x2, y, { depth: braceDepth, color });
                 this.addChild(brace.path);
                 tipX = brace.tipX;
                 tipY = brace.tipY;
             }
 
-            if ( label ) centerMathLabel(label, tipX, tipY - labelGap - label.height / 2);
+            if ( label ) centerMathLabel(label, tipX, tipY + outward * (labelGap + label.height / 2));
         }
         else
         {
             const y1 = originY + ratValue(span.from) * unit;
             const y2 = originY + ratValue(span.to) * unit;
-            const x = originX - braceGap;
+            const x = side === "left" ? originX - braceGap : originX + gridW + braceGap;
 
             if ( span.style === "arrow" )
             {
-                const arrow = makeArrowDimension(x - braceDepth, y1, x - braceDepth, y2, { color });
+                const arrowX = x + outward * braceDepth;
+                const arrow = makeArrowDimension(arrowX, y1, arrowX, y2, { color });
                 this.addChild(arrow.group);
-                tipX = x - braceDepth;
+                tipX = arrowX;
                 tipY = arrow.tipY;
             }
             else
             {
-                const brace = makeBrace(x, y1, x, y2, { depth: braceDepth, color });
+                // Top-to-bottom points the tip left, bottom-to-top points it right.
+                const brace = side === "left"
+                    ? makeBrace(x, y1, x, y2, { depth: braceDepth, color })
+                    : makeBrace(x, y2, x, y1, { depth: braceDepth, color });
                 this.addChild(brace.path);
                 tipX = brace.tipX;
                 tipY = brace.tipY;
             }
 
-            if ( label ) centerMathLabel(label, tipX - labelGap - label.width / 2, tipY);
+            if ( label ) centerMathLabel(label, tipX + outward * (labelGap + label.width / 2), tipY);
         }
 
         if ( label ) this.addChild(label);
@@ -858,9 +896,10 @@ export class omdAreaDiagram extends jsvgGroup
     }
 
     /**
-     * Distributive-property overlay: tints the fractional part of the shaded
-     * region, rules the split, and returns the partial-product markup, e.g.
-     * 2 x 3 2/5 -> "(2 x 3) + (2 x 2/5)".
+     * Distributive-property overlay: tints the fractional parts of the shaded
+     * region, rules the splits, and returns the readout markup, e.g.
+     * 2 x 3 2/5 -> "(2 x 3) + (2 x 2/5)". With decomposeAxis 'both' each
+     * mixed side splits into whole + fraction, giving four partial products.
      */
     _drawDecomposition(content)
     {
@@ -870,49 +909,73 @@ export class omdAreaDiagram extends jsvgGroup
         const w = this.getShadeWidth();
         const h = this.getShadeHeight();
 
-        let axis = this.decomposeAxis;
-        if ( axis !== "x" && axis !== "y" ) axis = w.d > 1 ? "x" : "y";
+        const splitMixed = (r) => {
+            const whole = makeRational(Math.floor(r.n / r.d), 1);
+            const rest = ratSub(r, whole);
+            return whole.n > 0 && rest.n > 0 ? [whole, rest] : null;
+        };
 
-        const along = axis === "x" ? w : h;
-        const other = axis === "x" ? h : w;
-        const whole = makeRational(Math.floor(along.n / along.d), 1);
-        const rest = ratSub(along, whole);
-        if ( whole.n <= 0 || rest.n <= 0 ) return null;
+        const axis = this.decomposeAxis === "auto" ? (w.d > 1 ? "x" : "y") : this.decomposeAxis;
+        const columnSplit = axis === "x" || axis === "both" ? splitMixed(w) : null;
+        const rowSplit = axis === "y" || axis === "both" ? splitMixed(h) : null;
+        if ( !columnSplit && !rowSplit ) return null;
 
-        const splitPx = ratValue(whole) * unit;
+        const columnPieces = columnSplit ?? [w];
+        const rowPieces = rowSplit ?? [h];
         const wPx = ratValue(w) * unit;
         const hPx = ratValue(h) * unit;
+        const splitXPx = columnSplit ? ratValue(columnSplit[0]) * unit : wPx;
+        const splitYPx = rowSplit ? ratValue(rowSplit[0]) * unit : hPx;
 
-        const tint = new jsvgRect();
-        if ( axis === "x" )
+        // The whole x whole piece keeps the shade colour; every piece with a
+        // fractional side gets a tint, the fraction x fraction corner its own.
+        const addTint = (x, y, width, height, color) => {
+            const tint = new jsvgRect();
+            tint.setWidthAndHeight(width, height);
+            tint.setPosition(x, y);
+            tint.setFillColor(color);
+            tint.setStrokeWidth(0);
+            content.addChild(tint);
+        };
+        const rowColor = columnSplit ? this.decomposeRowColor : this.decomposeColor;
+        if ( columnSplit ) addTint(splitXPx, 0, wPx - splitXPx, splitYPx, this.decomposeColor);
+        if ( rowSplit ) addTint(0, splitYPx, splitXPx, hPx - splitYPx, rowColor);
+        if ( columnSplit && rowSplit ) addTint(splitXPx, splitYPx, wPx - splitXPx, hPx - splitYPx, this.decomposeCornerColor);
+
+        const addDivider = (x1, y1, x2, y2) => {
+            const divider = new jsvgLine();
+            divider.setEndpoints(x1, y1, x2, y2);
+            divider.setStrokeColor("#9F2F2D");
+            divider.setStrokeWidth(3);
+            content.addChild(divider);
+        };
+        if ( columnSplit ) addDivider(splitXPx, 0, splitXPx, hPx);
+        if ( rowSplit ) addDivider(0, splitYPx, wPx, splitYPx);
+
+        // Factor order follows the single-axis convention — the unsplit side
+        // first — and reads row by row once both sides split.
+        const factors = [];
+        if ( columnSplit )
         {
-            tint.setWidthAndHeight(wPx - splitPx, hPx);
-            tint.setPosition(splitPx, 0);
+            for ( const rowPiece of rowPieces )
+                for ( const columnPiece of columnPieces ) factors.push([rowPiece, columnPiece]);
         }
         else
         {
-            tint.setWidthAndHeight(wPx, hPx - splitPx);
-            tint.setPosition(0, splitPx);
+            for ( const rowPiece of rowPieces ) factors.push([w, rowPiece]);
         }
-        tint.setFillColor(this.decomposeColor);
-        tint.setStrokeWidth(0);
-        content.addChild(tint);
 
-        const divider = new jsvgLine();
-        if ( axis === "x" ) divider.setEndpoints(splitPx, 0, splitPx, hPx);
-        else divider.setEndpoints(0, splitPx, wPx, splitPx);
-        divider.setStrokeColor("#9F2F2D");
-        divider.setStrokeWidth(3);
-        content.addChild(divider);
-
-        const first = `(${formatRationalMarkup(other)} \u00d7 ${formatRationalMarkup(whole)})`;
-        const second = `(${formatRationalMarkup(other)} \u00d7 ${formatRationalMarkup(rest)})`;
-        const total = ratAdd(ratMul(other, whole), ratMul(other, rest));
+        const partials = factors
+            .map(([a, b]) => `(${formatRationalMarkup(a)} \u00d7 ${formatRationalMarkup(b)})`)
+            .join(" + ");
+        const products = factors.map(([a, b]) => ratMul(a, b));
+        const total = products.reduce((sum, product) => ratAdd(sum, product), { n: 0, d: 1 });
 
         return {
-            axis, whole, rest,
-            markup: `${first} + ${second} = ${formatRationalMarkup(ratMul(other, whole))}` +
-                ` + ${formatRationalMarkup(ratMul(other, rest))} = ${formatRationalMarkup(total)}`,
+            axis,
+            partials,
+            full: `${partials} = ${products.map((product) => formatRationalMarkup(product)).join(" + ")}` +
+                ` = ${formatRationalMarkup(total)}`,
         };
     }
 

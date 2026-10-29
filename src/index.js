@@ -5,6 +5,7 @@ export { omdCoordinatePlane } from './visualizations/omdCoordinatePlane.js';
 export { omdTapeDiagram } from './visualizations/omdTapeDiagram.js';
 export { omdDoubleTapeDiagram } from './visualizations/omdDoubleTapeDiagram.js';
 export { omdAreaDiagram } from './visualizations/omdAreaDiagram.js';
+export { omdAreaModel } from './visualizations/omdAreaModel.js';
 export { omdFractionStrips } from './visualizations/omdFractionStrips.js';
 export { omdFractionCircle } from './visualizations/omdFractionCircle.js';
 export { omdTileEquation } from './visualizations/omdTileEquation.js';

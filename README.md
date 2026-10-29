@@ -136,6 +136,7 @@ expr.hideBackgroundByDefault();       // transparent background
 | Class | Description |
 |---|---|
 | `omdAreaDiagram` | Area model with fractional side lengths; shadeable, draggable, answerable |
+| `omdAreaModel` | Not-to-scale partial-products area model — mixed × mixed or multi-digit whole numbers, with a sum line |
 | `omdFractionStrips` | Equal-sharing strips — `a ÷ b` and `a × 1/b` on one diagram |
 | `omdFractionCircle` | Circles cut into equal wedges |
 

@@ -11,6 +11,9 @@
  * Vertical orientation with a separator renders the chocolate-bar model
  * (four bars of fifths, three fifths eaten from each).
  *
+ * `subParts` cuts every part again: { strips: 1, parts: 3, subParts: 6,
+ * shaded: 1 } rules solid thirds over dashed eighteenths and shades 1/18.
+ *
  * State leaves through `onChange(payload)` and the DOM event
  * `omd-fractionstrips-change`.
  */
@@ -61,7 +64,8 @@ export class omdFractionStrips extends jsvgGroup
 
         this.strips = 3;
         this.parts = 5;
-        this.shaded = 1;                 // shaded parts per strip
+        this.subParts = 1;               // equal sub-parts per part; >1 rules parts solid, sub-parts dashed
+        this.shaded = 1;                 // shaded cells per strip (sub-parts when subParts > 1)
         this.shadedList = null;          // per-strip override
         this.orientation = "horizontal";
         this.fillFrom = "start";         // 'start' | 'end'
@@ -76,7 +80,8 @@ export class omdFractionStrips extends jsvgGroup
         this.strokeWidth = 2.5;
         this.dividerColor = "#111111";
         this.dividerWidth = 1.8;
-        this.dividerDash = "6 5";
+        this.dividerDash = "6 5";        // part lines when subParts is 1
+        this.subPartDash = "6 5";        // sub-part lines; part lines are then solid
         this.cornerRadius = 3;
 
         this.brace = "1";                // label under the whole; false to hide
@@ -103,6 +108,7 @@ export class omdFractionStrips extends jsvgGroup
 
         if ( data.strips !== undefined ) this.strips = positiveInteger(data.strips, this.strips);
         if ( data.parts !== undefined ) this.parts = positiveInteger(data.parts, this.parts);
+        if ( data.subParts !== undefined ) this.subParts = positiveInteger(data.subParts, this.subParts);
         if ( data.shaded !== undefined ) this.shaded = nonNegativeInteger(data.shaded, this.shaded);
         if ( Array.isArray(data.shadedList) ) this.shadedList = data.shadedList.map((v) => nonNegativeInteger(v, 0));
 
@@ -121,6 +127,7 @@ export class omdFractionStrips extends jsvgGroup
         if ( data.dividerColor !== undefined ) this.dividerColor = optionalText(data.dividerColor, this.dividerColor);
         if ( data.dividerWidth !== undefined ) this.dividerWidth = positiveNumber(data.dividerWidth, this.dividerWidth);
         if ( data.dividerDash !== undefined ) this.dividerDash = optionalText(data.dividerDash, this.dividerDash);
+        if ( data.subPartDash !== undefined ) this.subPartDash = optionalText(data.subPartDash, this.subPartDash);
         if ( data.cornerRadius !== undefined ) this.cornerRadius = Number(data.cornerRadius) || 0;
 
         if ( data.brace !== undefined ) this.brace = data.brace === false ? false : String(data.brace);
@@ -145,11 +152,17 @@ export class omdFractionStrips extends jsvgGroup
 
     /* ================= state ================= */
 
+    /** Smallest pieces each strip is cut into: parts x subParts. */
+    _cellCount()
+    {
+        return this.parts * this.subParts;
+    }
+
     _shadedCountFor(stripIndex)
     {
         if ( Array.isArray(this.shadedList) )
-            return Math.min(this.parts, this.shadedList[stripIndex] ?? 0);
-        return Math.min(this.parts, this.shaded);
+            return Math.min(this._cellCount(), this.shadedList[stripIndex] ?? 0);
+        return Math.min(this._cellCount(), this.shaded);
     }
 
     _ensureCellSet()
@@ -162,7 +175,7 @@ export class omdFractionStrips extends jsvgGroup
             const count = this._shadedCountFor(s);
             for ( let k = 0; k < count; k++ )
             {
-                const index = this.fillFrom === "end" ? this.parts - 1 - k : k;
+                const index = this.fillFrom === "end" ? this._cellCount() - 1 - k : k;
                 cells.add(`${s},${index}`);
             }
         }
@@ -173,22 +186,22 @@ export class omdFractionStrips extends jsvgGroup
     /** Total shaded amount in wholes, exact and reduced. */
     getTotal()
     {
-        return makeRational(this._ensureCellSet().size, this.parts);
+        return makeRational(this._ensureCellSet().size, this._cellCount());
     }
 
     /**
-     * Total as the diagram literally reads it: shaded parts over partitions,
-     * unreduced. 10 shaded sixths displays as 10/6, not 5/3.
+     * Total as the diagram literally reads it: shaded pieces over pieces per
+     * strip, unreduced. 10 shaded sixths displays as 10/6, not 5/3.
      */
     getTotalAsDrawn()
     {
-        return { n: this._ensureCellSet().size, d: this.parts };
+        return { n: this._ensureCellSet().size, d: this._cellCount() };
     }
 
     /** Amount shaded on a single strip, as drawn. */
     getPerStrip()
     {
-        return { n: this._shadedCountFor(0), d: this.parts };
+        return { n: this._shadedCountFor(0), d: this._cellCount() };
     }
 
     getState()
@@ -197,6 +210,7 @@ export class omdFractionStrips extends jsvgGroup
         return {
             strips: this.strips,
             parts: this.parts,
+            subParts: this.subParts,
             shadedCells: Array.from(this._ensureCellSet()),
             shadedCount: this._ensureCellSet().size,
             total: formatRationalText(total),
@@ -227,7 +241,7 @@ export class omdFractionStrips extends jsvgGroup
         this.removeAllChildren();
 
         const horizontal = this.orientation === "horizontal";
-        const partLength = this.stripLength / this.parts;
+        const cellLength = this.stripLength / this._cellCount();
         const braceDepth = 11;
         const braceGap = 8;
         const labelGap = 6;
@@ -267,7 +281,7 @@ export class omdFractionStrips extends jsvgGroup
         this.addChild(content);
 
         this._shadeLayer = new jsvgGroup();
-        this._metrics = { horizontal, partLength, stripW, stripH, step, originX, originY };
+        this._metrics = { horizontal, cellLength, stripW, stripH, step, originX, originY };
 
         // Shade layer sits under the rules so dividers stay legible.
         content.addChild(this._shadeLayer);
@@ -279,23 +293,29 @@ export class omdFractionStrips extends jsvgGroup
         {
             const { x, y } = this._stripOrigin(s);
 
-            for ( let k = 1; k < this.parts; k++ )
+            for ( let k = 1; k < this._cellCount(); k++ )
             {
+                // With sub-parts, part boundaries are solid at outline weight so
+                // the unit fractions still read through the dashed sub-parts.
+                const partBoundary = k % this.subParts === 0;
+                const solidPart = partBoundary && this.subParts > 1;
+                const dash = partBoundary ? (solidPart ? "none" : this.dividerDash) : this.subPartDash;
+
                 const divider = new jsvgLine();
                 if ( horizontal )
                 {
-                    const dx = x + k * partLength;
+                    const dx = x + k * cellLength;
                     divider.setEndpoints(dx, y, dx, y + stripH);
                 }
                 else
                 {
-                    const dy = y + k * partLength;
+                    const dy = y + k * cellLength;
                     divider.setEndpoints(x, dy, x + stripW, dy);
                 }
-                divider.setStrokeColor(this.dividerColor);
-                divider.setStrokeWidth(this.dividerWidth);
-                if ( this.dividerDash !== "none" )
-                    divider.svgObject.setAttribute("stroke-dasharray", this.dividerDash);
+                divider.setStrokeColor(solidPart ? this.strokeColor : this.dividerColor);
+                divider.setStrokeWidth(solidPart ? this.strokeWidth : this.dividerWidth);
+                if ( dash !== "none" )
+                    divider.svgObject.setAttribute("stroke-dasharray", dash);
                 content.addChild(divider);
             }
 
@@ -394,25 +414,25 @@ export class omdFractionStrips extends jsvgGroup
         if ( !layer ) return;
         layer.removeAllChildren();
 
-        const { horizontal, partLength, stripW, stripH } = this._metrics;
+        const { horizontal, cellLength, stripW, stripH } = this._metrics;
 
         for ( const key of this._ensureCellSet() )
         {
             const [s, k] = key.split(",").map(Number);
-            if ( !(s >= 0 && s < this.strips && k >= 0 && k < this.parts) ) continue;
+            if ( !(s >= 0 && s < this.strips && k >= 0 && k < this._cellCount()) ) continue;
 
             const { x, y } = this._stripOrigin(s);
             const rect = new jsvgRect();
 
             if ( horizontal )
             {
-                rect.setWidthAndHeight(partLength, stripH);
-                rect.setPosition(x + k * partLength, y);
+                rect.setWidthAndHeight(cellLength, stripH);
+                rect.setPosition(x + k * cellLength, y);
             }
             else
             {
-                rect.setWidthAndHeight(stripW, partLength);
-                rect.setPosition(x, y + k * partLength);
+                rect.setWidthAndHeight(stripW, cellLength);
+                rect.setPosition(x, y + k * cellLength);
             }
 
             rect.setFillColor(this.shadeColor);
@@ -444,7 +464,7 @@ export class omdFractionStrips extends jsvgGroup
 
     _cellAt(localX, localY)
     {
-        const { horizontal, partLength, stripW, stripH } = this._metrics;
+        const { horizontal, cellLength, stripW, stripH } = this._metrics;
 
         for ( let s = 0; s < this.strips; s++ )
         {
@@ -452,8 +472,8 @@ export class omdFractionStrips extends jsvgGroup
             if ( localX < x || localX > x + stripW || localY < y || localY > y + stripH ) continue;
 
             const offset = horizontal ? localX - x : localY - y;
-            const k = Math.floor(offset / partLength);
-            if ( k < 0 || k >= this.parts ) return null;
+            const k = Math.floor(offset / cellLength);
+            if ( k < 0 || k >= this._cellCount() ) return null;
             return `${s},${k}`;
         }
         return null;

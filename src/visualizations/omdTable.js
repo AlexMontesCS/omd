@@ -1,6 +1,7 @@
 import { omdColor } from "../omdConstants.js";
 import { jsvgGroup, jsvgRect, jsvgTextBox, jsvgClipMask } from "@teachinglab/jsvg";
 import { math } from "../math.js";
+import { makeFractionTextLabel } from "./omdFractionTypeset.js";
 
 export class omdTable extends jsvgGroup
 {
@@ -393,10 +394,11 @@ export class omdTable extends jsvgGroup
                 tableContentGroup.addChild(headerRect);
             }
             
+            // Only a missing header gets a placeholder; "" is a deliberately blank corner.
             const headerText = this.createHeaderTextBox(
                 cellWidth,
                 this.headerHeight,
-                this.headers[col] || `Col ${col + 1}`
+                this.headers[col] ?? `Col ${col + 1}`
             );
             headerText.setPosition(currentX, headerY);
             tableContentGroup.addChild(headerText);
@@ -445,8 +447,7 @@ export class omdTable extends jsvgGroup
                         cellValue,
                     );
                 } else {
-                    const cellText = this.createBodyTextBox(cellWidth, this.cellHeight, "");
-                    cellText.setText((cellValue ?? '').toString());
+                    const cellText = this.createBodyTextBox(cellWidth, this.cellHeight, (cellValue ?? '').toString());
                     cellText.setPosition(currentX, rowY);
                     tableContentGroup.addChild(cellText);
                 }
@@ -477,6 +478,9 @@ export class omdTable extends jsvgGroup
 
     // ===== Helpers for consistent styling (match other components) =====
     createHeaderTextBox(width, height, text) {
+        const stacked = this.createStackedCellText(width, height, text, this.headerFontFamily, this.headerFontSize, 600);
+        if (stacked) return stacked;
+
         const tb = new jsvgTextBox();
         tb.setWidthAndHeight(width, height);
         tb.setText(text);
@@ -490,6 +494,9 @@ export class omdTable extends jsvgGroup
     }
 
     createBodyTextBox(width, height, text) {
+        const stacked = this.createStackedCellText(width, height, text, this.fontFamily, this.fontSize, 400);
+        if (stacked) return stacked;
+
         const tb = new jsvgTextBox({ translateMirror: true });
         tb.setWidthAndHeight(width, height);
         tb.setText(text);
@@ -500,6 +507,22 @@ export class omdTable extends jsvgGroup
         tb.setVerticalCentering();
         tb.setFontWeight(400);
         return tb;
+    }
+
+    /**
+     * Cell text holding a fraction ("3/4", "1 1/2") is typeset stacked, like
+     * every other OMD label. Returned as a cell-sized group so callers place it
+     * by its top-left corner exactly like a text box; null for plain text.
+     */
+    createStackedCellText(width, height, text, fontFamily, fontSize, fontWeight) {
+        const label = makeFractionTextLabel(text, { fontSize, color: "black", fontFamily, fontWeight });
+        if (!label) return null;
+
+        const cell = new jsvgGroup();
+        cell.setWidthAndHeight(width, height);
+        label.setPosition(width / 2, height / 2);
+        cell.addChild(label);
+        return cell;
     }
 
     addRow( rowData )

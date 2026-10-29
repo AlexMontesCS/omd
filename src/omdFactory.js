@@ -55,6 +55,7 @@ import { omdFractionAreaModel } from './visualizations/omdFractionAreaModel.js';
 import { omdMathText } from './visualizations/omdMathText.js';
 import { omdLinePlot } from './visualizations/omdLinePlot.js';
 import { omdAreaDiagram } from './visualizations/omdAreaDiagram.js';
+import { omdAreaModel } from './visualizations/omdAreaModel.js';
 import { omdFractionStrips } from './visualizations/omdFractionStrips.js';
 import { omdFractionCircle } from './visualizations/omdFractionCircle.js';
 
@@ -96,6 +97,7 @@ const OMD_TYPE_MAP = {
     'mathText': omdMathText,
     'linePlot': omdLinePlot,
     'areaDiagram': omdAreaDiagram,
+    'areaModel': omdAreaModel,
     'fractionStrips': omdFractionStrips,
     'fractionCircle': omdFractionCircle,
     'label': omdLabel,

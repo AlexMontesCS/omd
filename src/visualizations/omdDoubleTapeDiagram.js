@@ -15,6 +15,7 @@ export class omdDoubleTapeDiagram extends jsvgGroup
         this.bottomTapeDiagram = new omdTapeDiagram();
         
         this.spacing = 30;
+        this.totalWidth = 300;      // px width of the longer tape
         
         this.updateLayout();
     }
@@ -34,6 +35,18 @@ export class omdDoubleTapeDiagram extends jsvgGroup
             this.bottomTapeDiagram.loadFromJSON(data.bottomTapeDiagram);
         }
 
+        // The tapes share one unit width, so a single width drives both: the
+        // top-level totalWidth, else the widest totalWidth set on either tape.
+        const tapeWidths = [data.topTapeDiagram?.totalWidth, data.bottomTapeDiagram?.totalWidth]
+            .map(Number)
+            .filter((width) => Number.isFinite(width) && width > 0);
+        const requestedWidth = Number(data.totalWidth);
+        if ( Number.isFinite(requestedWidth) && requestedWidth > 0 ) {
+            this.totalWidth = requestedWidth;
+        } else if ( tapeWidths.length ) {
+            this.totalWidth = Math.max(...tapeWidths);
+        }
+
         this.updateLayout();
     }
 
@@ -47,8 +60,7 @@ export class omdDoubleTapeDiagram extends jsvgGroup
         
         // Find the maximum total to determine a consistent unit width
         const maxTotal = Math.max(topTotal, bottomTotal);
-        const baseWidth = 300; // Base width for the longest tape
-        const unitWidth = maxTotal > 0 ? baseWidth / maxTotal : baseWidth;
+        const unitWidth = maxTotal > 0 ? this.totalWidth / maxTotal : this.totalWidth;
         
         // Set each tape's width based on its total value
         this.topTapeDiagram.totalWidth = topTotal * unitWidth;

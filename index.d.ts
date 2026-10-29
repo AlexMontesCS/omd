@@ -42,6 +42,7 @@ export type OmdConstructibleType =
   | "mathText"
   | "linePlot"
   | "areaDiagram"
+  | "areaModel"
   | "fractionStrips"
   | "fractionCircle"
   | "label";
@@ -406,22 +407,29 @@ export interface OmdCoordinatePlaneJson {
 }
 
 export interface OmdTapeValue {
-  value?: number;
-  label?: string;
+  /** Segment text; bare fractions ("3/10", "4 1/2") are typeset stacked. */
+  value?: number | string;
+  /** Relative width; defaults to the numeric value, else 1. */
+  weight?: number;
+  showLabel?: boolean;
   color?: string;
-  fillColor?: string;
-  text?: string;
-  [key: string]: unknown;
+  textColor?: string;
+  strokeColor?: string;
+  strokeWidth?: number;
+  /** Equal parts drawn as dashed lines inside the segment. */
+  parts?: number;
 }
 
 export interface OmdTapeLabel {
-  from?: number;
-  to?: number;
+  /** First segment the brace covers (0-based). */
+  startIndex: number;
+  /** One past the last segment covered: `{ startIndex: 0, endIndex: 1 }` spans segment 0. */
+  endIndex: number;
   label?: string;
-  text?: string;
+  showBelow?: boolean;
   color?: string;
-  position?: "top" | "bottom" | string;
-  [key: string]: unknown;
+  fontSize?: number;
+  strokeWidth?: number;
 }
 
 export interface OmdTapeDiagramJson {
@@ -438,7 +446,10 @@ export interface OmdTapeDiagramJson {
   segmentTextColor?: string;
   braceLabelFontSize?: number;
   braceColor?: string;
+  /** SVG dash pattern for segment `parts`, or "none" for solid. */
+  partDash?: string;
   values?: Array<number | string | OmdTapeValue>;
+  /** A plain array of braces — not `{ braces: [...] }`. */
   labelSet?: OmdTapeLabel[];
 }
 
@@ -447,6 +458,8 @@ export interface OmdDoubleTapeDiagramJson {
   topTapeDiagram?: OmdLoadData<OmdTapeDiagramJson>;
   bottomTapeDiagram?: OmdLoadData<OmdTapeDiagramJson>;
   spacing?: number;
+  /** Width of the longer tape in px; defaults to the widest tape `totalWidth`, else 300. */
+  totalWidth?: number;
 }
 
 export interface OmdNumberTileJson {
@@ -781,6 +794,7 @@ export type OmdJson =
   | OmdMathTextJson
   | OmdLinePlotJson
   | OmdAreaDiagramJson
+  | OmdAreaModelJson
   | OmdFractionStripsJson
   | OmdFractionCircleJson
   | OmdLabelJson;
@@ -1190,8 +1204,12 @@ export interface OmdAreaDiagramJson {
   rowPartitionScope?: OmdPartitionScope;
   topBrace?: OmdBraceSpec;
   leftBrace?: OmdBraceSpec;
+  bottomBrace?: OmdBraceSpec;
+  rightBrace?: OmdBraceSpec;
   topBraces?: OmdBraceSpec;
   leftBraces?: OmdBraceSpec;
+  bottomBraces?: OmdBraceSpec;
+  rightBraces?: OmdBraceSpec;
   /** Shorthand for `topBrace: 'shaded'` and `leftBrace: 'shaded'`. */
   showLabels?: boolean;
   braceStyle?: "brace" | "arrow";
@@ -1204,9 +1222,16 @@ export interface OmdAreaDiagramJson {
   expressionLine?: boolean;
   expressionSuffix?: string;
   decompose?: boolean;
-  decomposeAxis?: "auto" | "x" | "y";
-  decomposeLabels?: boolean;
+  /** "both" splits both mixed sides into whole + fraction: four partial products. */
+  decomposeAxis?: "auto" | "x" | "y" | "both";
+  /** Decomposition line: the whole equation, the partial products only, or nothing. */
+  readout?: "full" | "partials" | "none";
+  /** Tint for the fractional columns (and the fractional rows when only rows split). */
   decomposeColor?: string;
+  /** Tint for the fractional rows when both sides split. */
+  decomposeRowColor?: string;
+  /** Tint for the fraction × fraction piece when both sides split. */
+  decomposeCornerColor?: string;
   interactive?: boolean;
   allowPaint?: boolean;
   allowResize?: boolean;
@@ -1231,9 +1256,52 @@ export declare class omdAreaDiagram extends OmdComponentBase {
   checkAll(): Record<string, "correct" | "incorrect" | null>;
 }
 
+export interface OmdAreaModelJson {
+  omdType: "areaModel";
+  /** Side lengths across the top, one per column: "3", "2/3", "200". */
+  columns: ReadonlyArray<string | number>;
+  /** Side lengths down the left, one per row. */
+  rows: ReadonlyArray<string | number>;
+  /** Text in each piece, row by row; computed products when omitted. */
+  cells?: ReadonlyArray<ReadonlyArray<string | number>>;
+  /** Sum line under the figure. */
+  showSum?: boolean;
+  /** "rows" adds each row first: "2,220 + 888 = 3,108". */
+  sumBy?: "cells" | "rows";
+  /** Explicit sum line; wins over the computed one. */
+  sum?: string;
+  /** Size pieces by their side lengths instead of by their text. */
+  toScale?: boolean;
+  /** px per unit when `toScale`; 0 fits the columns to `cellWidth` each. */
+  unitScale?: number;
+  /** Width of the largest column when not to scale; smaller side lengths get narrower (compressed, not proportional) columns. */
+  cellWidth?: number;
+  /** Height of the largest row when not to scale. */
+  cellHeight?: number;
+  lineStyle?: "solid" | "dashed";
+  lineDash?: string;
+  cellColors?: ReadonlyArray<ReadonlyArray<string>> | null;
+  strokeColor?: string;
+  strokeWidth?: number;
+  fontSize?: number;
+  labelFontSize?: number;
+  textColor?: string;
+  caption?: string;
+  captionColor?: string;
+  padding?: number;
+}
+
+export declare class omdAreaModel extends OmdComponentBase {
+  constructor();
+  loadFromJSON(data: OmdLoadData<OmdAreaModelJson>): void;
+  getCells(): string[][];
+  getSumText(): string;
+}
+
 export interface OmdFractionStripsState {
   strips: number;
   parts: number;
+  subParts: number;
   shadedCells: string[];
   shadedCount: number;
   total: string;
@@ -1247,8 +1315,10 @@ export interface OmdFractionStripsJson {
   strips?: number;
   /** Equal parts each whole is cut into. */
   parts?: number;
-  /** Shaded parts per whole. */
+  /** Shaded pieces per whole (sub-parts when `subParts` > 1). */
   shaded?: number;
+  /** Cuts every part again; parts are then ruled solid, sub-parts dashed. */
+  subParts?: number;
   shadedList?: readonly number[];
   shadedCells?: ReadonlyArray<[number, number] | string>;
   orientation?: "horizontal" | "vertical";
@@ -1262,8 +1332,10 @@ export interface OmdFractionStripsJson {
   strokeWidth?: number;
   dividerColor?: string;
   dividerWidth?: number;
-  /** SVG dash pattern, or "none" for solid dividers. */
+  /** SVG dash pattern for part lines when `subParts` is 1, or "none" for solid. */
   dividerDash?: string;
+  /** SVG dash pattern for sub-part lines. */
+  subPartDash?: string;
   cornerRadius?: number;
   /** Label under the whole; false hides the brace. */
   brace?: string | false;

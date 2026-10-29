@@ -1,5 +1,8 @@
 import { omdColor } from "../omdConstants.js";
 import { jsvgGroup, jsvgRect, jsvgTextBox, jsvgLine} from "@teachinglab/jsvg";
+import { hasFractionText, makeFractionTextLabel, measureFractionText } from "./omdFractionTypeset.js";
+
+const TAPE_FONT_FAMILY = "Albert Sans";
 
 function getDisplayText(value)
 {
@@ -149,24 +152,39 @@ export class omdTapeLabel extends jsvgGroup
         tick.setStrokeWidth( this.strokeWidth );
         this.addChild( tick );
 
-         // make label text
-        var labelText = new jsvgTextBox({ translateMirror: true });
-        labelText.setWidthAndHeight( W,labelHeight );
-        labelText.setText ( this.name );
-        labelText.setFontFamily( "Albert Sans" );
-        labelText.setFontColor( this.color );
-        labelText.setFontSize( this.fontSize );
-        labelText.setAlignment("center");
-        labelText.setText( this.label );
-        labelText.setPosition( startX, labelOffsetY );
-        this.addChild( labelText );
+        // make label text; fractions are stacked like every other OMD label
+        let labelTop;
+        let labelBottom;
+        const stacked = makeFractionTextLabel( this.label, { fontSize: this.fontSize, color: this.color, fontFamily: TAPE_FONT_FAMILY } );
+        if ( stacked )
+        {
+            const centerY = this.showBelow ? 6 + stacked.height / 2 : -(6 + stacked.height / 2);
+            stacked.setPosition( startX + W / 2, centerY );
+            this.addChild( stacked );
+            labelTop = centerY - stacked.height / 2;
+            labelBottom = centerY + stacked.height / 2;
+        }
+        else
+        {
+            var labelText = new jsvgTextBox({ translateMirror: true });
+            labelText.setWidthAndHeight( W,labelHeight );
+            labelText.setFontFamily( TAPE_FONT_FAMILY );
+            labelText.setFontColor( this.color );
+            labelText.setFontSize( this.fontSize );
+            labelText.setAlignment("center");
+            labelText.setText( this.label );
+            labelText.setPosition( startX, labelOffsetY );
+            this.addChild( labelText );
+            labelTop = labelOffsetY;
+            labelBottom = labelOffsetY + labelHeight;
+        }
 
         // Calculate dimensions for this label using geometric bounds.
         // This avoids clipping when labels are stacked above the tape.
         var labelWidth = Math.max(W, endX);
         const verticalPadding = 6;
-        const contentTop = Math.min(-3, labelOffsetY);
-        const contentBottom = Math.max(3, labelOffsetY + labelHeight);
+        const contentTop = Math.min(-3, labelTop);
+        const contentBottom = Math.max(3, labelBottom);
         const minY = contentTop - verticalPadding;
         const maxY = contentBottom + verticalPadding;
         const viewHeight = maxY - minY;
@@ -200,6 +218,7 @@ export class omdTapeDiagram extends jsvgGroup
         this.titleColor = "black";
         this.braceLabelFontSize = 14;
         this.braceColor = "black";
+        this.partDash = "4 4";
         this.updateLayout();
     }
 
@@ -249,6 +268,9 @@ export class omdTapeDiagram extends jsvgGroup
         if ( typeof data.braceColor !== "undefined" )
             this.braceColor = getOptionalText(data.braceColor, this.braceColor);
 
+        if ( typeof data.partDash !== "undefined" )
+            this.partDash = getOptionalText(data.partDash, this.partDash);
+
         this.updateLayout();
     }
 
@@ -261,28 +283,6 @@ export class omdTapeDiagram extends jsvgGroup
     updateLayout()
     {
         this.removeAllChildren();
-
-        const titleOuterPadding = 8;
-        const titleGap = 8;
-        const titleWidth = this.title ? this._estimateTitleWidth(this.title, this.titleFontSize) : 0;
-        const titleBoxHeight = Math.max(24, this.titleFontSize + 10);
-        const titleY = Math.max(0, (this.segmentHeight - titleBoxHeight) / 2);
-        const leftPadding = this.title ? titleOuterPadding + titleWidth + titleGap : 20;
-        const rightPadding = 20;
-        
-        // Add title if present
-        if (this.title) {
-            const titleText = new jsvgTextBox({ translateMirror: true });
-            titleText.setWidthAndHeight(titleWidth, titleBoxHeight);
-            titleText.setFontFamily("Albert Sans");
-            titleText.setFontColor(this.titleColor);
-            titleText.setFontSize(this.titleFontSize);
-            titleText.setAlignment("right");
-            titleText.setVerticalCentering();
-            titleText.setText(this.title);
-            titleText.setPosition(titleOuterPadding, titleY);
-            this.addChild(titleText);
-        }
 
         // Parse values and calculate proportional widths
         const parsedValues = [];
@@ -297,6 +297,7 @@ export class omdTapeDiagram extends jsvgGroup
             let strokeColor = this.segmentStrokeColor;
             let strokeWidth = this.segmentStrokeWidth;
             let numericValue = null;
+            let parts = 1;
 
             // Handle both old format (simple values) and new format (objects)
             if (isRichValue) {
@@ -306,6 +307,7 @@ export class omdTapeDiagram extends jsvgGroup
                 textColor = getOptionalText(valueData.textColor, this.segmentTextColor);
                 strokeColor = getOptionalText(valueData.strokeColor, this.segmentStrokeColor);
                 strokeWidth = getNonNegativeNumber(valueData.strokeWidth, this.segmentStrokeWidth);
+                parts = Math.max(1, getNonNegativeInteger(valueData.parts, 1));
                 if (valueData.weight !== undefined) {
                     numericValue = getPositiveNumber(valueData.weight, null);
                 }
@@ -324,9 +326,41 @@ export class omdTapeDiagram extends jsvgGroup
                 textColor,
                 strokeColor,
                 strokeWidth,
-                numericValue
+                numericValue,
+                parts
             });
             totalNumericValue += numericValue;
+        }
+
+        // Stacked fractions are taller than a line of text; grow the boxes so
+        // "4 1/2" keeps clear space above and below inside its segment.
+        const stackedPadding = 18;
+        let segmentHeight = this.segmentHeight;
+        for (const parsed of parsedValues) {
+            if (parsed.showLabel && hasFractionText(parsed.value))
+                segmentHeight = Math.max(segmentHeight, measureFractionText(parsed.value, this.labelFontSize).height + stackedPadding);
+        }
+
+        const titleOuterPadding = 8;
+        const titleGap = 8;
+        const titleWidth = this.title ? this._estimateTitleWidth(this.title, this.titleFontSize) : 0;
+        const titleBoxHeight = Math.max(24, this.titleFontSize + 10);
+        const titleY = Math.max(0, (segmentHeight - titleBoxHeight) / 2);
+        const leftPadding = this.title ? titleOuterPadding + titleWidth + titleGap : 20;
+        const rightPadding = 20;
+        
+        // Add title if present
+        if (this.title) {
+            const titleText = new jsvgTextBox({ translateMirror: true });
+            titleText.setWidthAndHeight(titleWidth, titleBoxHeight);
+            titleText.setFontFamily(TAPE_FONT_FAMILY);
+            titleText.setFontColor(this.titleColor);
+            titleText.setFontSize(this.titleFontSize);
+            titleText.setAlignment("right");
+            titleText.setVerticalCentering();
+            titleText.setText(this.title);
+            titleText.setPosition(titleOuterPadding, titleY);
+            this.addChild(titleText);
         }
 
         // Calculate width for each segment based on proportion
@@ -342,7 +376,7 @@ export class omdTapeDiagram extends jsvgGroup
 
             // Make box
             var box = new jsvgRect();
-            box.setWidthAndHeight(segmentWidth, this.segmentHeight);
+            box.setWidthAndHeight(segmentWidth, segmentHeight);
             box.setCornerRadius(this.segmentCornerRadius);
             box.setStrokeColor(parsed.strokeColor);
             box.setStrokeWidth(parsed.strokeWidth);
@@ -350,18 +384,41 @@ export class omdTapeDiagram extends jsvgGroup
             box.setPosition(pX, 0);
             this.addChild(box);
 
+            // Equal parts inside one segment are dashed, so the segment's own
+            // solid edges still read as the unit.
+            for (let k = 1; k < parsed.parts; k++) {
+                const partX = pX + k * segmentWidth / parsed.parts;
+                const partLine = new jsvgLine();
+                partLine.setEndpoints(partX, 0, partX, segmentHeight);
+                partLine.setStrokeColor(parsed.strokeColor);
+                partLine.setStrokeWidth(Math.max(1, parsed.strokeWidth));
+                if (this.partDash !== "none")
+                    partLine.svgObject.setAttribute("stroke-dasharray", this.partDash);
+                this.addChild(partLine);
+            }
+
             // Make box text (if showLabel is true)
             if (parsed.showLabel) {
-                var boxText = new jsvgTextBox();
-                boxText.setWidthAndHeight(segmentWidth, this.segmentHeight);
-                boxText.setFontFamily("Albert Sans");
-                boxText.setFontColor(parsed.textColor);
-                boxText.setFontSize(this.labelFontSize);
-                boxText.setAlignment("center");
-                boxText.setVerticalCentering();
-                boxText.setText(parsed.value);
-                boxText.setPosition(pX, 0);
-                this.addChild(boxText);
+                const stacked = makeFractionTextLabel(parsed.value, {
+                    fontSize: this.labelFontSize,
+                    color: parsed.textColor,
+                    fontFamily: TAPE_FONT_FAMILY,
+                });
+                if (stacked) {
+                    stacked.setPosition(pX + segmentWidth / 2, segmentHeight / 2);
+                    this.addChild(stacked);
+                } else {
+                    var boxText = new jsvgTextBox();
+                    boxText.setWidthAndHeight(segmentWidth, segmentHeight);
+                    boxText.setFontFamily(TAPE_FONT_FAMILY);
+                    boxText.setFontColor(parsed.textColor);
+                    boxText.setFontSize(this.labelFontSize);
+                    boxText.setAlignment("center");
+                    boxText.setVerticalCentering();
+                    boxText.setText(parsed.value);
+                    boxText.setPosition(pX, 0);
+                    this.addChild(boxText);
+                }
             }
 
             pX += segmentWidth;
@@ -371,7 +428,7 @@ export class omdTapeDiagram extends jsvgGroup
 
         // Calculate dimensions
         var contentWidth = pX - leftPadding;
-        var contentHeight = this.segmentHeight;
+        var contentHeight = segmentHeight;
         let minGlobalY = 0;
         let maxGlobalY = contentHeight;
         const braceLayerStep = Math.max(35, this.braceLabelFontSize + 18);
@@ -433,7 +490,7 @@ export class omdTapeDiagram extends jsvgGroup
                 }
                 bottomLayers[layer].push({ start, end });
                 
-                const yPos = this.segmentHeight + 10 + (layer * braceLayerStep);
+                const yPos = segmentHeight + 10 + (layer * braceLayerStep);
                 T.setPosition(0, yPos);
             } else {
                 // Find the highest available layer for this label

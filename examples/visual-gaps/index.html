@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMD — Unit 3 &amp; 4 visual gaps: before and after</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f4f1;--card:#ffffff;--ink:#1d2125;--ink-2:#4b5258;--ink-3:#7a8188;--line:#e3e3de;
+  --feature:#2f6f9f;--bug:#b5452f;--docs:#8a6d12;
+  --before:#f8ebe8;--before-ink:#a8402c;--after:#e9f1ea;--after-ink:#2e6b3c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Albert Sans','Helvetica Neue',sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+main{max-width:1180px;margin:0 auto;padding:56px 24px 80px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--feature)}
+h1{font-size:clamp(2rem,4.6vw,2.9rem);line-height:1.08;letter-spacing:-.025em;margin:10px 0 12px;font-weight:700}
+.lede{max-width:700px;color:var(--ink-2);margin:0 0 18px}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--ink-2);margin-bottom:28px;flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--c)}
+.toc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px;
+  display:grid;grid-template-columns:1fr 1fr;gap:6px 28px;margin-bottom:28px;counter-reset:gap}
+.toc a{color:var(--ink);text-decoration:none;font-size:14.5px}
+.toc a::before{counter-increment:gap;content:counter(gap) ". ";color:var(--ink-3)}
+.toc a:hover{text-decoration:underline}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px}
+section.gap{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 22px 24px;margin-bottom:22px}
+.kind{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase}
+.kind.feature{color:var(--feature)}.kind.bug{color:var(--bug)}.kind.docs{color:var(--docs)}
+h2{font-size:1.45rem;letter-spacing:-.015em;margin:4px 0 6px}
+.desc{color:var(--ink-2);max-width:760px;margin:0 0 16px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.side{border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.side.before{background:var(--before)}.side.after{background:var(--after)}
+.side-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
+.before .side-label{color:var(--before-ink)}.after .side-label{color:var(--after-ink)}
+figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+.stage{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;justify-content:center;align-items:center;overflow:auto}
+.stage svg{max-width:100%;height:auto}
+figcaption{font-size:13px;color:var(--ink-2)}
+details summary{cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-3)}
+pre{margin:6px 0 0;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px;
+  font:12px/1.5 'JetBrains Mono',monospace;overflow:auto;max-height:280px}
+.error{color:var(--bug);font:12px 'JetBrains Mono',monospace;white-space:pre-wrap}
+.state{font:12px 'JetBrains Mono',monospace;color:var(--ink-2)}
+@media(max-width:820px){.toc,.compare{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Mathly curriculum · OMD · Units 3 &amp; 4</div>
+  <h1>OMD visual gaps: before and after</h1>
+  <p class="lede">The left column of each card is rendered live by the <strong>published OMD 0.9.96</strong> bundle.
+    These are the renders and workarounds we've been using. The right column is rendered live by
+    <strong>this branch's source</strong>, with the fix. Expand <em>omd json</em> to see the exact input for each figure.</p>
+  <div class="legend">
+    <span style="--c:var(--feature)">Missing feature</span>
+    <span style="--c:var(--bug)">Bug</span>
+    <span style="--c:var(--docs)">Docs</span>
+    <span style="--c:var(--before-ink)">Before · OMD 0.9.96</span>
+    <span style="--c:var(--after-ink)">After · fixed</span>
+  </div>
+  <nav class="toc" id="toc"></nav>
+  <div id="gaps"></div>
+</main>
+
+<script type="module">
+import { createFromJSON as createFixed } from '/src/index.js';
+import { createFromJSON as createBefore } from './omd-0.9.96.browser.js';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+const RUG_TAPES = {
+  omdType: 'doubleTapeDiagram', spacing: 0,
+  topTapeDiagram: { totalWidth: 440, segmentStrokeColor: '#222222',
+    values: [{ value: '2 × 3 = 6', weight: 3, color: '#CFE0F1' }, { value: '2 × 2/3 = 4/3', weight: 2, color: '#EFE3B4' }],
+    labelSet: [{ startIndex: 0, endIndex: 1, label: '3' }, { startIndex: 1, endIndex: 2, label: '2/3' }] },
+  bottomTapeDiagram: { totalWidth: 440, segmentStrokeColor: '#222222',
+    values: [{ value: '1/4 × 3 = 3/4', weight: 3, color: '#DCEFD6' }, { value: '1/4 × 2/3 = 2/12 = 1/6', weight: 2, color: '#F2D4D4' }] },
+};
+
+const MIXED_AREA = {
+  omdType: 'areaDiagram', columns: 4, rows: 3, columnParts: 3, rowParts: 4,
+  shadeWidth: '3 2/3', shadeHeight: '2 1/4', partitionScope: 'last', unitScale: 56,
+  topBraces: [{ from: 0, to: 3, label: '3' }, { from: 3, to: '3 2/3' }],
+  leftBraces: [{ from: 0, to: 2, label: '2' }, { from: 2, to: '2 1/4' }],
+  decompose: true,
+};
+
+const FLOUR = {
+  omdType: 'areaDiagram', columns: 7, rows: 1, columnParts: 5, rowParts: 4,
+  shadeWidth: '6 2/5', shadeHeight: '3/4', partitionScope: 'last', unitScale: 50,
+  topBraces: [{ from: 0, to: 6, label: '6' }, { from: 6, to: '6 2/5' }],
+  leftBrace: 'shaded', decompose: true,
+};
+
+const DAY2_BAR = {
+  omdType: 'areaDiagram', columns: 5, rows: 1, columnParts: 3, shadeWidth: '1/3', unitScale: 70,
+};
+
+const FLOUR_TAPE = {
+  omdType: 'tapeDiagram', totalWidth: 360, segmentStrokeColor: '#222222', segmentStrokeWidth: 2,
+  values: [{ value: '4 1/2', weight: 4.5, color: '#CFE0F1' }, { value: '3/10', weight: 1.2, color: '#EFE3B4' }],
+};
+
+const MULT_TABLE = { omdType: 'table', data: [['2', '6', '4/3'], ['1/4', '3/4', '1/6']] };
+
+const GAPS = [
+  {
+    id: 'area-model', kind: 'feature',
+    title: 'A not-to-scale area model',
+    desc: 'Partial products for mixed × mixed (Unit 3 rug, patio and flour questions) and for whole numbers (Unit 4 Lesson 2: 213 × 12 and 222 × 14). Fix: a new omdType, "areaModel".',
+    before: [
+      { caption: 'Stacked tapes: the workaround in the rug question. There is no room for the 2 and 1/4 side lengths on the left.', json: RUG_TAPES },
+      { caption: 'A table: what the rug question used before. The × corner read as confusing.',
+        json: { ...MULT_TABLE, headers: ['×', '3', '2/3'] } },
+    ],
+    after: [
+      { caption: 'areaModel: side lengths on both sides, the products computed, and a sum line. It is not to scale, but bigger sides still get bigger pieces (compressed, the way it is sketched by hand).',
+        json: { omdType: 'areaModel', columns: ['3', '2/3'], rows: ['2', '1/4'], showSum: true, caption: 'not to scale' } },
+      { caption: 'Whole-number partial products (sumBy: "rows"): 200 is the widest column and 2 the narrowest.',
+        json: { omdType: 'areaModel', columns: ['200', '20', '2'], rows: ['10', '4'], showSum: true, sumBy: 'rows' } },
+      { caption: 'toScale: true draws the pieces exactly proportional to their side lengths.',
+        json: { omdType: 'areaModel', columns: ['3', '2/3'], rows: ['2', '1/4'], toScale: true, unitScale: 64, fontSize: 15, labelFontSize: 17 } },
+    ],
+  },
+  {
+    id: 'decompose-both', kind: 'feature',
+    title: 'Split both sides of a to-scale area model',
+    desc: 'decompose split only one side, but mixed × mixed needs four pieces. Fix: decomposeAxis: "both".',
+    before: [
+      { caption: 'decompose: true. Only the 2/3 column is split off, and the readout is (2 1/4 × 3) + (2 1/4 × 2/3) rather than four parts. The figure\u2019s width also ignores the readout, so the readout can run past the right edge.',
+        json: MIXED_AREA },
+    ],
+    after: [
+      { caption: 'decomposeAxis: "both" tints all four pieces and rules both splits. The figure widens to fit the readout.',
+        json: { ...MIXED_AREA, decomposeAxis: 'both' } },
+    ],
+  },
+  {
+    id: 'readout', kind: 'feature',
+    title: 'Control over the area-model readout',
+    desc: 'decompose always printed the whole equation, total included, which gave away 4 4/5 in the flour question. Fix: readout: "full" | "partials" | "none".',
+    before: [
+      { caption: 'decompose: true always ends with = 4 4/5.', json: FLOUR },
+    ],
+    after: [
+      { caption: 'readout: "partials" stops at the partial products.', json: { ...FLOUR, readout: 'partials' } },
+      { caption: 'readout: "none" hides the line.', json: { ...FLOUR, readout: 'none' } },
+    ],
+  },
+  {
+    id: 'braces', kind: 'feature',
+    title: 'Braces below and to the right',
+    desc: 'Requested for the Day 2 bar. Braces could only go on the top or left edge. Fix: bottomBraces and rightBraces.',
+    before: [
+      { caption: 'topBraces only. There is no bottomBraces or rightBraces.',
+        json: { ...DAY2_BAR, columnPartitionScope: { from: 0, to: 1 }, topBraces: [{ from: 0, to: 1, label: '[1/5]' }] } },
+    ],
+    after: [
+      { caption: 'bottomBraces: a brace under the first fifth.',
+        json: { ...DAY2_BAR, columnPartitionScope: { from: 0, to: 1 }, bottomBraces: [{ from: 0, to: 1, label: '[1/5]' }] } },
+      { caption: 'rightBraces work the same way.',
+        json: { ...DAY2_BAR, columnPartitionScope: { from: 0, to: 1 }, bottomBraces: [{ from: 0, to: 1, label: '[1/5]' }], rightBrace: { scope: 'grid', label: '1' } } },
+    ],
+  },
+  {
+    id: 'solid-dashed', kind: 'feature',
+    title: 'Solid units, dashed parts, in strips and tapes',
+    desc: 'Requested for Katie\u2019s dog food and the brownies. Tape diagrams drew every line solid and fraction strips drew every line dashed. Fix: fractionStrips subParts and tape-segment parts.',
+    before: [
+      { caption: 'tapeDiagram: every line solid.',
+        json: { omdType: 'tapeDiagram', totalWidth: 400, segmentStrokeColor: '#222222', segmentStrokeWidth: 2, segmentCornerRadius: 0,
+          values: [{ value: '', weight: 1, color: '#7FCFEA' }, { value: '', weight: 1, color: '#ffffff' }, { value: '', weight: 1, color: '#ffffff' },
+            { value: '', weight: 3, color: '#ffffff' }, { value: '', weight: 3, color: '#ffffff' }, { value: '', weight: 3, color: '#ffffff' }] } },
+      { caption: 'fractionStrips: every line dashed, so the thirds disappear.',
+        json: { omdType: 'fractionStrips', strips: 1, parts: 18, shaded: 1, brace: false } },
+    ],
+    after: [
+      { caption: 'fractionStrips with parts: 3, subParts: 6: solid thirds over dashed eighteenths. Click the strip to shade pieces.',
+        json: { omdType: 'fractionStrips', strips: 1, parts: 3, subParts: 6, shaded: 1, brace: false, interactive: true },
+        state: true },
+      { caption: 'tapeDiagram segments with parts: 6: dashed inside, solid edges.',
+        json: { omdType: 'tapeDiagram', totalWidth: 400, segmentStrokeColor: '#222222', segmentStrokeWidth: 2, segmentCornerRadius: 0,
+          values: [{ value: '', parts: 6, color: '#ffffff' }, { value: '', parts: 6, color: '#ffffff' }, { value: '', parts: 6, color: '#ffffff' }] } },
+    ],
+  },
+  {
+    id: 'double-tape', kind: 'bug',
+    title: 'Stacked tapes ignore totalWidth',
+    desc: 'doubleTapeDiagram always laid out at 300px because baseWidth was hard-coded, so longer labels spilled out of their boxes. Both columns below use the same JSON.',
+    before: [{ caption: 'totalWidth: 440 on both tapes is ignored, and the bottom-right label overflows.', json: RUG_TAPES }],
+    after: [{ caption: 'totalWidth is honoured. A top-level totalWidth works too.', json: RUG_TAPES }],
+  },
+  {
+    id: 'label-set', kind: 'docs',
+    title: 'Tape-diagram docs show the wrong labelSet shape',
+    desc: 'The docs said labelSet is { braces: [...] }, with endIndex equal to startIndex for one segment. The code wants a plain array, with endIndex one past the last segment. Fix: the docs and the TypeScript types.',
+    before: [
+      { caption: 'The documented shape: no braces appear, and there is no error.',
+        json: { ...FLOUR_TAPE, labelSet: { braces: [{ startIndex: 0, endIndex: 0, label: '6' }, { startIndex: 1, endIndex: 1, label: '2/5' }] } } },
+    ],
+    after: [
+      { caption: 'The shape the docs now show: a plain array with an exclusive endIndex.',
+        json: { ...FLOUR_TAPE, labelSet: [{ startIndex: 0, endIndex: 1, label: '6' }, { startIndex: 1, endIndex: 2, label: '2/5' }] } },
+    ],
+  },
+  {
+    id: 'fractions', kind: 'bug',
+    title: 'Fractions render differently by figure type',
+    desc: 'Area-model braces stacked fractions, but tape boxes, rectangle labels and table cells printed them flat, so the same number looked different from one step to the next. Both columns below use the same JSON.',
+    before: [
+      { caption: 'tapeDiagram: 4 1/2 and 3/10 printed flat.', json: FLOUR_TAPE },
+      { caption: 'rectangle labels printed flat.',
+        json: { omdType: 'rectangle', width: 12, height: 6, unitScale: 16, labelFontSize: 15, sideLabels: { top: '3 2/3 ft', left: '2 1/4 ft' }, centerLabel: '8 1/4 sq ft' } },
+    ],
+    after: [
+      { caption: 'Every label stacks fraction strings the same way.', json: FLOUR_TAPE },
+      { caption: 'Rectangle labels stack too.',
+        json: { omdType: 'rectangle', width: 12, height: 6, unitScale: 16, labelFontSize: 15, sideLabels: { top: '3 2/3 ft', left: '2 1/4 ft' }, centerLabel: '8 1/4 sq ft' } },
+    ],
+  },
+  {
+    id: 'table-header', kind: 'bug',
+    title: 'An empty table header shows “Col 1”',
+    desc: 'Leaving the corner header blank, to drop the ×, printed a placeholder instead. Both columns below use the same JSON.',
+    before: [{ caption: 'headers: ["", "3", "2/3"] renders Col 1.', json: { ...MULT_TABLE, headers: ['', '3', '2/3'] } }],
+    after: [{ caption: 'An empty string leaves the cell blank, and the cells stack their fractions.', json: { ...MULT_TABLE, headers: ['', '3', '2/3'] } }],
+  },
+];
+
+function el(tag, cls, text) {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+/** Mounts a component at its natural size; interactions relayout in place, so keep the frame in sync. */
+function mount(host, json, create) {
+  const component = create(json);
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.style.overflow = 'visible';
+  const sync = () => {
+    svg.setAttribute('width', component.width);
+    svg.setAttribute('height', component.height);
+    svg.setAttribute('viewBox', `0 0 ${component.width} ${component.height}`);
+  };
+  sync();
+  svg.appendChild(component.svgObject);
+  host.replaceChildren(svg);
+  return { component, sync };
+}
+
+function renderFigure(fig, create) {
+  const figure = el('figure');
+  const stage = el('div', 'stage');
+  figure.appendChild(stage);
+  try {
+    const { component, sync } = mount(stage, fig.json, create);
+    if (fig.state) {
+      const state = el('div', 'state');
+      const show = () => {
+        const s = component.getState();
+        state.textContent = `shaded ${s.shadedCount} of ${s.parts * s.subParts} → ${s.total}`;
+      };
+      show();
+      component.svgObject.addEventListener('omd-fractionstrips-change', () => { sync(); show(); });
+      figure.appendChild(state);
+    }
+  } catch (error) {
+    stage.replaceChildren(el('div', 'error', String(error.stack || error)));
+  }
+  figure.appendChild(el('figcaption', null, fig.caption));
+  const details = el('details');
+  details.append(el('summary', null, 'omd json'), el('pre', null, JSON.stringify(fig.json, null, 2)));
+  figure.appendChild(details);
+  return figure;
+}
+
+await document.fonts.ready;
+
+const toc = document.getElementById('toc');
+const root = document.getElementById('gaps');
+const KIND_LABEL = { feature: 'Missing feature', bug: 'Bug', docs: 'Docs' };
+const KIND_COLOR = { feature: 'var(--feature)', bug: 'var(--bug)', docs: 'var(--docs)' };
+
+for (const gap of GAPS) {
+  const link = el('a');
+  link.href = `#${gap.id}`;
+  const dot = el('span', 'dot');
+  dot.style.background = KIND_COLOR[gap.kind];
+  link.append(dot, gap.title);
+  toc.appendChild(link);
+
+  const section = el('section', 'gap');
+  section.id = gap.id;
+  section.append(el('div', `kind ${gap.kind}`, KIND_LABEL[gap.kind]), el('h2', null, gap.title), el('p', 'desc', gap.desc));
+
+  const compare = el('div', 'compare');
+  for (const [side, label, figures, create] of [
+    ['before', 'Before · OMD 0.9.96', gap.before, createBefore],
+    ['after', 'After · fixed', gap.after, createFixed],
+  ]) {
+    const column = el('div', `side ${side}`);
+    column.appendChild(el('div', 'side-label', label));
+    for (const fig of figures) column.appendChild(renderFigure(fig, create));
+    compare.appendChild(column);
+  }
+  section.appendChild(compare);
+  root.appendChild(section);
+}
+
+window.__omdReady = true;
+</script>
+</body>
+</html>

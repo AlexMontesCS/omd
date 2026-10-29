@@ -1,6 +1,7 @@
 
 import { omdColor } from "../omdConstants.js";
 import { jsvgGroup, jsvgPath, jsvgLine, jsvgTextLine, jsvgEllipse } from "@teachinglab/jsvg";
+import { hasFractionText, makeFractionTextLabel, measureFractionText } from "./omdFractionTypeset.js";
 
 const DEFAULT_SHAPE_PADDING = 10;
 const LABEL_SHAPE_PADDING = 38;
@@ -15,15 +16,31 @@ function labelHasText(value) {
 }
 
 function createShapeTextLabel(text, x, y, options = {}) {
+    const fontSize = typeof options.fontSize === "number" ? options.fontSize : 12;
+    const hasRotation = typeof options.rotation === "number" && Number.isFinite(options.rotation);
+
+    // Centred, upright labels stack their fractions like every other OMD label.
+    if (!hasRotation && (options.align || "center") === "center") {
+        const stacked = makeFractionTextLabel(normalizeLabelValue(text), {
+            fontSize,
+            color: options.color || "black",
+            fontFamily: "Albert Sans",
+        });
+        if (stacked) {
+            stacked.setPosition(x, y);
+            return stacked;
+        }
+    }
+
     const label = new jsvgTextLine();
     label.setAlignment(options.align || "center");
     label.setFontFamily("Albert Sans");
     label.setFontColor(options.color || "black");
-    label.setFontSize(typeof options.fontSize === "number" ? options.fontSize : 12);
+    label.setFontSize(fontSize);
     label.setPosition(x, y);
     label.svgObject.setAttribute("dominant-baseline", "middle");
 
-    if (typeof options.rotation === "number" && Number.isFinite(options.rotation)) {
+    if (hasRotation) {
         label.setRotation(options.rotation);
     }
 
@@ -38,11 +55,13 @@ function getShapePadding(showLabels) {
 function estimateLabelWidth(text, fontSize = 12) {
     const normalized = normalizeLabelValue(text);
     if (!normalized) return 0;
+    if (hasFractionText(normalized)) return measureFractionText(normalized, fontSize).width;
     // Approximate average latin glyph width at ~0.58em for compact layout sizing.
     return normalized.length * fontSize * 0.58;
 }
 
-function estimateLabelHeight(fontSize = 12) {
+function estimateLabelHeight(fontSize = 12, text = "") {
+    if (hasFractionText(normalizeLabelValue(text))) return measureFractionText(normalizeLabelValue(text), fontSize).height;
     return fontSize * 1.2;
 }
 
@@ -54,7 +73,7 @@ function getEstimatedLabelBox(text, x, y, options = {}) {
     const fontSize = typeof options.fontSize === "number" ? options.fontSize : 12;
     const padding = typeof options.padding === "number" ? options.padding : 4;
     const width = estimateLabelWidth(text, fontSize) + padding * 2;
-    const height = estimateLabelHeight(fontSize) + padding * 2;
+    const height = estimateLabelHeight(fontSize, text) + padding * 2;
     const align = options.align || "center";
 
     let left = x - width * 0.5;
@@ -466,12 +485,27 @@ export class omdRectangle extends jsvgGroup
         let topPad = basePadding;
         let bottomPad = basePadding;
 
+        // Distance from an edge to a label's centre. Short labels keep the
+        // fixed offsets; wide or stacked ones ("2 1/4 ft") move out far enough
+        // that their near side clears the edge instead of crossing it.
+        const awayFromEdge = (minimum, gap, size) => Math.max(minimum, gap + size * 0.5);
+        const offsets = {
+            top: awayFromEdge(edgeOffset, 6, estimateLabelHeight(fontSize, sideLabels.top)),
+            bottom: awayFromEdge(edgeOffset, 6, estimateLabelHeight(fontSize, sideLabels.bottom)),
+            left: awayFromEdge(edgeOffset, 8, estimateLabelWidth(sideLabels.left, fontSize)),
+            right: awayFromEdge(edgeOffset, 8, estimateLabelWidth(sideLabels.right, fontSize)),
+            outTop: awayFromEdge(outerOffset, 26, estimateLabelHeight(fontSize, this.outsideTopLabel)),
+            outBottom: awayFromEdge(outerOffset, 26, estimateLabelHeight(fontSize, this.outsideBottomLabel)),
+            outLeft: awayFromEdge(outerOffset, 28, estimateLabelWidth(this.outsideLeftLabel, fontSize)),
+            outRight: awayFromEdge(outerOffset, 28, estimateLabelWidth(this.outsideRightLabel, fontSize)),
+        };
+
         if ( hasAnyLabels )
         {
-            const topHeight = estimateLabelHeight(fontSize);
-            const rightHeight = estimateLabelHeight(fontSize);
-            const bottomHeight = estimateLabelHeight(fontSize);
-            const leftHeight = estimateLabelHeight(fontSize);
+            const topHeight = estimateLabelHeight(fontSize, sideLabels.top);
+            const rightHeight = estimateLabelHeight(fontSize, sideLabels.right);
+            const bottomHeight = estimateLabelHeight(fontSize, sideLabels.bottom);
+            const leftHeight = estimateLabelHeight(fontSize, sideLabels.left);
 
             const topWidth = estimateLabelWidth(sideLabels.top, fontSize);
             const rightWidth = estimateLabelWidth(sideLabels.right, fontSize);
@@ -479,12 +513,12 @@ export class omdRectangle extends jsvgGroup
             const leftWidth = estimateLabelWidth(sideLabels.left, fontSize);
 
             const centerWidth = estimateLabelWidth(this.centerLabel, fontSize);
-            const centerHeight = estimateLabelHeight(fontSize);
+            const centerHeight = estimateLabelHeight(fontSize, this.centerLabel);
 
-            const outTopHeight = estimateLabelHeight(fontSize);
-            const outRightHeight = estimateLabelHeight(fontSize);
-            const outBottomHeight = estimateLabelHeight(fontSize);
-            const outLeftHeight = estimateLabelHeight(fontSize);
+            const outTopHeight = estimateLabelHeight(fontSize, this.outsideTopLabel);
+            const outRightHeight = estimateLabelHeight(fontSize, this.outsideRightLabel);
+            const outBottomHeight = estimateLabelHeight(fontSize, this.outsideBottomLabel);
+            const outLeftHeight = estimateLabelHeight(fontSize, this.outsideLeftLabel);
 
             const outTopWidth = estimateLabelWidth(this.outsideTopLabel, fontSize);
             const outRightWidth = estimateLabelWidth(this.outsideRightLabel, fontSize);
@@ -493,28 +527,28 @@ export class omdRectangle extends jsvgGroup
 
             if ( labelHasText(sideLabels.top) )
             {
-                topPad = Math.max(topPad, edgeOffset + topHeight * 0.5 + basePadding);
+                topPad = Math.max(topPad, offsets.top + topHeight * 0.5 + basePadding);
                 leftPad = Math.max(leftPad, topWidth * 0.5 + basePadding);
                 rightPad = Math.max(rightPad, topWidth * 0.5 + basePadding);
             }
 
             if ( labelHasText(sideLabels.right) )
             {
-                rightPad = Math.max(rightPad, edgeOffset + rightWidth * 0.5 + basePadding);
+                rightPad = Math.max(rightPad, offsets.right + rightWidth * 0.5 + basePadding);
                 topPad = Math.max(topPad, rightHeight * 0.5 + basePadding);
                 bottomPad = Math.max(bottomPad, rightHeight * 0.5 + basePadding);
             }
 
             if ( labelHasText(sideLabels.bottom) )
             {
-                bottomPad = Math.max(bottomPad, edgeOffset + bottomHeight * 0.5 + basePadding);
+                bottomPad = Math.max(bottomPad, offsets.bottom + bottomHeight * 0.5 + basePadding);
                 leftPad = Math.max(leftPad, bottomWidth * 0.5 + basePadding);
                 rightPad = Math.max(rightPad, bottomWidth * 0.5 + basePadding);
             }
 
             if ( labelHasText(sideLabels.left) )
             {
-                leftPad = Math.max(leftPad, edgeOffset + leftWidth * 0.5 + basePadding);
+                leftPad = Math.max(leftPad, offsets.left + leftWidth * 0.5 + basePadding);
                 topPad = Math.max(topPad, leftHeight * 0.5 + basePadding);
                 bottomPad = Math.max(bottomPad, leftHeight * 0.5 + basePadding);
             }
@@ -529,28 +563,28 @@ export class omdRectangle extends jsvgGroup
 
             if ( labelHasText(this.outsideTopLabel) )
             {
-                topPad = Math.max(topPad, outerOffset + outTopHeight * 0.5 + basePadding);
+                topPad = Math.max(topPad, offsets.outTop + outTopHeight * 0.5 + basePadding);
                 leftPad = Math.max(leftPad, outTopWidth * 0.5 + basePadding);
                 rightPad = Math.max(rightPad, outTopWidth * 0.5 + basePadding);
             }
 
             if ( labelHasText(this.outsideBottomLabel) )
             {
-                bottomPad = Math.max(bottomPad, outerOffset + outBottomHeight * 0.5 + basePadding);
+                bottomPad = Math.max(bottomPad, offsets.outBottom + outBottomHeight * 0.5 + basePadding);
                 leftPad = Math.max(leftPad, outBottomWidth * 0.5 + basePadding);
                 rightPad = Math.max(rightPad, outBottomWidth * 0.5 + basePadding);
             }
 
             if ( labelHasText(this.outsideLeftLabel) )
             {
-                leftPad = Math.max(leftPad, outerOffset + outLeftWidth * 0.5 + basePadding);
+                leftPad = Math.max(leftPad, offsets.outLeft + outLeftWidth * 0.5 + basePadding);
                 topPad = Math.max(topPad, outLeftHeight * 0.5 + basePadding);
                 bottomPad = Math.max(bottomPad, outLeftHeight * 0.5 + basePadding);
             }
 
             if ( labelHasText(this.outsideRightLabel) )
             {
-                rightPad = Math.max(rightPad, outerOffset + outRightWidth * 0.5 + basePadding);
+                rightPad = Math.max(rightPad, offsets.outRight + outRightWidth * 0.5 + basePadding);
                 topPad = Math.max(topPad, outRightHeight * 0.5 + basePadding);
                 bottomPad = Math.max(bottomPad, outRightHeight * 0.5 + basePadding);
             }
@@ -582,7 +616,7 @@ export class omdRectangle extends jsvgGroup
                 this.labelsHolder.addChild(createShapeTextLabel(
                     sideLabels.top,
                     centerX,
-                    topY - edgeOffset,
+                    topY - offsets.top,
                     { fontSize }
                 ));
             }
@@ -591,7 +625,7 @@ export class omdRectangle extends jsvgGroup
             {
                 this.labelsHolder.addChild(createShapeTextLabel(
                     sideLabels.right,
-                    rightX + edgeOffset,
+                    rightX + offsets.right,
                     centerY,
                     { fontSize }
                 ));
@@ -602,7 +636,7 @@ export class omdRectangle extends jsvgGroup
                 this.labelsHolder.addChild(createShapeTextLabel(
                     sideLabels.bottom,
                     centerX,
-                    bottomY + edgeOffset,
+                    bottomY + offsets.bottom,
                     { fontSize }
                 ));
             }
@@ -611,7 +645,7 @@ export class omdRectangle extends jsvgGroup
             {
                 this.labelsHolder.addChild(createShapeTextLabel(
                     sideLabels.left,
-                    leftX - edgeOffset,
+                    leftX - offsets.left,
                     centerY,
                     { fontSize }
                 ));
@@ -632,7 +666,7 @@ export class omdRectangle extends jsvgGroup
                 this.labelsHolder.addChild(createShapeTextLabel(
                     this.outsideTopLabel,
                     centerX,
-                    topY - outerOffset,
+                    topY - offsets.outTop,
                     { fontSize }
                 ));
             }
@@ -642,7 +676,7 @@ export class omdRectangle extends jsvgGroup
                 this.labelsHolder.addChild(createShapeTextLabel(
                     this.outsideBottomLabel,
                     centerX,
-                    bottomY + outerOffset,
+                    bottomY + offsets.outBottom,
                     { fontSize }
                 ));
             }
@@ -651,7 +685,7 @@ export class omdRectangle extends jsvgGroup
             {
                 this.labelsHolder.addChild(createShapeTextLabel(
                     this.outsideLeftLabel,
-                    leftX - outerOffset,
+                    leftX - offsets.outLeft,
                     centerY,
                     { fontSize }
                 ));
@@ -661,7 +695,7 @@ export class omdRectangle extends jsvgGroup
             {
                 this.labelsHolder.addChild(createShapeTextLabel(
                     this.outsideRightLabel,
-                    rightX + outerOffset,
+                    rightX + offsets.outRight,
                     centerY,
                     { fontSize }
                 ));

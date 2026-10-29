@@ -1,4 +1,4 @@
-import { jsvgLine, jsvgTextLine } from "@teachinglab/jsvg";
+import { jsvgGroup, jsvgLine, jsvgTextLine } from "@teachinglab/jsvg";
 
 /**
  * Pure-SVG typesetting for the fraction visuals (omdFractionWork,
@@ -197,4 +197,67 @@ export function parseFractionMarkup(markup)
     if ( last < markup.length )
         out.push(word(markup.slice(last)));
     return out;
+}
+
+// A bare fraction or mixed number inside plain label text: "3/10", "4 1/2".
+// Digits, dots or slashes on either side mean it is part of something else
+// (a date, a decimal, "1/2/3"), so it stays flat.
+const BARE_FRACTION = /(?<![\d./])(?:(\d+) )?(\d+)\/(\d+)(?![\d/])/g;
+
+/** True when plain label text holds a fraction that should be stacked. */
+export function hasFractionText(text)
+{
+    BARE_FRACTION.lastIndex = 0;
+    const found = BARE_FRACTION.test(String(text ?? ""));
+    BARE_FRACTION.lastIndex = 0;
+    return found;
+}
+
+/**
+ * Plain label text → items, every bare fraction stacked:
+ * "1/4 × 3 = 3/4", "4 1/2", "3/10 cup".
+ */
+export function parseFractionText(text)
+{
+    const source = String(text ?? "");
+    const out = [];
+    let last = 0;
+    for ( const match of source.matchAll(BARE_FRACTION) )
+    {
+        if ( match.index > last )
+            out.push(word(source.slice(last, match.index)));
+        out.push(frac(match[2], match[3], { whole: match[1] ?? null }));
+        last = match.index + match[0].length;
+    }
+    if ( last < source.length )
+        out.push(word(source.slice(last)));
+    return out;
+}
+
+/** Size of a plain-text label once its fractions are stacked. */
+export function measureFractionText(text, fontSize)
+{
+    const runs = parseFractionText(text);
+    const extent = extentOfItems(runs, fontSize);
+    return { width: measureItems(runs, fontSize), above: extent.above, below: extent.below, height: extent.above + extent.below };
+}
+
+/**
+ * The one way OMD labels typeset fraction strings — tape boxes and braces,
+ * table cells, shape labels, area models. Returns a group centred on its
+ * origin (move it with setPosition(cx, cy)), or null when the text has no
+ * fraction so callers keep their ordinary text path.
+ */
+export function makeFractionTextLabel(text, { fontSize, color = "black", fontFamily, fontWeight = 400 })
+{
+    if ( !hasFractionText(text) )
+        return null;
+
+    const runs = parseFractionText(text);
+    const size = measureFractionText(text, fontSize);
+    const group = new jsvgGroup();
+    drawItems(group, runs, -size.width / 2, 0, fontSize, { color, weight: fontWeight, fontFamily });
+    group.width = size.width;
+    group.height = size.height;
+    return group;
 }

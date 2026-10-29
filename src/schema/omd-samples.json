@@ -3342,6 +3342,42 @@
         "labelFontSize": 17
       },
       "spacing": 36
+    },
+    {
+      "_comment": "Partial products on stacked tapes; totalWidth widens both tapes so the longer labels fit.",
+      "omdType": "doubleTapeDiagram",
+      "spacing": 0,
+      "totalWidth": 440,
+      "topTapeDiagram": {
+        "segmentStrokeColor": "#222222",
+        "values": [
+          {
+            "value": "2 × 3 = 6",
+            "weight": 3,
+            "color": "#CFE0F1"
+          },
+          {
+            "value": "2 × 2/3 = 4/3",
+            "weight": 2,
+            "color": "#EFE3B4"
+          }
+        ]
+      },
+      "bottomTapeDiagram": {
+        "segmentStrokeColor": "#222222",
+        "values": [
+          {
+            "value": "1/4 × 3 = 3/4",
+            "weight": 3,
+            "color": "#DCEFD6"
+          },
+          {
+            "value": "1/4 × 2/3 = 1/6",
+            "weight": 2,
+            "color": "#F2D4D4"
+          }
+        ]
+      }
     }
   ],
   "tileEquation": [
@@ -3909,6 +3945,27 @@
         [
           3,
           12
+        ]
+      ]
+    },
+    {
+      "_comment": "Multiplication table for 2 1/4 x 3 2/3 with a blank corner; fractions are stacked.",
+      "omdType": "table",
+      "headers": [
+        "",
+        "3",
+        "2/3"
+      ],
+      "data": [
+        [
+          "2",
+          "6",
+          "4/3"
+        ],
+        [
+          "1/4",
+          "3/4",
+          "1/6"
         ]
       ]
     }
@@ -6616,6 +6673,142 @@
           "answer": "1 1/2"
         }
       ]
+    },
+    {
+      "_comment": "Mixed x mixed, 2 1/4 x 3 2/3: decomposeAxis 'both' splits both sides, tinting four partial products.",
+      "omdType": "areaDiagram",
+      "columns": 4,
+      "rows": 3,
+      "columnParts": 3,
+      "rowParts": 4,
+      "shadeWidth": "3 2/3",
+      "shadeHeight": "2 1/4",
+      "partitionScope": "last",
+      "unitScale": 56,
+      "topBraces": [
+        {
+          "from": 0,
+          "to": 3,
+          "label": "3"
+        },
+        {
+          "from": 3,
+          "to": "3 2/3"
+        }
+      ],
+      "leftBraces": [
+        {
+          "from": 0,
+          "to": 2,
+          "label": "2"
+        },
+        {
+          "from": 2,
+          "to": "2 1/4"
+        }
+      ],
+      "decompose": true,
+      "decomposeAxis": "both"
+    },
+    {
+      "_comment": "Flour question: the readout stops at the partial products so the student finds the total.",
+      "omdType": "areaDiagram",
+      "columns": 7,
+      "rows": 1,
+      "columnParts": 5,
+      "rowParts": 4,
+      "shadeWidth": "6 2/5",
+      "shadeHeight": "3/4",
+      "partitionScope": "last",
+      "unitScale": 50,
+      "topBraces": [
+        {
+          "from": 0,
+          "to": 6,
+          "label": "6"
+        },
+        {
+          "from": 6,
+          "to": "6 2/5"
+        }
+      ],
+      "leftBrace": "shaded",
+      "decompose": true,
+      "readout": "partials"
+    },
+    {
+      "_comment": "A bar of fifths with the first fifth cut into thirds; the brace sits under the first fifth.",
+      "omdType": "areaDiagram",
+      "columns": 5,
+      "rows": 1,
+      "columnParts": 3,
+      "shadeWidth": "1/3",
+      "unitScale": 70,
+      "columnPartitionScope": {
+        "from": 0,
+        "to": 1
+      },
+      "bottomBraces": [
+        {
+          "from": 0,
+          "to": 1,
+          "label": "[1/5]"
+        }
+      ]
+    }
+  ],
+  "areaModel": [
+    {
+      "_comment": "Rug question, 2 1/4 x 3 2/3, not to scale: products computed, sum line on.",
+      "omdType": "areaModel",
+      "columns": [
+        "3",
+        "2/3"
+      ],
+      "rows": [
+        "2",
+        "1/4"
+      ],
+      "showSum": true,
+      "caption": "not to scale"
+    },
+    {
+      "_comment": "Unit 4 partial products, 222 x 14, summed row by row.",
+      "omdType": "areaModel",
+      "columns": [
+        "200",
+        "20",
+        "2"
+      ],
+      "rows": [
+        "10",
+        "4"
+      ],
+      "showSum": true,
+      "sumBy": "rows"
+    },
+    {
+      "_comment": "Each piece spells out its multiplication; dashed dividers.",
+      "omdType": "areaModel",
+      "columns": [
+        "3",
+        "2/3"
+      ],
+      "rows": [
+        "2",
+        "1/4"
+      ],
+      "lineStyle": "dashed",
+      "cells": [
+        [
+          "2 × 3 = 6",
+          "2 × 2/3 = 4/3"
+        ],
+        [
+          "1/4 × 3 = 3/4",
+          "1/4 × 2/3 = 1/6"
+        ]
+      ]
     }
   ],
   "fractionStrips": [
@@ -6642,6 +6835,15 @@
       "stripLength": 210,
       "stripThickness": 46,
       "expressionLine": true
+    },
+    {
+      "_comment": "Solid thirds cut into dashed eighteenths, one eighteenth shaded.",
+      "omdType": "fractionStrips",
+      "strips": 1,
+      "parts": 3,
+      "subParts": 6,
+      "shaded": 1,
+      "brace": false
     }
   ],
   "fractionCircle": [
