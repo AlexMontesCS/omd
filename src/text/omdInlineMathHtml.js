@@ -26,7 +26,7 @@ export const INLINE_MATH_CSS = `
 .omd-math{display:inline-block;white-space:nowrap;font-variant-numeric:lining-nums tabular-nums}
 .omd-math-gap-l{margin-left:.1em}
 .omd-math-gap-r{margin-right:.1em}
-.omd-math-var{font-style:italic}
+.omd-math-var{font-style:normal}
 .omd-math-fn{font-style:normal}
 .omd-math-op{padding:0 .18em}
 .omd-math-punct{padding-right:.18em}
